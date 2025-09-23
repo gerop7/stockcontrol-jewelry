@@ -32,29 +32,41 @@ public class User {
 
     @OneToMany(mappedBy="user")
     private List<Jewel> jewelry;
+
+    @OneToMany(mappedBy="user")
+    private List<Movement> movements;
+    
     
     public User() {
         this.jewelry = new ArrayList<>();
+        this.movements=new ArrayList<>();
     }
-
+    
     public User(String password, String username) {
         this();
         this.password = password;
         this.username = username;
     }
-
+    
     public Long getId() {
         return id;
     }
-
+    
     public void setId(Long id) {
         this.id = id;
     }
-
+    
     public String getUsername() {
         return username;
     }
+    public List<Movement> getMovements() {
+        return movements;
+    }
 
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
+    }
+    
     public void setUsername(String username) {
         this.username = username;
     }

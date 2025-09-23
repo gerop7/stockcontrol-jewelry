@@ -8,11 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
-public class Metal {
+@Table(name="compositions")
+public class Composition {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -21,14 +23,14 @@ public class Metal {
     @Size(min=3, max=30)
     private String name;
 
-    @ManyToMany(mappedBy="metal")
+    @ManyToMany(mappedBy="composition")
     private List<Jewel> jewelry;
 
-    public Metal() {
+    public Composition() {
         jewelry = new ArrayList<>();
     }
 
-    public Metal(String name) {
+    public Composition(String name) {
         this();
         this.name = name;
     }
