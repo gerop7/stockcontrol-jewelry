@@ -4,5 +4,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository {
+    public boolean existByUsername(String username);
 
 }

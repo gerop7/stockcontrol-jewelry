@@ -7,12 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
-public class Category {
+public class Metal {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -21,14 +21,14 @@ public class Category {
     @Size(min=3, max=30)
     private String name;
 
-    @OneToMany(mappedBy="category")
+    @ManyToMany(mappedBy="metal")
     private List<Jewel> jewelry;
-    
-    public Category() {
+
+    public Metal() {
         jewelry = new ArrayList<>();
     }
-    
-    public Category(String name) {
+
+    public Metal(String name) {
         this();
         this.name = name;
     }
@@ -57,4 +57,5 @@ public class Category {
         this.jewelry = jewelry;
     }
 
+    
 }
