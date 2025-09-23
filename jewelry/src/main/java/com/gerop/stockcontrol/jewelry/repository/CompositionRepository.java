@@ -3,8 +3,6 @@ package com.gerop.stockcontrol.jewelry.repository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface JewelRepository {
-
-    boolean existByName(String name);
+public interface CompositionRepository {
 
 }
