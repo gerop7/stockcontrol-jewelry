@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.model.entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,8 +20,9 @@ public class Movement {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-    @NotBlank
-    private String type;
+
+    @Enumerated()
+    private MovementType type;
     @NotBlank
     private String description;
     @Positive
@@ -39,9 +41,8 @@ public class Movement {
         this.timestamp= LocalDateTime.now();
     }
 
-    public Movement(String type, String description, Long quantity) {
+    public Movement(String description, Long quantity) {
         this();
-        this.type = type;
         this.description = description;
         this.quantity = quantity;
     }
@@ -54,11 +55,11 @@ public class Movement {
         this.id = id;
     }
 
-    public String getType() {
+    public MovementType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(MovementType type) {
         this.type = type;
     }
 

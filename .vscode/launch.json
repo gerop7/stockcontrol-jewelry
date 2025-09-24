@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-JewelryApplication<jewelry>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.gerop.stockcontrol.jewelry.JewelryApplication",
+            "projectName": "jewelry",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
