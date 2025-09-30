@@ -1,8 +1,15 @@
 package com.gerop.stockcontrol.jewelry.repository;
 
+import java.util.Optional;
+
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface CategoryRepository {
+import com.gerop.stockcontrol.jewelry.model.entity.Category;
 
+
+@Repository
+public interface CategoryRepository extends CrudRepository<Category, Long>{
+    @Override
+    Optional<Category> findById(Long id);
 }

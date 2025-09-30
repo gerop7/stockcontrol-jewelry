@@ -1,8 +1,13 @@
 package com.gerop.stockcontrol.jewelry.repository;
 
+import java.util.List;
+
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface CompositionRepository {
+import com.gerop.stockcontrol.jewelry.model.entity.Composition;
 
+@Repository
+public interface CompositionRepository extends CrudRepository<Composition, Long>{
+    List<Composition> findAllById(List<Long> ids);
 }

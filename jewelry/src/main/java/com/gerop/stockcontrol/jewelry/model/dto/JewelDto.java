@@ -5,8 +5,8 @@ import java.util.List;
 public class JewelDto {
     private String name;
     private String description;
-    private String categoryId;
-    private String subcategoryId;
+    private Long categoryId;
+    private Long subcategoryId;
     private List<Long> compositionIds;
     private Long stock;
     private String imageUrl;
@@ -18,7 +18,7 @@ public class JewelDto {
 
 
 
-    public JewelDto(String categoryId, List<Long> compositionIds, String description, String imageUrl, String name, Long stock, String subcategoryId) {
+    public JewelDto(Long categoryId, List<Long> compositionIds, String description, String imageUrl, String name, Long stock, Long subcategoryId) {
         this.categoryId = categoryId;
         this.compositionIds = compositionIds;
         this.description = description;
@@ -42,16 +42,16 @@ public class JewelDto {
     public void setDescription(String description) {
         this.description = description;
     }
-    public String getCategoryId() {
+    public Long getCategoryId() {
         return categoryId;
     }
-    public void setCategoryId(String categoryId) {
+    public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
-    public String getSubcategoryId() {
+    public Long getSubcategoryId() {
         return subcategoryId;
     }
-    public void setSubcategoryId(String subcategoryId) {
+    public void setSubcategoryId(Long subcategoryId) {
         this.subcategoryId = subcategoryId;
     }
     public List<Long> getCompositionIds() {
