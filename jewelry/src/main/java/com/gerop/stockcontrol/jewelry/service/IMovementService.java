@@ -15,4 +15,6 @@ public interface IMovementService {
     Optional<Movement> addStock(Jewel jewel, Long quantity);
 
     Optional<Movement> removeStock(Jewel jewel, Long quantity);
+
+    Optional<Movement> sale(Jewel jewel, Long quantity);
 }

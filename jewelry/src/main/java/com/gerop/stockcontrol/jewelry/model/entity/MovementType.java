@@ -5,5 +5,8 @@ public enum MovementType {
     MODIFY,
     DELETE,
     STOCK_ADD,
-    STOCK_REMOVE
+    STOCK_REMOVE,
+    SALE,
+    RESTOCK,
+    MARK_TO_RESTOCK
 }

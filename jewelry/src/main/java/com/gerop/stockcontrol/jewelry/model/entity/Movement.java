@@ -12,7 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name="movements")
@@ -25,7 +25,7 @@ public class Movement {
     private MovementType type;
     @NotBlank
     private String description;
-    @Positive
+    @PositiveOrZero
     private Long quantity;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)

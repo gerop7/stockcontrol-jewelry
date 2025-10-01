@@ -3,11 +3,13 @@ package com.gerop.stockcontrol.jewelry.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -25,6 +27,9 @@ public class Composition {
 
     @ManyToMany(mappedBy="composition")
     private List<Jewel> jewelry;
+
+    @OneToOne(mappedBy = "composition", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PendingCompositionRestock pendingCompositionRestock;
 
     public Composition() {
         jewelry = new ArrayList<>();
@@ -57,6 +62,14 @@ public class Composition {
 
     public void setJewelry(List<Jewel> jewelry) {
         this.jewelry = jewelry;
+    }
+
+    public PendingCompositionRestock getPendingCompositionRestock() {
+        return pendingCompositionRestock;
+    }
+
+    public void setPendingCompositionRestock(PendingCompositionRestock pendingCompositionRestock) {
+        this.pendingCompositionRestock = pendingCompositionRestock;
     }
 
     
