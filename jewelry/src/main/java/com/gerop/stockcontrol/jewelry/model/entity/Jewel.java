@@ -22,6 +22,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -46,6 +47,12 @@ public class Jewel {
     @Column(unique = true)
     private String imageUrl;
 
+    @PositiveOrZero
+    private Float weight;
+
+    @PositiveOrZero
+    private Float size;
+
     @OneToOne(mappedBy = "jewel", cascade = CascadeType.ALL, orphanRemoval = true)
     private PendingJewelRestock pendingRestock;
 
@@ -60,12 +67,19 @@ public class Jewel {
     
     @ManyToMany
     @JoinTable(
-        name = "jewel_composition",
+        name = "jewel_metal",
         joinColumns = @JoinColumn(name = "jewel_id"),
-        inverseJoinColumns = @JoinColumn(name = "composition_id")
-        )
-        
-    private List<Composition> composition;
+        inverseJoinColumns = @JoinColumn(name = "metal_id")
+    )
+    private List<Metal> metal;
+
+    @ManyToMany
+    @JoinTable(
+        name = "jewel_stone",
+        joinColumns = @JoinColumn(name = "jewel_id"),
+        inverseJoinColumns = @JoinColumn(name = "stone_id")
+    )
+    private List<Stone> stone;
         
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name="user_id")
@@ -74,7 +88,10 @@ public class Jewel {
     private boolean active = true;
     
     public Jewel() {
-        this.composition = new ArrayList<>();
+        this.metal = new ArrayList<>();
+        this.stone = new ArrayList<>();
+        this.weight=0f;
+        this.size=0f;
     }
     
     public Jewel(String name, String description, Long stock) {
@@ -123,12 +140,12 @@ public class Jewel {
         this.category = category;
     }
     
-    public List<Composition> getComposition() {
-        return composition;
+    public List<Metal> getMetal() {
+        return metal;
     }
     
-    public void setComposition(List<Composition> composition) {
-        this.composition = composition;
+    public void setMetal(List<Metal> metal) {
+        this.metal = metal;
     }
     
     public User getUser() {
@@ -168,5 +185,29 @@ public class Jewel {
 
     public void setPendingRestock(PendingJewelRestock pendingRestock) {
         this.pendingRestock = pendingRestock;
+    }
+
+    public List<Stone> getStone() {
+        return stone;
+    }
+
+    public void setStone(List<Stone> stone) {
+        this.stone = stone;
+    }
+
+    public Float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Float weight) {
+        this.weight = weight;
+    }
+
+    public Float getSize() {
+        return size;
+    }
+
+    public void setSize(Float size) {
+        this.size = size;
     }
 }    

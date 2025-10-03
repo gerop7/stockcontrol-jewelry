@@ -1,7 +1,7 @@
 package com.gerop.stockcontrol.jewelry.model.entity.movement;
 
-import com.gerop.stockcontrol.jewelry.model.entity.Composition;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
+import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.enums.CompositionMovementType;
 
 import jakarta.persistence.Entity;
@@ -15,31 +15,31 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
-@Table(name="composition_movements")
-public class CompositionMovement extends Movement {
+@Table(name="stone_movements")
+public class StoneMovement extends Movement{
     @Enumerated(EnumType.STRING)
     @NotNull
     private CompositionMovementType type;
 
     @PositiveOrZero
-    private Float weight;
+    private Long quantity;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
-    @JoinColumn(name="composition_id")
+    @JoinColumn(name="stone_id")
     @NotNull
-    private Composition composition;
+    private Stone stone;
 
     @ManyToOne
     @JoinColumn(name="jewel_id")
     private Jewel jewel;
 
-    public CompositionMovement(){
+    public StoneMovement(){
         super();
     }
 
-    public CompositionMovement(Float weight){
+    public StoneMovement(Long quantity){
         this();
-        this.weight=weight;
+        this.quantity=quantity;
     }
 
     public CompositionMovementType getType() {
@@ -50,20 +50,20 @@ public class CompositionMovement extends Movement {
         this.type = type;
     }
 
-    public Float getWeight() {
-        return weight;
+    public Long getQuantity() {
+        return quantity;
     }
 
-    public void setWeight(Float weight) {
-        this.weight = weight;
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
     }
 
-    public Composition getComposition() {
-        return composition;
+    public Stone getStone() {
+        return stone;
     }
 
-    public void setComposition(Composition composition) {
-        this.composition = composition;
+    public void setStone(Stone stone) {
+        this.stone = stone;
     }
 
     public Jewel getJewel() {
@@ -73,6 +73,4 @@ public class CompositionMovement extends Movement {
     public void setJewel(Jewel jewel) {
         this.jewel = jewel;
     }
-
-    
 }

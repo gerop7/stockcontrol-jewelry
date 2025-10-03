@@ -36,6 +36,8 @@ public class User {
 
     @OneToMany(mappedBy="user")
     private List<JewelMovement> movements;
+
+    
     
     
     public User() {

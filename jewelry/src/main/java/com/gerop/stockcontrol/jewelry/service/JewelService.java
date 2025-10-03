@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
+import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
-import com.gerop.stockcontrol.jewelry.model.entity.Composition;
+import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
-import com.gerop.stockcontrol.jewelry.repository.CompositionRepository;
+import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
@@ -33,7 +34,7 @@ public class JewelService implements IJewelService{
     @Autowired
     private SubcategoryRepository subcategoryRepository;
     @Autowired
-    private CompositionRepository compositionRepository;
+    private MetalRepository metalRepository;
 
 
     @Override
@@ -47,20 +48,20 @@ public class JewelService implements IJewelService{
 
         jewel.setImageUrl(jewelDto.getImageUrl());
 
-        if (jewelDto.getCategoryId() == null || jewelDto.getSubcategoryId() == null || jewelDto.getCompositionIds() == null || jewelDto.getCompositionIds().isEmpty()) {
+        if (jewelDto.getCategoryId() == null || jewelDto.getSubcategoryId() == null || jewelDto.getMetalIds() == null || jewelDto.getMetalIds().isEmpty()) {
             return Optional.empty();
         }
 
         Category category = categoryRepository.findById(jewelDto.getCategoryId()).orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
         Subcategory subcategory = subcategoryRepository.findById(jewelDto.getSubcategoryId()).orElseThrow(() -> new RuntimeException("Subategoría no encontrada"));
-        if(subcategory.getPrincipalCategory().getId().equals(category.getId()))
+        if(!subcategory.getPrincipalCategory().getId().equals(category.getId()))
             throw new IllegalArgumentException("La subcategoría no pertenece a la categoría seleccionada");
         
-        List<Composition> compositions = compositionRepository.findAllById(jewelDto.getCompositionIds());
+        List<Metal> metal = metalRepository.findAllById(jewelDto.getMetalIds());
 
         jewel.setCategory(category);
         jewel.setSubcategory(subcategory);
-        jewel.setComposition(compositions);
+        jewel.setMetal(metal);
 
         Jewel saved = jewelRepository.save(jewel);
 
@@ -91,6 +92,11 @@ public class JewelService implements IJewelService{
 
     @Override
     public Optional<Jewel> addStock(Long id, Long quantity) {
+    }
+
+    @Override
+    public Optional<Jewel> sale(Long quantity, Long id, boolean jewelToRestock, List<MetalWeightDto> compositionToRestock) {
+        
     }
 
     @Override

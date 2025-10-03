@@ -2,12 +2,10 @@ package com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-@Entity
 public abstract class PendingRestock {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
