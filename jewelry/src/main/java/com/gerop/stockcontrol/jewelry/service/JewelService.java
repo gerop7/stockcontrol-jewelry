@@ -15,6 +15,7 @@ import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.CompositionRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
+import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 
 @Service
 public class JewelService implements IJewelService{
@@ -22,7 +23,7 @@ public class JewelService implements IJewelService{
     private JewelRepository jewelRepository;
 
     @Autowired
-    private IMovementService movementService;
+    private IJewelMovementService movementService;
 
     @Autowired
     private UserServiceHelper userServiceHelper;
@@ -52,6 +53,9 @@ public class JewelService implements IJewelService{
 
         Category category = categoryRepository.findById(jewelDto.getCategoryId()).orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
         Subcategory subcategory = subcategoryRepository.findById(jewelDto.getSubcategoryId()).orElseThrow(() -> new RuntimeException("Subategoría no encontrada"));
+        if(subcategory.getPrincipalCategory().getId().equals(category.getId()))
+            throw new IllegalArgumentException("La subcategoría no pertenece a la categoría seleccionada");
+        
         List<Composition> compositions = compositionRepository.findAllById(jewelDto.getCompositionIds());
 
         jewel.setCategory(category);

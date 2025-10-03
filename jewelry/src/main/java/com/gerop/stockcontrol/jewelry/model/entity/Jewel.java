@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.validation.UniqueName;
 
 import jakarta.persistence.CascadeType;

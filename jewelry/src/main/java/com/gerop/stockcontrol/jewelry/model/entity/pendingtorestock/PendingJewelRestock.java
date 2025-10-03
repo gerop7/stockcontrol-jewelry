@@ -1,4 +1,6 @@
-package com.gerop.stockcontrol.jewelry.model.entity;
+package com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock;
+
+import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;

@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gerop.stockcontrol.jewelry.model.entity.movement.JewelMovement;
 import com.gerop.stockcontrol.jewelry.validation.UniqueUsername;
 
 import jakarta.persistence.Entity;
@@ -34,7 +35,7 @@ public class User {
     private List<Jewel> jewelry;
 
     @OneToMany(mappedBy="user")
-    private List<Movement> movements;
+    private List<JewelMovement> movements;
     
     
     public User() {
@@ -59,11 +60,11 @@ public class User {
     public String getUsername() {
         return username;
     }
-    public List<Movement> getMovements() {
+    public List<JewelMovement> getMovements() {
         return movements;
     }
 
-    public void setMovements(List<Movement> movements) {
+    public void setMovements(List<JewelMovement> movements) {
         this.movements = movements;
     }
     
