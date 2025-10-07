@@ -1,8 +1,8 @@
 package com.gerop.stockcontrol.jewelry.service.movement;
 
+import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
@@ -14,61 +14,67 @@ import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 
 @Service
 public class MetalMovementService implements IMaterialMovementService<MetalMovement, Metal, Float> {
-    @Autowired
-    private MetalMovementRepository metalMovementRepository;
-    @Autowired
-    public UserServiceHelper userServiceHelper;
+    private final MetalMovementRepository metalMovementRepository;
+    private final UserServiceHelper userServiceHelper;
 
+    public MetalMovementService(MetalMovementRepository metalMovementRepository, UserServiceHelper userServiceHelper){
+        this.metalMovementRepository= metalMovementRepository;
+        this.userServiceHelper = userServiceHelper;
+    }
+
+    @Override
     public Optional<MetalMovement> inflow(Float quantity, Metal metal) {
-        MetalMovement movement = new MetalMovement();
-        movement.setDescription("Se agregaron "+quantity+"gr.\nAntes "+(metal.getWeight()-quantity)+".");
-        movement.setMetal(metal);
-        movement.setJewel(null);
-        movement.setType(CompositionMovementType.RAW_MATERIAL_INFLOW);
-        movement.setUser(userServiceHelper.getCurrentUser());
-        movement.setWeight(metal.getWeight());
-
-        MetalMovement saved = metalMovementRepository.save(movement);
-        return Optional.of(saved);
+        String description =("Se agregaron "+quantity+"gr.\nAntes "+(metal.getWeight()-quantity)+".");
+        return saveMovement(metal, quantity,null,description,CompositionMovementType.RAW_MATERIAL_INFLOW);
     }
 
+    @Override
     public Optional<MetalMovement> outflow(Float quantity, Metal metal) {
-        MetalMovement movement = new MetalMovement();
-        movement.setDescription("Se quitaron "+quantity+"gr.\nAntes "+(metal.getWeight()+quantity)+".");
-        movement.setMetal(metal);
-        movement.setJewel(null);
-        movement.setType(CompositionMovementType.RAW_MATERIAL_OUTFLOW);
-        movement.setUser(userServiceHelper.getCurrentUser());
-        movement.setWeight(metal.getWeight());
+        String description =("Se quitaron "+quantity+"gr.\nAntes "+(metal.getWeight()+quantity)+".");
 
-        MetalMovement saved = metalMovementRepository.save(movement);
-        return Optional.of(saved);
+        return saveMovement(metal, quantity,null,description,CompositionMovementType.RAW_MATERIAL_OUTFLOW);
     }
 
+    @Override
     public Optional<MetalMovement> jewelRegister(Metal metal, Jewel jewel) {
-        MetalMovement movement = new MetalMovement();
-        movement.setDescription("Se creo una nueva joya compuesta de "+metal.getName()+".");
-        movement.setMetal(metal);
-        movement.setJewel(jewel);
-        movement.setType(CompositionMovementType.JEWEL_REGISTER);
-        movement.setUser(userServiceHelper.getCurrentUser());
-        movement.setWeight(0f);
-
-        MetalMovement saved = metalMovementRepository.save(movement);
-        return Optional.of(saved);
+        String description =("Se creo una joya compuesta de "+metal.getName()+".");
+        return saveMovement(metal, 0f, jewel, description, CompositionMovementType.JEWEL_REGISTER);
     }
 
+    @Override
     public Optional<MetalMovement> jewelDeregister(Metal metal, Jewel jewel) {
+        String description = ("Se elimino una joya compuesta de "+metal.getName()+".");
+        
+        return saveMovement(metal, 0f, jewel, description, CompositionMovementType.JEWEL_DEREGISTER);
+    }
+
+    @Override
+    public Optional<MetalMovement> replacement(Metal metal, Float quantity) {
+        String description = ("Se repuso "+quantity+" gramos.");
+        return saveMovement(metal, quantity,null,description,CompositionMovementType.REPLACEMENT);
+    }
+
+    @Override
+    public Optional<MetalMovement> saveMovement(Metal metal, Float quantity, Jewel jewel, String description, CompositionMovementType type) {
         MetalMovement movement = new MetalMovement();
-        movement.setDescription("Se elimino una joya compuesta de "+metal.getName()+".");
+        movement.setDescription(description);
         movement.setMetal(metal);
         movement.setJewel(jewel);
-        movement.setType(CompositionMovementType.JEWEL_DEREGISTER);
+        movement.setType(type);
         movement.setUser(userServiceHelper.getCurrentUser());
-        movement.setWeight(0f);
+        movement.setWeight(quantity);
 
-        MetalMovement saved = metalMovementRepository.save(movement);
-        return Optional.of(saved);
+        return Optional.of(metalMovementRepository.save(movement));
+    }
+
+    @Override
+    public List<MetalMovement> findAll() {
+        return metalMovementRepository.findAllByOrderByTimestampDesc();
+    }
+
+    @Override
+    public List<MetalMovement> findAllByType(CompositionMovementType type) {
+        return metalMovementRepository.findAllByTypeOrderByTimestampDesc(type);
     }
 
 }
