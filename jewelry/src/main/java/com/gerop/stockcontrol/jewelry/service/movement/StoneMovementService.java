@@ -75,11 +75,11 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
 
     @Override
     public List<StoneMovement> findAll() {
-        return stoneMovementRepository.findAllByOrderByTimestampDesc();
+        return stoneMovementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
     }
 
     @Override
     public List<StoneMovement> findAllByType(CompositionMovementType type) {
-        return stoneMovementRepository.findAllByTypeOrderByTimestampDesc(type);
+        return stoneMovementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
     }
 }

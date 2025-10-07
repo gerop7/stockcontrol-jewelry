@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.model.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +37,11 @@ public class Sale {
     @JoinColumn(name="user_id")
     private User user;
 
+    private LocalDateTime timestamp;
+
     public Sale() {
-        jewels = new ArrayList<>();
+        this.jewels = new ArrayList<>();
+        this.timestamp = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -78,6 +82,14 @@ public class Sale {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 
 
