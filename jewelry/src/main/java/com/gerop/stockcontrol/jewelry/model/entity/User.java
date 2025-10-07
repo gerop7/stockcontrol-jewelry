@@ -1,16 +1,11 @@
 package com.gerop.stockcontrol.jewelry.model.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.gerop.stockcontrol.jewelry.model.entity.movement.JewelMovement;
 import com.gerop.stockcontrol.jewelry.validation.UniqueUsername;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,23 +25,11 @@ public class User {
     @NotBlank
     @Size(min=8, max=100)
     private String password;
-
-    @OneToMany(mappedBy="user")
-    private List<Jewel> jewelry;
-
-    @OneToMany(mappedBy="user")
-    private List<JewelMovement> movements;
-
-    
-    
     
     public User() {
-        this.jewelry = new ArrayList<>();
-        this.movements=new ArrayList<>();
     }
     
     public User(String password, String username) {
-        this();
         this.password = password;
         this.username = username;
     }
@@ -62,13 +45,7 @@ public class User {
     public String getUsername() {
         return username;
     }
-    public List<JewelMovement> getMovements() {
-        return movements;
-    }
 
-    public void setMovements(List<JewelMovement> movements) {
-        this.movements = movements;
-    }
     
     public void setUsername(String username) {
         this.username = username;
@@ -81,12 +58,4 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public List<Jewel> getJewelry() {
-        return jewelry;
-    }
-
-    public void setJewelry(List<Jewel> jewelry) {
-        this.jewelry = jewelry;
-    } 
 }
