@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,9 +27,8 @@ public class Sale {
     @PositiveOrZero
     private Float total;
 
-    @OneToMany
-    @JoinColumn(name="sale_id")
-    private List<Jewel> jewels;
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaleJewel> jewels;
 
     @NotNull
     private String description;
@@ -60,14 +60,6 @@ public class Sale {
         this.total = total;
     }
 
-    public List<Jewel> getJewels() {
-        return jewels;
-    }
-
-    public void setJewels(List<Jewel> jewels) {
-        this.jewels = jewels;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -90,6 +82,14 @@ public class Sale {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public List<SaleJewel> getJewels() {
+        return jewels;
+    }
+
+    public void setJewels(List<SaleJewel> jewels) {
+        this.jewels = jewels;
     }
 
 
