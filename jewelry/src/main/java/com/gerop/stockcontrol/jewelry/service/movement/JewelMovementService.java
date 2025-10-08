@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.enums.JewelMovementType;
@@ -12,6 +13,7 @@ import com.gerop.stockcontrol.jewelry.repository.JewelMovementRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 
 @Service
+@Transactional
 public class JewelMovementService implements IJewelMovementService {
     private final JewelMovementRepository movementRepository;
     private final UserServiceHelper userServiceHelper;
@@ -72,6 +74,7 @@ public class JewelMovementService implements IJewelMovementService {
         return saveMovement(jewel, quantity, description.toString(), JewelMovementType.REPLACEMENT);
     }
 
+    
     public Optional<JewelMovement> saveMovement(Jewel jewel, Long quantity, String description, JewelMovementType type) {
         
         JewelMovement movement = new JewelMovement();
@@ -85,11 +88,13 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<JewelMovement> findAll() {
         return movementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<JewelMovement> findAllByType(JewelMovementType type) {
         return movementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
     }

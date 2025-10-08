@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
@@ -13,6 +14,7 @@ import com.gerop.stockcontrol.jewelry.repository.StoneMovementRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 
 @Service
+@Transactional
 public class StoneMovementService implements IMaterialMovementService<StoneMovement, Stone, Long>{
 
     private final StoneMovementRepository stoneMovementRepository;
@@ -74,11 +76,13 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<StoneMovement> findAll() {
         return stoneMovementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<StoneMovement> findAllByType(CompositionMovementType type) {
         return stoneMovementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
     }

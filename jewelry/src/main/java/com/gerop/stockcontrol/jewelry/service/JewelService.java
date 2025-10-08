@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
@@ -38,6 +39,7 @@ public class JewelService implements IJewelService{
 
 
     @Override
+    @Transactional
     public Optional<Jewel> create(JewelDto jewelDto) {
         if(jewelRepository.existByName(jewelDto.getName()))
             return Optional.empty();
