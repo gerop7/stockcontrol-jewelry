@@ -22,10 +22,6 @@ public abstract class Material{
     @JoinColumn(name="user_id")
     private User user;
 
-    public Material() {
-        
-    }
-
     public Long getId() {
         return id;
     }

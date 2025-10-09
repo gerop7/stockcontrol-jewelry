@@ -86,6 +86,7 @@ public class JewelService implements IJewelService{
 
     @Override
     public Optional<Jewel> findById(Long id) {
+        return jewelRepository.findById(id);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public Optional<Jewel> sale(Long quantity, Long id, boolean jewelToRestock, List<MetalWeightDto> compositionToRestock) {
+    public Optional<Jewel> sale(Long quantity, Long id, Long quantityToRestock) {
         
     }
 

@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 
+
 @Repository
 public interface JewelRepository extends CrudRepository<Jewel, Long> {
 
     boolean existByName(String name);
-
     Optional<Jewel> findByName(String name);
 }
