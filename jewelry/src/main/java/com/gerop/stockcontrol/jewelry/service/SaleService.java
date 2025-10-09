@@ -13,8 +13,6 @@ import com.gerop.stockcontrol.jewelry.model.dto.StoneQuantityDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Sale;
 import com.gerop.stockcontrol.jewelry.repository.SaleRepository;
-import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockManagerService;
-
 
 @Service
 public class SaleService implements ISaleService {

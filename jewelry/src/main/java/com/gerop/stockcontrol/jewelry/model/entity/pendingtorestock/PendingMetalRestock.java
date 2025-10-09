@@ -10,6 +10,12 @@ public class PendingMetalRestock extends PendingRestock {
 
     public PendingMetalRestock() {
         super();
+        this.weight = 0f;
+    }
+
+    public PendingMetalRestock(Float weight) {
+        super();
+        this.weight =weight;
     }
 
     public Float getWeight() {

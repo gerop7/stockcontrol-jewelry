@@ -12,6 +12,12 @@ public class PendingJewelRestock extends PendingRestock {
 
     public PendingJewelRestock() {
         super();
+        this.quantity = 0L;
+    }
+
+    public PendingJewelRestock(@PositiveOrZero Long quantity) {
+        super();
+        this.quantity = quantity;
     }
 
     public Long getQuantity() {

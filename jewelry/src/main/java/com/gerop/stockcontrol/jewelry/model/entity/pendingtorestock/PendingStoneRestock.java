@@ -13,7 +13,15 @@ public class PendingStoneRestock extends PendingRestock{
 
     public PendingStoneRestock() {
         super();
+        this.quantity = 0L;
     }
+    
+
+    public PendingStoneRestock(Long quantity) {
+        super();
+        this.quantity = quantity;
+    }
+
 
     public Long getQuantity() {
         return quantity;
