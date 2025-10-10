@@ -1,17 +1,27 @@
-package com.gerop.stockcontrol.jewelry.model.dto;
+package com.gerop.stockcontrol.jewelry.model.dto.sale;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
+import com.gerop.stockcontrol.jewelry.model.dto.StoneQuantityDto;
+
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public class JewelSaleWithPendingRestockDto {
     @NotNull
     private Long jewelId;
 
+    @Positive
     private Long quantity;
 
+    @PositiveOrZero
     private Long quantityToRestock;
+
+    @PositiveOrZero
+    private Float total;
 
     private List<MetalWeightDto> metalToRestock;
 
@@ -60,5 +70,13 @@ public class JewelSaleWithPendingRestockDto {
 
     public void setStoneToRestock(List<StoneQuantityDto> stoneToRestock) {
         this.stoneToRestock = stoneToRestock;
+    }
+
+    public Float getTotal() {
+        return total;
+    }
+
+    public void setTotal(Float total) {
+        this.total = total;
     }
 }

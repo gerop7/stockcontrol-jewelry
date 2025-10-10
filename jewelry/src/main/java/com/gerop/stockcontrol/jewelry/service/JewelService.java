@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
-import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;

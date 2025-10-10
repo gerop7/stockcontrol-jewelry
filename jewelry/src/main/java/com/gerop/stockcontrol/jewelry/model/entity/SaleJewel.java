@@ -15,17 +15,16 @@ public class SaleJewel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "sale_id")
-    private Sale sale;
-
+    
     @ManyToOne
     @JoinColumn(name = "jewel_id")
     private Jewel jewel;
 
     @Positive
-    private int quantity;
+    private Long quantity;
+
+    @Positive
+    private Float total;
 
     public SaleJewel() {
     }
@@ -38,13 +37,6 @@ public class SaleJewel {
         this.id = id;
     }
 
-    public Sale getSale() {
-        return sale;
-    }
-
-    public void setSale(Sale sale) {
-        this.sale = sale;
-    }
 
     public Jewel getJewel() {
         return jewel;
@@ -54,12 +46,20 @@ public class SaleJewel {
         this.jewel = jewel;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    public Float getTotal() {
+        return total;
+    }
+
+    public void setTotal(Float total) {
+        this.total = total;
     }
 
 

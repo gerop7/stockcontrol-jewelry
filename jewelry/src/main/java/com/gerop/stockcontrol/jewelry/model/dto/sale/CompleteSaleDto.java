@@ -1,17 +1,14 @@
-package com.gerop.stockcontrol.jewelry.model.dto;
+package com.gerop.stockcontrol.jewelry.model.dto.sale;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 public class CompleteSaleDto {
     @NotNull
     private String description;
-    @PositiveOrZero
-    private Float total;
     @NotEmpty
     private List<JewelSaleWithPendingRestockDto> jewels;
 
@@ -25,14 +22,6 @@ public class CompleteSaleDto {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Float getTotal() {
-        return total;
-    }
-
-    public void setTotal(Float total) {
-        this.total = total;
     }
 
     public List<JewelSaleWithPendingRestockDto> getJewels() {
