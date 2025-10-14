@@ -5,12 +5,11 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.model.entity.enums.CompositionMovementType;
 import com.gerop.stockcontrol.jewelry.model.entity.movement.MetalMovement;
 
 @Repository
 public interface MetalMovementRepository extends JpaRepository<MetalMovement, Long> {
-    List<MetalMovement> findAllByUserOrderByTimestampDesc(User user);
-    List<MetalMovement> findAllByUserAndTypeOrderByTimestampDesc(User user,CompositionMovementType type);
+    List<MetalMovement> findAllByUserIdOrderByTimestampDesc(Long id);
+    List<MetalMovement> findAllByUserIdAndTypeOrderByTimestampDesc(Long id,CompositionMovementType type);
 }

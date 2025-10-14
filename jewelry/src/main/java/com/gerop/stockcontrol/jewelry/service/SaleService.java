@@ -55,7 +55,7 @@ public class SaleService implements ISaleService {
         
         for(JewelSaleWithPendingRestockDto jewelData: saleDto.getJewels()){
             Optional<Jewel> jewel = jewelService.findById(jewelData.getJewelId());
-            if((jewel.isEmpty() || !jewel.get().isActive() || jewel.get().getUser().equals(helper.getCurrentUser()))){
+            if((jewel.isEmpty() || !jewel.get().isActive() || !jewel.get().getUser().equals(helper.getCurrentUser()))){
                 failedJewels.add("La joya ID "+jewelData.getJewelId()+" No puede ser vendida.");
             }else{
                 try {
@@ -96,19 +96,19 @@ public class SaleService implements ISaleService {
     @Override
     @Transactional(readOnly= true)
     public List<Sale> listAll() {
-        return repository.findAllByUserOrderByTimestampDesc(helper.getCurrentUser());
+        return repository.findAllByUserIdOrderByTimestampDesc(helper.getCurrentUser().getId());
     }
 
     @Override
     @Transactional(readOnly= true)
     public List<Sale> listAllOrderByTotalAsc() {
-        return repository.findAllByUserOrderByTotalAsc(helper.getCurrentUser());
+        return repository.findAllByUserIdOrderByTotalAsc(helper.getCurrentUser().getId());
     }
 
     @Override
     @Transactional(readOnly= true)
     public List<Sale> listAllOrderByTotalDesc() {
-        return repository.findAllByUserOrderByTotalDesc(helper.getCurrentUser());
+        return repository.findAllByUserIdOrderByTotalDesc(helper.getCurrentUser().getId());
     }
 
 }

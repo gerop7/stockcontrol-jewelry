@@ -24,6 +24,9 @@ public class Subcategory {
     private String name;
 
     @NotNull
+    private User user;
+
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     private Category principalCategory;
 
@@ -53,6 +56,16 @@ public class Subcategory {
 
     public void setPrincipalCategory(Category principalCategory) {
         this.principalCategory = principalCategory;
+    }
+
+
+    public User getUser() {
+        return user;
+    }
+
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     

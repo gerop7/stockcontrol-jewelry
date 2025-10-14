@@ -77,12 +77,12 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     @Override
     @Transactional(readOnly=true)
     public List<StoneMovement> findAll() {
-        return stoneMovementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
+        return stoneMovementRepository.findAllByUserIdOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId());
     }
 
     @Override
     @Transactional(readOnly=true)
     public List<StoneMovement> findAllByType(CompositionMovementType type) {
-        return stoneMovementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
+        return stoneMovementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
 }

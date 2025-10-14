@@ -11,6 +11,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 @Repository
 public interface JewelRepository extends CrudRepository<Jewel, Long> {
 
-    boolean existByName(String name);
-    Optional<Jewel> findByName(String name);
+    boolean existByNameAndUserId(Long id,String name);
+    Optional<Jewel> findByNameAndUserId(Long id,String name);
+    Optional<Jewel> findByIdAndUserId(Long id, Long userId);
 }

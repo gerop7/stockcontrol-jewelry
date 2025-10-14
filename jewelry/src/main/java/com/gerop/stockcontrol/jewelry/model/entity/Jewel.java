@@ -99,6 +99,20 @@ public class Jewel {
         this.size=0f;
     }
     
+    public Jewel(String name,String description, String sku, Long stock, String imageUrl,
+        Float weight, Float size, User user) {
+        this.metal = new ArrayList<>();
+        this.stone = new ArrayList<>();
+        this.name = name;
+        this.description = description;
+        this.sku = sku;
+        this.stock = stock;
+        this.imageUrl = imageUrl;
+        this.weight = weight;
+        this.size = size;
+        this.user = user;
+    }
+
     public Jewel(String name, String description, Long stock) {
         this();
         this.name = name;
@@ -141,8 +155,8 @@ public class Jewel {
         return category;
     }
     
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategory(Category category2) {
+        this.category = category2;
     }
     
     public List<Metal> getMetal() {

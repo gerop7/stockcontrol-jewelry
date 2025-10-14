@@ -89,12 +89,12 @@ public class JewelMovementService implements IJewelMovementService {
     @Override
     @Transactional(readOnly=true)
     public List<JewelMovement> findAll() {
-        return movementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
+        return movementRepository.findAllByUserIdOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId());
     }
 
     @Override
     @Transactional(readOnly=true)
     public List<JewelMovement> findAllByType(JewelMovementType type) {
-        return movementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
+        return movementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
 }

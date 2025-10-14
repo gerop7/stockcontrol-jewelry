@@ -71,13 +71,13 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     @Override
     @Transactional(readOnly=true)
     public List<MetalMovement> findAll() {
-        return metalMovementRepository.findAllByUserOrderByTimestampDesc(userServiceHelper.getCurrentUser());
+        return metalMovementRepository.findAllByUserIdOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId());
     }
 
     @Override
     @Transactional(readOnly=true)
     public List<MetalMovement> findAllByType(CompositionMovementType type) {
-        return metalMovementRepository.findAllByUserAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser(),type);
+        return metalMovementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
 
 }
