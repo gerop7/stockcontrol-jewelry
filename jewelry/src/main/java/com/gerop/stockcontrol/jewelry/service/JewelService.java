@@ -54,30 +54,41 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional
     public Jewel create(JewelDto jewelDto) {
-        Jewel jewel = new Jewel(jewelDto.getName(), jewelDto.getDescription(), jewelDto.getSku(),
-            jewelDto.getStock(), jewelDto.getImageUrl(), jewelDto.getWeight(),
-            jewelDto.getSize(), userServiceHelper.getCurrentUser()
+        Jewel jewel = new Jewel(
+            jewelDto.getName(), 
+            jewelDto.getDescription(), 
+            jewelDto.getSku(),
+            jewelDto.getStock(), 
+            jewelDto.getImageUrl(), 
+            jewelDto.getWeight(),
+            jewelDto.getSize(), 
+            userServiceHelper.getCurrentUser()
         );
 
         jewel.setPendingRestock(pendingRestockService.create());
+        Long userId = userServiceHelper.getCurrentUser().getId();
 
         if (jewelDto.getCategoryId()!=null  && jewelDto.getCategoryId()>0) {
-            Category category = categoryRepository.findById(jewelDto.getCategoryId()).orElseThrow(()-> new IllegalArgumentException("Category not found"));
-            if(!category.getUser().getId().equals(userServiceHelper.getCurrentUser().getId())){
-                throw new IllegalArgumentException("Category not found");
-            }
+            Category category = categoryRepository.findByIdAndUserId(jewelDto.getCategoryId(), userId)
+            .orElseThrow(()-> new IllegalArgumentException("Category not found"));
+
             jewel.setCategory(category);
 
             if(jewelDto.getSubcategoryId()>0){
-                Subcategory subcategory = subcategoryRepository.findById(jewelDto.getSubcategoryId()).orElseThrow(()-> new IllegalArgumentException("Subcategory not found"));
-                if(!subcategory.getUser().getId().equals(userServiceHelper.getCurrentUser().getId()) || !subcategory.getPrincipalCategory().getId().equals(category.getId)){
+                Subcategory subcategory = subcategoryRepository.findByIdAndUserId(jewelDto.getSubcategoryId(), userId)
+                .orElseThrow(()-> new IllegalArgumentException("Subcategory not found"));
+
+                if(!subcategory.getPrincipalCategory().getId().equals(category.getId())){
                     throw new IllegalArgumentException("Subcategory not found");
                 }
+
                 jewel.setSubcategory(subcategory);
             }
         }else{
             throw new CategoryRequiredException;
         }
+
+        
     }
 
     @Override

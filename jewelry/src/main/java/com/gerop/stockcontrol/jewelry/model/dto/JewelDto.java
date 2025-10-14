@@ -2,9 +2,12 @@ package com.gerop.stockcontrol.jewelry.model.dto;
 
 import java.util.List;
 
+import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
+
 public class JewelDto {
     private String name;
     private String description;
+    @UniqueSku
     private String sku;
     private Long categoryId;
     private Long subcategoryId;

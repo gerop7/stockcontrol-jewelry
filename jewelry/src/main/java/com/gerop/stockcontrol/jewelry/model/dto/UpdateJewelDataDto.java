@@ -1,9 +1,12 @@
 package com.gerop.stockcontrol.jewelry.model.dto;
 
+import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
+
 public class UpdateJewelDataDto {
     private String name;
     private String description;
     private String imageUrl;
+    @UniqueSku
     private String sku;
     private Float size;
     private Float weight;

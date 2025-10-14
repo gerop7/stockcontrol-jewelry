@@ -8,11 +8,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Table;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name="pending_restock")
+@MappedSuperclass
 public abstract class PendingRestock {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

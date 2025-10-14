@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.validation.UniqueName;
+import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,6 +44,7 @@ public class Jewel {
     private String description;
 
     @NotEmpty
+    @UniqueSku
     private String sku;
 
     @Positive
@@ -57,7 +59,7 @@ public class Jewel {
     @PositiveOrZero
     private Float size;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "pending_restock_id")
     private PendingJewelRestock pendingRestock;
 
