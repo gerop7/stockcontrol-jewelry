@@ -7,18 +7,17 @@ import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 
 public interface IJewelService {
-    Optional<Jewel> create(JewelDto jewelDto);
+    Jewel create(JewelDto jewelDto);
+    Boolean delete(Long id);
+    Jewel save(Jewel jewel);
+    
+    JewelDto updateImageUrl(Long id, String imageUrl);
+    JewelDto updateName(Long id, String name);
+    JewelDto updateDescription(Long id,String description);
 
-    Optional<Jewel> updateName(Long id, String name);
-
-    Optional<Jewel> updateDescription(Long id,String description);
-
-    Optional<Jewel> addStock(Long id, Long quantity);
-    Optional<Jewel> removeStock(Long id, Long quantity);
-
-    Optional<Jewel> sale(Long quantity, Long id, Long quantityToRestock);
+    JewelDto addStock(Long id, Long quantity);
+    JewelDto sale(Long id,Long quantity, Long quantityToRestock);
 
     Optional<Jewel> findById(Long id);
-
     List<Jewel> findAll();
 }

@@ -18,14 +18,14 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
     public PendingStoneRestock create() {
         PendingStoneRestock pending= new PendingStoneRestock();
         pending.setQuantity(0L);
-        return pendingRestockRepository.save(pending);
+        return save(pending);
     }
 
     @Override
     public void addToRestock(Long id,Long quantity) {
         PendingStoneRestock pending = (PendingStoneRestock)pendingRestockRepository.findById(id).orElseThrow();
         pending.setQuantity(pending.getQuantity()+quantity);
-        pendingRestockRepository.save(pending);
+        save(pending);
     }
 
     @Override
@@ -33,7 +33,12 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
         PendingStoneRestock pending = (PendingStoneRestock)pendingRestockRepository.findById(id).orElseThrow();
         Long q = pending.getQuantity() - quantity;
         pending.setQuantity(q<0?0:q);
-        pendingRestockRepository.save(pending);
+        save(pending);
+    }
+
+    @Override
+    public PendingStoneRestock save(PendingStoneRestock entity) {
+        return pendingRestockRepository.save(entity);
     }
 
 

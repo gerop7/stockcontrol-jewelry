@@ -1,7 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service.movement;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,26 +25,26 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
-    public Optional<JewelMovement> create(Jewel jewel) {
+    public JewelMovement create(Jewel jewel) {
         String description=("Articulo: "+jewel.getName() + " Creado exitosamente!");
 
         return saveMovement(jewel, 0L, description, JewelMovementType.CREATE);
     }
 
     @Override
-    public Optional<JewelMovement> modify(String modifyDescription, Jewel jewel) {  
+    public JewelMovement modify(String modifyDescription, Jewel jewel) {  
         return saveMovement(jewel, 0L, modifyDescription, JewelMovementType.MODIFY);
     }
 
     @Override
-    public Optional<JewelMovement> delete(Jewel jewel) {
+    public JewelMovement delete(Jewel jewel) {
         String description =("Se elimino el articulo: "+jewel.getName());
         
         return saveMovement(jewel, 0L, description, JewelMovementType.DELETE);
     }
 
     @Override
-    public Optional<JewelMovement> addStock(Jewel jewel, Long quantity) {
+    public JewelMovement addStock(Jewel jewel, Long quantity) {
         String description = ("Se añadio "+quantity+" unidades de "+ jewel.getName()+ 
             ". Antes: "+(jewel.getStock()-quantity)+" unidades");
         
@@ -53,7 +52,7 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
-    public Optional<JewelMovement> sale(Jewel jewel, Long quantity, Float total) {
+    public JewelMovement sale(Jewel jewel, Long quantity, Float total) {
         StringBuilder description = new StringBuilder("Venta de ").append(jewel.getName()).append(".\n Total= $").append(total.toString());
         if(quantity>1)
             description.append(".\nSe vendieron ").append(quantity).append(" Unidades.");
@@ -64,7 +63,7 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
-    public Optional<JewelMovement> replacement(Jewel jewel, Long quantity) {
+    public JewelMovement replacement(Jewel jewel, Long quantity) {
         StringBuilder description = new StringBuilder("Se repuso ").append(jewel.getName());
         if(quantity>1)
             description.append(".\nUn total de ").append(quantity).append(" Unidades.");
@@ -75,7 +74,7 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     
-    public Optional<JewelMovement> saveMovement(Jewel jewel, Long quantity, String description, JewelMovementType type) {
+    public JewelMovement saveMovement(Jewel jewel, Long quantity, String description, JewelMovementType type) {
         
         JewelMovement movement = new JewelMovement();
         movement.setDescription(description);
@@ -84,7 +83,7 @@ public class JewelMovementService implements IJewelMovementService {
         movement.setQuantity(quantity);
         movement.setUser(userServiceHelper.getCurrentUser());
         
-        return Optional.of(movementRepository.save(movement));
+        return movementRepository.save(movement);
     }
 
     @Override

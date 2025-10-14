@@ -55,7 +55,7 @@ public class SaleService implements ISaleService {
         
         for(JewelSaleWithPendingRestockDto jewelData: saleDto.getJewels()){
             Optional<Jewel> jewel = jewelService.findById(jewelData.getJewelId());
-            if((jewel.isEmpty() || !jewel.get().isActive()) && jewel.get().getUser().equals(helper.getCurrentUser())){
+            if((jewel.isEmpty() || !jewel.get().isActive() || jewel.get().getUser().equals(helper.getCurrentUser()))){
                 failedJewels.add("La joya ID "+jewelData.getJewelId()+" No puede ser vendida.");
             }else{
                 try {

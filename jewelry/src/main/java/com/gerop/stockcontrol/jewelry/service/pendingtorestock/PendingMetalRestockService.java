@@ -17,14 +17,19 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
     public PendingMetalRestock create() {
         PendingMetalRestock pending = new PendingMetalRestock();
         pending.setWeight(0F);
-        return pendingRestockRepository.save(pending);
+        return save(pending);
+    }
+    
+    @Override
+    public PendingMetalRestock save(PendingMetalRestock entity) {
+        return pendingRestockRepository.save(entity);
     }
 
     @Override
     public void addToRestock(Long id,Float quantity) {
         PendingMetalRestock pending = (PendingMetalRestock)pendingRestockRepository.findById(id).orElseThrow();
         pending.setWeight(pending.getWeight()+quantity);
-        pendingRestockRepository.save(pending);
+        save(pending);
     }
 
     @Override
@@ -32,7 +37,8 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
         PendingMetalRestock pending = (PendingMetalRestock)pendingRestockRepository.findById(id).orElseThrow();
         Float q = pending.getWeight() - quantity;
         pending.setWeight(q<0?0:q);
-        pendingRestockRepository.save(pending);
+        save(pending);
     }   
+
 
 }

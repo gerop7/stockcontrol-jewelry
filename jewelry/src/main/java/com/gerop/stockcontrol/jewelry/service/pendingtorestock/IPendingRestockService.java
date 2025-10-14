@@ -4,6 +4,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingResto
 
 public interface IPendingRestockService<T extends PendingRestock, N extends Number> {
     T create();
+    T save(T entity);
     void addToRestock(Long id, N quantity);
     void removeFromRestock(Long id, N quantity);
 }

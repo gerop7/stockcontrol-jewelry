@@ -18,14 +18,19 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     public PendingJewelRestock create() {
         PendingJewelRestock pendingJewelRestock = new PendingJewelRestock();
         pendingJewelRestock.setQuantity(0L);
-        return pendingRestockRepository.save(pendingJewelRestock);
+        return save(pendingJewelRestock);
+    }
+
+    @Override
+    public PendingJewelRestock save(PendingJewelRestock entity) {
+        return pendingRestockRepository.save(entity);
     }
 
     @Override
     public void addToRestock(Long id,Long quantity) {
         PendingJewelRestock pendingJewelRestock = (PendingJewelRestock)pendingRestockRepository.findById(id).orElseThrow();
         pendingJewelRestock.setQuantity(pendingJewelRestock.getQuantity() + quantity);
-        pendingRestockRepository.save(pendingJewelRestock);
+        save(pendingJewelRestock);
     }
 
     @Override
@@ -33,7 +38,7 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
         PendingJewelRestock pendingJewelRestock = (PendingJewelRestock)pendingRestockRepository.findById(id).orElseThrow();
         Long q = pendingJewelRestock.getQuantity() - quantity;
         pendingJewelRestock.setQuantity(q < 0 ? 0 : q);
-        pendingRestockRepository.save(pendingJewelRestock);
+        save(pendingJewelRestock);
     }
 
 }
