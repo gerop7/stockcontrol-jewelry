@@ -57,7 +57,8 @@ public class Jewel {
     @PositiveOrZero
     private Float size;
 
-    @OneToOne(mappedBy = "jewel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pending_restock_id")
     private PendingJewelRestock pendingRestock;
 
     

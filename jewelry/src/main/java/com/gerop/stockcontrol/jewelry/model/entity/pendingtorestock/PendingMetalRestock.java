@@ -1,11 +1,9 @@
 package com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.PositiveOrZero;
 
-@Entity
-@Table(name="metal_restock")
 public class PendingMetalRestock extends PendingRestock {
+    @PositiveOrZero
     private Float weight;
 
     public PendingMetalRestock() {

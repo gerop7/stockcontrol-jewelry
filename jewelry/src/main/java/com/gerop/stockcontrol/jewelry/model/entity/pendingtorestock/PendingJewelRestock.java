@@ -1,11 +1,7 @@
 package com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.PositiveOrZero;
 
-@Entity
-@Table(name="jewel_restock")
 public class PendingJewelRestock extends PendingRestock {
     @PositiveOrZero
     private Long quantity;
@@ -15,7 +11,7 @@ public class PendingJewelRestock extends PendingRestock {
         this.quantity = 0L;
     }
 
-    public PendingJewelRestock(@PositiveOrZero Long quantity) {
+    public PendingJewelRestock(Long quantity) {
         super();
         this.quantity = quantity;
     }

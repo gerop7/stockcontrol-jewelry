@@ -16,6 +16,7 @@ import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 
 @Service

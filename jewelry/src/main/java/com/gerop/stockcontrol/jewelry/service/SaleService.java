@@ -17,6 +17,10 @@ import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Sale;
 import com.gerop.stockcontrol.jewelry.model.entity.SaleJewel;
 import com.gerop.stockcontrol.jewelry.repository.SaleRepository;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IMetalService;
+import com.gerop.stockcontrol.jewelry.service.interfaces.ISaleService;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IStoneService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -51,21 +55,21 @@ public class SaleService implements ISaleService {
         
         for(JewelSaleWithPendingRestockDto jewelData: saleDto.getJewels()){
             Optional<Jewel> jewel = jewelService.findById(jewelData.getJewelId());
-            if(jewel.isEmpty()){
-                failedJewels.add("La joya ID "+jewelData.getJewelId()+" No existe");
+            if((jewel.isEmpty() || !jewel.get().isActive()) && jewel.get().getUser().equals(helper.getCurrentUser())){
+                failedJewels.add("La joya ID "+jewelData.getJewelId()+" No puede ser vendida.");
             }else{
                 try {
                     jewelService.sale(jewelData.getQuantity(), jewelData.getJewelId(), jewelData.getQuantityToRestock());
                     for(MetalWeightDto metalToRestock : jewelData.getMetalToRestock()){
                         try {
-                            metalService.pendingRestock(metalToRestock.getMetalId(),metalToRestock.getWeight());
+                            metalService.pendingRestock(metalToRestock);
                         } catch (EntityNotFoundException e) {
                             failedJewels.add("Metal ID "+metalToRestock.getMetalId()+" No existe.");
                         }
                     }
                     for(StoneQuantityDto stoneToRestock: jewelData.getStoneToRestock()){
                         try {
-                            stoneService.pendingRestock(stoneToRestock.getStoneId(),stoneToRestock.getQuantity());
+                            stoneService.pendingRestock(stoneToRestock);
                         } catch (EntityNotFoundException e) {
                             failedJewels.add("Piedra ID "+stoneToRestock.getStoneId()+ " No existe.");
                         }
