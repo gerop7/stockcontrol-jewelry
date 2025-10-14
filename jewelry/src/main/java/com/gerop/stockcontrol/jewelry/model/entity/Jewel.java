@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -40,6 +41,9 @@ public class Jewel {
     @NotNull
     @Size(max=40)
     private String description;
+
+    @NotEmpty
+    private String sku;
 
     @Positive
     private Long stock;
@@ -209,5 +213,13 @@ public class Jewel {
 
     public void setSize(Float size) {
         this.size = size;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
     }
 }    

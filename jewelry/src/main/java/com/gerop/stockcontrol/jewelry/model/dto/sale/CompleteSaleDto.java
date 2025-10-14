@@ -12,6 +12,11 @@ public class CompleteSaleDto {
     @NotEmpty
     private List<JewelSaleWithPendingRestockDto> jewels;
 
+    public CompleteSaleDto(String description, List<JewelSaleWithPendingRestockDto> jewels) {
+        this.description = description;
+        this.jewels = jewels;
+    }
+
     public CompleteSaleDto() {
         jewels= new ArrayList<>();
     }

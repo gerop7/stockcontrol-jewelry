@@ -5,6 +5,7 @@ import java.util.List;
 public class JewelDto {
     private String name;
     private String description;
+    private String sku;
     private Long categoryId;
     private Long subcategoryId;
     private List<Long> metalIds;
@@ -16,7 +17,7 @@ public class JewelDto {
     public JewelDto() {
     }
 
-    public JewelDto(Long categoryId, List<Long> metalIds, String description, String imageUrl, String name, Long stock, Long subcategoryId, Float weight, Float size) {
+    public JewelDto(Long categoryId, List<Long> metalIds, String description, String imageUrl, String name, Long stock, Long subcategoryId, Float weight, Float size,String sku) {
         this.categoryId = categoryId;
         this.metalIds = metalIds;
         this.description = description;
@@ -26,6 +27,7 @@ public class JewelDto {
         this.subcategoryId = subcategoryId;
         this.size=size;
         this.weight=weight;
+        this.sku=sku;
     }
 
     public String getName() {
@@ -85,6 +87,14 @@ public class JewelDto {
 
     public void setSize(Float size) {
         this.size = size;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
     }
 
     

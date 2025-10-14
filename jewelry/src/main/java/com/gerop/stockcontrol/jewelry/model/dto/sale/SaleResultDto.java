@@ -11,6 +11,11 @@ public class SaleResultDto {
         this.sale = sale;
         this.fails = fails;
     }
+
+    public SaleResultDto(List<String> fails, Sale sale) {
+        this.fails = fails;
+        this.sale = sale;
+    }
     public Sale getSale() {
         return sale;
     }

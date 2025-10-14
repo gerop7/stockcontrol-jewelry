@@ -32,6 +32,15 @@ public class JewelSaleWithPendingRestockDto {
         stoneToRestock=new ArrayList<>();
     }
 
+    public JewelSaleWithPendingRestockDto(Long jewelId, List<MetalWeightDto> metalToRestock, Long quantity, Long quantityToRestock, List<StoneQuantityDto> stoneToRestock, Float total) {
+        this.jewelId = jewelId;
+        this.metalToRestock = metalToRestock;
+        this.quantity = quantity;
+        this.quantityToRestock = quantityToRestock;
+        this.stoneToRestock = stoneToRestock;
+        this.total = total;
+    }
+
     public Long getJewelId() {
         return jewelId;
     }
