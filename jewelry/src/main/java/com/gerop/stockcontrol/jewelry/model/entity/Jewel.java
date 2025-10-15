@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
-import com.gerop.stockcontrol.jewelry.validation.UniqueName;
 import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
 
 import jakarta.persistence.CascadeType;
@@ -35,7 +34,6 @@ public class Jewel {
     private Long id;
 
     @NotBlank
-    @UniqueName
     @Size(min=3, max=30)
     private String name;
 
@@ -44,7 +42,7 @@ public class Jewel {
     private String description;
 
     @NotEmpty
-    @UniqueSku
+    @UniqueSku(message="El código SKU ingresado es inválido.")
     private String sku;
 
     @Positive

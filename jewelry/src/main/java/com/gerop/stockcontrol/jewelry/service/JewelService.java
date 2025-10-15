@@ -5,11 +5,13 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.gerop.stockcontrol.jewelry.exception.CategoryRequiredException;
+import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
+import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
@@ -21,6 +23,7 @@ import com.gerop.stockcontrol.jewelry.service.interfaces.IStoneService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -65,30 +68,57 @@ public class JewelService implements IJewelService{
             userServiceHelper.getCurrentUser()
         );
 
-        jewel.setPendingRestock(pendingRestockService.create());
         Long userId = userServiceHelper.getCurrentUser().getId();
 
+        
         if (jewelDto.getCategoryId()!=null  && jewelDto.getCategoryId()>0) {
             Category category = categoryRepository.findByIdAndUserId(jewelDto.getCategoryId(), userId)
-            .orElseThrow(()-> new IllegalArgumentException("Category not found"));
+            .orElseThrow(()-> new EntityNotFoundException("Category not found"));
 
             jewel.setCategory(category);
 
-            if(jewelDto.getSubcategoryId()>0){
+            if(jewelDto.getSubcategoryId()!=null){
                 Subcategory subcategory = subcategoryRepository.findByIdAndUserId(jewelDto.getSubcategoryId(), userId)
-                .orElseThrow(()-> new IllegalArgumentException("Subcategory not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Subcategory not found"));
 
                 if(!subcategory.getPrincipalCategory().getId().equals(category.getId())){
-                    throw new IllegalArgumentException("Subcategory not found");
+                    throw new RequiredFieldException("Subcategory does not belong to the selected category");
                 }
-
                 jewel.setSubcategory(subcategory);
             }
+            
         }else{
-            throw new CategoryRequiredException;
+            throw new RequiredFieldException("Category is required!");
         }
 
-        
+
+        List<Long> metalIds = jewelDto.getMetalIds();
+        if (metalIds ==null || metalIds.isEmpty()) {
+            throw new RequiredFieldException("Metal is required!");
+        }
+
+        List<Metal> metals = metalService.findAllById(metalIds);
+        if (metals.size() != metalIds.size()) {
+            throw new EntityNotFoundException("One or more metals not found");
+        }
+        jewel.setMetal(metals);
+
+
+        List<Long> stoneIds = jewelDto.getStoneIds();
+        if (stoneIds!=null && !stoneIds.isEmpty()) {
+            List<Stone> stones = stoneService.findAllById(stoneIds);
+            if (stones.size()!=stoneIds.size()) {
+                throw new EntityNotFoundException("One or more stones not found");
+            }
+            jewel.setStone(stones);
+        }
+
+
+        jewel.setPendingRestock(pendingRestockService.create());
+
+        movementService.create(jewel);
+
+        return save(jewel);
     }
 
     @Override

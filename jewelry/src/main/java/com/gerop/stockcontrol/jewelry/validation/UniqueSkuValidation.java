@@ -18,7 +18,8 @@ public class UniqueSkuValidation implements ConstraintValidator<UniqueSku, Strin
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return repository.existsBySkuAndUserId(value, helper.getCurrentUser().getId());
+        if(value == null || value.isBlank()) return true;
+        return !repository.existsBySkuAndUserId(value.trim().toUpperCase(), helper.getCurrentUser().getId());
     }
 
 }

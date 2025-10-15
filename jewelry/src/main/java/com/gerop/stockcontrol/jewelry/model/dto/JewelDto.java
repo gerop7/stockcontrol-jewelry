@@ -4,23 +4,32 @@ import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public class JewelDto {
+    @NotBlank
     private String name;
+    @NotBlank
     private String description;
     @UniqueSku
     private String sku;
     private Long categoryId;
     private Long subcategoryId;
     private List<Long> metalIds;
+    private List<Long> stoneIds;
+    @PositiveOrZero
     private Long stock;
     private String imageUrl;
+    @PositiveOrZero
     private Float weight;
+    @PositiveOrZero
     private Float size;
     
     public JewelDto() {
     }
 
-    public JewelDto(Long categoryId, List<Long> metalIds, String description, String imageUrl, String name, Long stock, Long subcategoryId, Float weight, Float size,String sku) {
+    public JewelDto(Long categoryId, List<Long> metalIds, String description, String imageUrl, String name, Long stock, Long subcategoryId, Float weight, Float size,String sku,List<Long> stoneIds) {
         this.categoryId = categoryId;
         this.metalIds = metalIds;
         this.description = description;
@@ -31,6 +40,7 @@ public class JewelDto {
         this.size=size;
         this.weight=weight;
         this.sku=sku;
+        this.stoneIds=stoneIds;
     }
 
     public String getName() {
@@ -98,6 +108,14 @@ public class JewelDto {
 
     public void setSku(String sku) {
         this.sku = sku;
+    }
+
+    public List<Long> getStoneIds() {
+        return stoneIds;
+    }
+
+    public void setStoneIds(List<Long> stoneIds) {
+        this.stoneIds = stoneIds;
     }
 
     
