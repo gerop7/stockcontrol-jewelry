@@ -4,6 +4,5 @@ public enum CompositionMovementType {
     RAW_MATERIAL_INFLOW,
     RAW_MATERIAL_OUTFLOW,
     JEWEL_REGISTER,
-    JEWEL_DEREGISTER,
     REPLACEMENT
 }

@@ -45,12 +45,6 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     }
 
     @Override
-    public StoneMovement jewelDeregister(Stone mat, Jewel jewel) {
-        String description = "Se elimino una joya compuesta de "+mat.getName()+".";
-        return saveMovement(mat, 0L, jewel, description, CompositionMovementType.JEWEL_DEREGISTER);
-    }
-
-    @Override
     public StoneMovement replacement(Stone mat, Long quantity) {
         StringBuilder description= new StringBuilder("Se repuso ");
         if(quantity>1)

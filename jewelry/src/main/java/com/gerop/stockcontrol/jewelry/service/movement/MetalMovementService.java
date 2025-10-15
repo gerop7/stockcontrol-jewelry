@@ -43,13 +43,6 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     }
 
     @Override
-    public MetalMovement jewelDeregister(Metal metal, Jewel jewel) {
-        String description = ("Se elimino una joya compuesta de "+metal.getName()+".");
-        
-        return saveMovement(metal, 0f, jewel, description, CompositionMovementType.JEWEL_DEREGISTER);
-    }
-
-    @Override
     public MetalMovement replacement(Metal metal, Float quantity) {
         String description = ("Se repuso "+quantity+" gramos.");
         return saveMovement(metal, quantity,null,description,CompositionMovementType.REPLACEMENT);

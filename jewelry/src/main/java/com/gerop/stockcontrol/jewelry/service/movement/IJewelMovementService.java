@@ -9,7 +9,6 @@ import com.gerop.stockcontrol.jewelry.model.entity.movement.JewelMovement;
 public interface IJewelMovementService {
     JewelMovement create(Jewel jewel);
     JewelMovement modify(String modifyDescription, Jewel jewel);
-    JewelMovement delete(Jewel jewel);
     JewelMovement addStock(Jewel jewel, Long quantity);
     JewelMovement sale(Jewel jewel, Long quantity, Float total);
     JewelMovement replacement(Jewel jewel, Long quantity);
