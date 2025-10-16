@@ -11,10 +11,15 @@ public class CompleteSaleDto {
     private String description;
     @NotEmpty
     private List<JewelSaleWithPendingRestockDto> jewels;
+    @NotNull
+    private Long inventoryId;
 
-    public CompleteSaleDto(String description, List<JewelSaleWithPendingRestockDto> jewels) {
+
+    public CompleteSaleDto(@NotNull String description, @NotEmpty List<JewelSaleWithPendingRestockDto> jewels,
+            Long inventoryId) {
         this.description = description;
         this.jewels = jewels;
+        this.inventoryId = inventoryId;
     }
 
     public CompleteSaleDto() {
@@ -35,6 +40,14 @@ public class CompleteSaleDto {
 
     public void setJewels(List<JewelSaleWithPendingRestockDto> jewels) {
         this.jewels = jewels;
+    }
+
+    public Long getInventoryId() {
+        return inventoryId;
+    }
+
+    public void setInventoryId(Long inventoryId) {
+        this.inventoryId = inventoryId;
     }
 
 

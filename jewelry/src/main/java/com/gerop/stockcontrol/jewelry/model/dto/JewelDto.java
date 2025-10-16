@@ -1,47 +1,64 @@
 package com.gerop.stockcontrol.jewelry.model.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public class JewelDto {
+    @Positive
+    private Long jewelId;
     @NotBlank
     private String name;
     @NotBlank
     private String description;
     @UniqueSku
     private String sku;
+    @PositiveOrZero
+    private String imageUrl;
+
     private Long categoryId;
     private Long subcategoryId;
     private List<Long> metalIds;
     private List<Long> stoneIds;
-    @PositiveOrZero
-    private Long stock;
-    private String imageUrl;
+    private List<InventoryStockDto> stockByInventory;
+    private Long inventoryQueryId;
+
     @PositiveOrZero
     private Float weight;
     @PositiveOrZero
     private Float size;
-    
+
     public JewelDto() {
+        metalIds = new ArrayList<>();
+        stoneIds = new ArrayList<>();
+        stockByInventory = new ArrayList<>();
     }
 
-    public JewelDto(Long categoryId, List<Long> metalIds, String description, String imageUrl, String name, Long stock, Long subcategoryId, Float weight, Float size,String sku,List<Long> stoneIds) {
-        this.categoryId = categoryId;
-        this.metalIds = metalIds;
-        this.description = description;
-        this.imageUrl = imageUrl;
+    public JewelDto(Long jewelId,String name, String description, String sku,
+            String imageUrl, Long categoryId, Long subcategoryId, List<Long> metalIds,
+            List<Long> stoneIds, List<InventoryStockDto> stockByInventory, Float weight,
+            Float size, Long inventoryQueryId) {
+        this.jewelId = jewelId;
         this.name = name;
-        this.stock = stock;
+        this.description = description;
+        this.sku = sku;
+        this.imageUrl = imageUrl;
+        this.categoryId = categoryId;
         this.subcategoryId = subcategoryId;
-        this.size=size;
-        this.weight=weight;
-        this.sku=sku;
-        this.stoneIds=stoneIds;
+        this.metalIds = metalIds;
+        this.stoneIds = stoneIds;
+        this.stockByInventory = stockByInventory;
+        this.weight = weight;
+        this.size = size;
+        this.inventoryQueryId = inventoryQueryId;
     }
+
+
 
     public String getName() {
         return name;
@@ -54,6 +71,18 @@ public class JewelDto {
     }
     public void setDescription(String description) {
         this.description = description;
+    }
+    public String getSku() {
+        return sku;
+    }
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
     public Long getCategoryId() {
         return categoryId;
@@ -73,49 +102,49 @@ public class JewelDto {
     public void setMetalIds(List<Long> metalIds) {
         this.metalIds = metalIds;
     }
-    public Long getStock() {
-        return stock;
+    public List<Long> getStoneIds() {
+        return stoneIds;
     }
-    public void setStock(Long stock) {
-        this.stock = stock;
+    public void setStoneIds(List<Long> stoneIds) {
+        this.stoneIds = stoneIds;
     }
-    public String getImageUrl() {
-        return imageUrl;
+    public List<InventoryStockDto> getStockByInventory() {
+        return stockByInventory;
     }
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setStockByInventory(List<InventoryStockDto> stockByInventory) {
+        this.stockByInventory = stockByInventory;
     }
-
     public Float getWeight() {
         return weight;
     }
-
     public void setWeight(Float weight) {
         this.weight = weight;
     }
-
     public Float getSize() {
         return size;
     }
-
     public void setSize(Float size) {
         this.size = size;
     }
 
-    public String getSku() {
-        return sku;
+
+
+    public Long getJewelId() {
+        return jewelId;
     }
 
-    public void setSku(String sku) {
-        this.sku = sku;
+
+
+    public void setJewelId(Long jewelId) {
+        this.jewelId = jewelId;
     }
 
-    public List<Long> getStoneIds() {
-        return stoneIds;
+    public Long getInventoryQueryId() {
+        return inventoryQueryId;
     }
 
-    public void setStoneIds(List<Long> stoneIds) {
-        this.stoneIds = stoneIds;
+    public void setInventoryQueryId(Long inventoryQueryId) {
+        this.inventoryQueryId = inventoryQueryId;
     }
 
     
