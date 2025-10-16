@@ -4,7 +4,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,8 +15,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name="categories")
-public class Category {
+@Table(name="inventories")
+public class Inventory {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -27,10 +26,19 @@ public class Category {
     private String name;
 
     @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user;
+    private User owner;
+
+    public Inventory(){
+
+    }
+
+    public Inventory(String name, User owner) {
+        this.name = name;
+        this.owner = owner;
+    }
 
     public Long getId() {
         return id;
@@ -48,11 +56,13 @@ public class Category {
         this.name = name;
     }
 
-    public User getUser() {
-        return user;
+    public User getOwner() {
+        return owner;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
+
+
 }

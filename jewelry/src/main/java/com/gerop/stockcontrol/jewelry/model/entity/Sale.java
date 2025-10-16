@@ -30,8 +30,8 @@ public class Sale {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
-    @JoinColumn(name="user_id")
-    private User user;
+    @JoinColumn(name="inventory_id")
+    private Inventory inventory;
 
     private LocalDateTime timestamp;
 
@@ -56,14 +56,6 @@ public class Sale {
         this.description = description;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
@@ -78,6 +70,14 @@ public class Sale {
 
     public void setJewels(List<SaleJewel> jewels) {
         this.jewels = jewels;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
 

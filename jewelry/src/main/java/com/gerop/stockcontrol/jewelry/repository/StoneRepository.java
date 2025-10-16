@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 
 @Repository
-public interface MetalRepository extends CrudRepository<Metal, Long>{
-    List<Metal> findAllByIdAndUserId(List<Long> ids, Long userId);
+public interface StoneRepository extends CrudRepository<Stone, Long>{
+    List<Stone> findAllByIdAndUserId(List<Long> ids, Long stoneId);
 }

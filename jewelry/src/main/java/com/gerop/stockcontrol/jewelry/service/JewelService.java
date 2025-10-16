@@ -52,8 +52,6 @@ public class JewelService implements IJewelService{
             this.userServiceHelper = userServiceHelper;
     }
     
-    
-
     @Override
     @Transactional
     public Jewel create(JewelDto jewelDto) {
@@ -116,19 +114,25 @@ public class JewelService implements IJewelService{
 
         jewel.setPendingRestock(pendingRestockService.create());
 
+        Jewel saved = save(jewel);
         movementService.create(jewel);
 
-        return save(jewel);
+        return saved;
     }
 
     @Override
     public Boolean delete(Long id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Jewel jewel = jewelRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Jewel not found"));
+        jewel.setActive(false);
+
+        save(jewel);
+
+        return true;
     }
 
     @Override
     public Jewel save(Jewel jewel) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jewelRepository.save(jewel);
     }
 
     @Override

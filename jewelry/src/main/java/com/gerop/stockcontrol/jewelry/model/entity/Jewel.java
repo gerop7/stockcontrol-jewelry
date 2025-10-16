@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
 import com.gerop.stockcontrol.jewelry.validation.UniqueSku;
 
 import jakarta.persistence.CascadeType;
@@ -17,12 +18,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -45,8 +46,8 @@ public class Jewel {
     @UniqueSku(message="El código SKU ingresado es inválido.")
     private String sku;
 
-    @Positive
-    private Long stock;
+    @OneToMany(mappedBy = "jewel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JewelryStockByInventory> stockByInventory;
 
     @Column(unique = true)
     private String imageUrl;
@@ -86,6 +87,14 @@ public class Jewel {
     )
     private List<Stone> stone;
         
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "inventory_jewel",
+        joinColumns = @JoinColumn(name = "jewel_id"),
+        inverseJoinColumns = @JoinColumn(name = "inventory_id")
+    )
+    private List<Inventory> inventories;
+
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name="user_id")
     private User user;
@@ -95,29 +104,30 @@ public class Jewel {
     public Jewel() {
         this.metal = new ArrayList<>();
         this.stone = new ArrayList<>();
+        this.inventories=new ArrayList<>();
         this.weight=0f;
         this.size=0f;
     }
     
-    public Jewel(String name,String description, String sku, Long stock, String imageUrl,
+    public Jewel(String name,String description, String sku, String imageUrl,
         Float weight, Float size, User user) {
         this.metal = new ArrayList<>();
         this.stone = new ArrayList<>();
+        this.inventories=new ArrayList<>();
+        this.stockByInventory = new ArrayList<>();
         this.name = name;
         this.description = description;
         this.sku = sku;
-        this.stock = stock;
         this.imageUrl = imageUrl;
         this.weight = weight;
         this.size = size;
-        this.user = user;
+        this.user=user;
     }
 
-    public Jewel(String name, String description, Long stock) {
+    public Jewel(String name, String description) {
         this();
         this.name = name;
         this.description = description;
-        this.stock=stock;
     }
     
     public Long getId() {
@@ -167,27 +177,12 @@ public class Jewel {
         this.metal = metal;
     }
     
-    public User getUser() {
-        return user;
-    }
-    
-    public void setUser(User user) {
-        this.user = user;
-    }
     public Subcategory getSubcategory() {
         return subcategory;
     }
 
     public void setSubcategory(Subcategory subcategory) {
         this.subcategory = subcategory;
-    }
-
-    public Long getStock() {
-        return stock;
-    }
-
-    public void setStock(Long stock) {
-        this.stock = stock;
     }
 
     public boolean isActive() {
@@ -236,5 +231,30 @@ public class Jewel {
 
     public void setSku(String sku) {
         this.sku = sku;
+    }
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<Inventory> getInventories() {
+        return inventories;
+    }
+
+    public void setInventories(List<Inventory> inventories) {
+        this.inventories = inventories;
+    }
+
+    public List<JewelryStockByInventory> getStockByInventory() {
+        return stockByInventory;
+    }
+
+    public void setStockByInventory(List<JewelryStockByInventory> stockByInventory) {
+        this.stockByInventory = stockByInventory;
     }
 }    
