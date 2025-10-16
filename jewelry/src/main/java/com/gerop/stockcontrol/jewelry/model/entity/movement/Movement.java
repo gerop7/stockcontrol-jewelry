@@ -2,6 +2,7 @@ package com.gerop.stockcontrol.jewelry.model.entity.movement;
 
 import java.time.LocalDateTime;
 
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.User;
 
 import jakarta.persistence.FetchType;
@@ -26,13 +27,17 @@ public abstract class Movement {
     @JoinColumn(name="user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="inventory_id")
+    private Inventory inventory;
+
     private LocalDateTime timestamp;
 
     public Movement() {
         this.timestamp = LocalDateTime.now();
     }
 
-    public Movement(@NotBlank String description) {
+    public Movement(String description) {
         this();
         this.description = description;
     }
@@ -67,6 +72,14 @@ public abstract class Movement {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
     

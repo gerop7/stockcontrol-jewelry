@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,6 +35,11 @@ public class Sale {
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name="inventory_id")
     private Inventory inventory;
+
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User user;
 
     private LocalDateTime timestamp;
 
@@ -78,6 +86,14 @@ public class Sale {
 
     public void setInventory(Inventory inventory) {
         this.inventory = inventory;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
 
