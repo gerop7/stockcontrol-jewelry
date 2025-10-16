@@ -1,6 +1,9 @@
 package com.gerop.stockcontrol.jewelry.model.entity;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingStoneRestock;
 
 import jakarta.persistence.CascadeType;
@@ -16,11 +19,17 @@ public class Stone extends Material{
     private Long stock;
 
     @OneToOne(mappedBy = "stone", cascade = CascadeType.ALL, orphanRemoval = true)
-    private PendingStoneRestock pendingStoneRestock;
+    private List<PendingStoneRestock> pendingStoneRestock;
 
     public Stone() {
         super();
         this.stock=0L;
+        this.pendingStoneRestock = new ArrayList<>();
+    }
+
+    public Stone(List<PendingStoneRestock> pendingStoneRestock, Long stock) {
+        this.pendingStoneRestock = pendingStoneRestock;
+        this.stock = stock;
     }
 
 
@@ -32,11 +41,13 @@ public class Stone extends Material{
         this.stock = stock;
     }
 
-    public PendingStoneRestock getPendingStoneRestock() {
+    public List<PendingStoneRestock> getPendingStoneRestock() {
         return pendingStoneRestock;
     }
 
-    public void setPendingStoneRestock(PendingStoneRestock pendingStoneRestock) {
+    public void setPendingStoneRestock(List<PendingStoneRestock> pendingStoneRestock) {
         this.pendingStoneRestock = pendingStoneRestock;
     }
+
+
 }

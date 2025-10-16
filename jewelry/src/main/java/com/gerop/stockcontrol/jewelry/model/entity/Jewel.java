@@ -19,7 +19,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -58,9 +57,8 @@ public class Jewel {
     @PositiveOrZero
     private Float size;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "pending_restock_id")
-    private PendingJewelRestock pendingRestock;
+    @OneToMany(mappedBy="jewel",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PendingJewelRestock> pendingRestock;
 
     
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
@@ -105,6 +103,8 @@ public class Jewel {
         this.metal = new ArrayList<>();
         this.stone = new ArrayList<>();
         this.inventories=new ArrayList<>();
+        this.pendingRestock = new ArrayList<>();
+        this.stockByInventory = new ArrayList<>();
         this.weight=0f;
         this.size=0f;
     }
@@ -115,6 +115,7 @@ public class Jewel {
         this.stone = new ArrayList<>();
         this.inventories=new ArrayList<>();
         this.stockByInventory = new ArrayList<>();
+        this.pendingRestock = new ArrayList<>();
         this.name = name;
         this.description = description;
         this.sku = sku;
@@ -193,14 +194,6 @@ public class Jewel {
         this.active = active;
     }
 
-    public PendingJewelRestock getPendingRestock() {
-        return pendingRestock;
-    }
-
-    public void setPendingRestock(PendingJewelRestock pendingRestock) {
-        this.pendingRestock = pendingRestock;
-    }
-
     public List<Stone> getStone() {
         return stone;
     }
@@ -256,5 +249,13 @@ public class Jewel {
 
     public void setStockByInventory(List<JewelryStockByInventory> stockByInventory) {
         this.stockByInventory = stockByInventory;
+    }
+
+    public List<PendingJewelRestock> getPendingRestock() {
+        return pendingRestock;
+    }
+
+    public void setPendingRestock(List<PendingJewelRestock> pendingRestock) {
+        this.pendingRestock = pendingRestock;
     }
 }    

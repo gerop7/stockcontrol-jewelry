@@ -1,41 +1,46 @@
 package com.gerop.stockcontrol.jewelry.model.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingMetalRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.MetalStockByInventory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name="metal")
 public class Metal extends Material {
-    @PositiveOrZero
-    private Float weight;
+    @OneToMany(mappedBy = "metal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MetalStockByInventory> stockByInventory;
 
-    @OneToOne(mappedBy = "metal", cascade = CascadeType.ALL, orphanRemoval = true)
-    private PendingMetalRestock pendingMetalRestock;
+    @OneToMany(mappedBy = "metal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PendingMetalRestock> pendingMetalRestock;
 
     public Metal() {
         super();
-        this.weight=0f;
+        this.stockByInventory=new ArrayList<>();
+        this.pendingMetalRestock = new ArrayList<>();
     }
 
-    public Float getWeight() {
-        return weight;
+    
+
+    public List<MetalStockByInventory> getStockByInventory() {
+        return stockByInventory;
     }
 
-    public void setWeight(Float weight) {
-        this.weight = weight;
+    public void setStockByInventory(List<MetalStockByInventory> stockByInventory) {
+        this.stockByInventory = stockByInventory;
     }
 
-
-    public PendingMetalRestock getPendingMetalRestock() {
+    public List<PendingMetalRestock> getPendingMetalRestock() {
         return pendingMetalRestock;
     }
 
-    public void setPendingMetalRestock(PendingMetalRestock pendingMetalRestock) {
+    public void setPendingMetalRestock(List<PendingMetalRestock> pendingMetalRestock) {
         this.pendingMetalRestock = pendingMetalRestock;
     }
 }

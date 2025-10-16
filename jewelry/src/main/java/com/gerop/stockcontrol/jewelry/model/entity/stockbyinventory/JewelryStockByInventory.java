@@ -40,6 +40,7 @@ public class JewelryStockByInventory {
     private Long stock;
 
     public JewelryStockByInventory() {
+        this.stock = 0L;
     }
 
     public JewelryStockByInventory(Inventory inventory, Jewel jewel, Long stock) {
