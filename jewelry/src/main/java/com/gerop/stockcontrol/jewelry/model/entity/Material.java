@@ -22,6 +22,14 @@ public abstract class Material{
     @JoinColumn(name="user_id")
     private User user;
 
+    public Material() {
+    }
+
+    public Material(String name, User user) {
+        this.name = name;
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }
@@ -45,6 +53,4 @@ public abstract class Material{
     public void setUser(User user) {
         this.user = user;
     }
-
-
 }
