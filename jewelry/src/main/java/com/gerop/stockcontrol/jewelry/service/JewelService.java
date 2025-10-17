@@ -59,7 +59,6 @@ public class JewelService implements IJewelService{
             jewelDto.getName(), 
             jewelDto.getDescription(), 
             jewelDto.getSku(),
-            jewelDto.getStock(), 
             jewelDto.getImageUrl(), 
             jewelDto.getWeight(),
             jewelDto.getSize(), 

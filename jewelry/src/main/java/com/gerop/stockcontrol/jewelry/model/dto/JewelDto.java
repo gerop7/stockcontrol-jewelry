@@ -26,7 +26,6 @@ public class JewelDto {
     private List<Long> metalIds;
     private List<Long> stoneIds;
     private List<InventoryStockDto> stockByInventory;
-    private Long inventoryQueryId;
 
     @PositiveOrZero
     private Float weight;
@@ -42,7 +41,7 @@ public class JewelDto {
     public JewelDto(Long jewelId,String name, String description, String sku,
             String imageUrl, Long categoryId, Long subcategoryId, List<Long> metalIds,
             List<Long> stoneIds, List<InventoryStockDto> stockByInventory, Float weight,
-            Float size, Long inventoryQueryId) {
+            Float size) {
         this.jewelId = jewelId;
         this.name = name;
         this.description = description;
@@ -55,7 +54,6 @@ public class JewelDto {
         this.stockByInventory = stockByInventory;
         this.weight = weight;
         this.size = size;
-        this.inventoryQueryId = inventoryQueryId;
     }
 
 
@@ -139,13 +137,5 @@ public class JewelDto {
         this.jewelId = jewelId;
     }
 
-    public Long getInventoryQueryId() {
-        return inventoryQueryId;
-    }
 
-    public void setInventoryQueryId(Long inventoryQueryId) {
-        this.inventoryQueryId = inventoryQueryId;
-    }
-
-    
 }

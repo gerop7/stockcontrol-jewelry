@@ -31,7 +31,8 @@ public class InventoryUserPermissions {
     private Inventory inventory;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
