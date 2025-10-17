@@ -1,9 +1,12 @@
 package com.gerop.stockcontrol.jewelry.service.permissions;
 
+import org.springframework.stereotype.Service;
+
 import com.gerop.stockcontrol.jewelry.model.entity.enums.UserInventoryPermissionType;
 import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.InventoryUserPermissionsRepository;
 
+@Service
 public class InventoryPermissionsService implements IInventoryPermissionsService{
     private final InventoryRepository inventoryRepository;
     private final InventoryUserPermissionsRepository permissionsRepository;

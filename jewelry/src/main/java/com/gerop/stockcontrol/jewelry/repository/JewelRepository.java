@@ -14,4 +14,5 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
     boolean existsBySkuAndUserId(String sku,Long id);
     Optional<Jewel> findBySkuAndUserId(String sku, Long id);
     Optional<Jewel> findByIdAndUserId(Long id, Long userId);
+    boolean existsByIdAndUserId(Long jewelId, Long userId);
 }
