@@ -10,4 +10,6 @@ import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 @Repository
 public interface StoneRepository extends CrudRepository<Stone, Long>{
     List<Stone> findAllByIdAndUserId(List<Long> ids, Long stoneId);
+
+    public boolean existsByIdAndUserId(Long materialId, Long userId);
 }

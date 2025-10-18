@@ -20,4 +20,6 @@ public interface MetalRepository extends CrudRepository<Metal, Long>{
 
     @Query("SELECT m.user.id FROM Metal m WHERE m.id = :metalId")
     Optional<Long> findUserIdByMetalId(@Param("metalId") Long metalId);
+
+    public boolean existByIdAndUserId(Long materialId, Long userId);
 }

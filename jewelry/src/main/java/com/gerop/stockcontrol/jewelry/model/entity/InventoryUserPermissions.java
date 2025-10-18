@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.model.entity;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.gerop.stockcontrol.jewelry.model.entity.enums.InventoryPermissionsStatus;
 import com.gerop.stockcontrol.jewelry.model.entity.enums.InventoryUserPermissionType;
 
 import jakarta.persistence.Entity;
@@ -15,10 +16,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name="inventory_user_permissions")
+@Table(
+    name="inventory_user_permissions",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"inventory_id", "user_id", "type"})
+)
 public class InventoryUserPermissions {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -40,14 +45,21 @@ public class InventoryUserPermissions {
     @NotNull
     private InventoryUserPermissionType type;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private InventoryPermissionsStatus status;
+
     public InventoryUserPermissions() {
     }
 
-    public InventoryUserPermissions(Inventory inventory, InventoryUserPermissionType type, User user) {
+    public InventoryUserPermissions(Inventory inventory, InventoryPermissionsStatus status, InventoryUserPermissionType type, User user) {
         this.inventory = inventory;
+        this.status = status;
         this.type = type;
         this.user = user;
     }
+
+    
 
     public Long getId() {
         return id;
@@ -71,6 +83,16 @@ public class InventoryUserPermissions {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    
+
+    public InventoryPermissionsStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(InventoryPermissionsStatus status) {
+        this.status = status;
     }
 
     public InventoryUserPermissionType getType() {

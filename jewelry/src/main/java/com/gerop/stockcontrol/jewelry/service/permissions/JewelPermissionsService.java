@@ -8,7 +8,7 @@ import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryReposito
 @Service
 public class JewelPermissionsService implements IJewelPermissionsService {
     private final JewelRepository jewelRepository;
-    private final InventoryPermissionsService invPermissions;
+    private final IInventoryPermissionsService invPermissions;
     private final JewelryStockByInventoryRepository stockRepository;
 
     public JewelPermissionsService(JewelRepository jewelRepository, InventoryPermissionsService invPermissions,
