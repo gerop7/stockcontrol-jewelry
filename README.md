@@ -19,17 +19,17 @@ StockControl Jewelry aims to modernize jewelry inventory management by combining
 
 ## ⚙️ Core Features
 
-### 💍 Jewelry Management
+### Jewelry Management
 - Create and manage jewels with category, subcategory, metal, and stone composition.  
 - Track stock, size, weight, and custom attributes.  
 - Automatically handle restock requests for low-stock items.  
 
-### 🪙 Materials (Metals & Stones)
+### Materials (Metals & Stones)
 - Global materials available system-wide.  
 - Custom materials per user or inventory.  
 - Independent quantity tracking for each inventory.  
 
-### 🏪 Multi-Inventory System
+### Multi-Inventory System
 - Each user can own multiple inventories (e.g., different stores).  
 - Inventories can be **shared** among users.  
 - Access permissions:
@@ -38,17 +38,17 @@ StockControl Jewelry aims to modernize jewelry inventory management by combining
   - **Read:** view-only access.  
 - Automatic material synchronization when new inventories or jewels are created.  
 
-### 👥 Multiuser Collaboration
+### Multiuser Collaboration
 - User authentication and registration.  
 - Invitation-based collaboration with access levels.  
 - Shared inventory support with granular permissions.  
 
-### 💰 Sales & Restock System
+### Sales & Restock System
 - Persistent record of every sale, restock, or material change.  
 - Pending restock module for automatic replenishment tracking.  
 - Sale processing that updates jewel and material quantities.  
 
-### 🤖 Artificial Intelligence (in progress)
+### Artificial Intelligence (in progress)
 - Automatic jewel image classification (type, category, metal).  
 - Integration with an external **Python FastAPI** microservice.  
 - Smart suggestions during jewel creation.  
