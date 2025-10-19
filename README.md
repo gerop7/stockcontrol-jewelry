@@ -74,7 +74,7 @@ Developed by [**@gerop7**](https://github.com/gerop7)
 
 ---
 
- License
+## License
 
 **© 2025 Gerop7. All Rights Reserved.**
 
