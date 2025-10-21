@@ -11,6 +11,6 @@ public interface IInventoryPermissionsService {
     boolean canWrite(Long inventoryId, Long userId);
     boolean inviteUser(Long inventoryId, Long targetUser, InventoryUserPermissionType type);
     boolean respondToInvitation(Long inventoryId, boolean accept);
-    boolean deleteInvitation(Long inventoryId, Long targetUser);
+    boolean deleteInvitation(Long inventoryId, Long targetUser, InventoryUserPermissionType type);
     public List<InventoryUserPermissions> listPendingInvitations();
 }

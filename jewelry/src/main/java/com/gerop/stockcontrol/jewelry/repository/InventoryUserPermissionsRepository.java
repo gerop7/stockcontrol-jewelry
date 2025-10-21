@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,10 @@ public interface InventoryUserPermissionsRepository extends JpaRepository<Invent
     public Optional<InventoryUserPermissions> findByInventoryIdAndUserIdAndType(Long inventoryId, Long targetUser, InventoryUserPermissionType type);
 
     public boolean existsByInventoryIdAndUserIdAndTypeAndStatus(Long inventoryId, Long targetUser, InventoryPermissionsStatus inventoryPermissionsStatus);
+
+    List<InventoryUserPermissions> findAllByUserId(Long id);
+
+    List<InventoryUserPermissions> findAllByUserIdAndStatus(Long id, InventoryPermissionsStatus status);
 
 
 }
