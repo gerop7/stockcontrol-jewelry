@@ -14,11 +14,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
-@Table(name="stone_stock_by_inventory")
+@Table(
+    name = "stone_stock_by_inventory",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"inventory_id", "stone_id"})
+    }
+)
 public class StoneStockByInventory {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

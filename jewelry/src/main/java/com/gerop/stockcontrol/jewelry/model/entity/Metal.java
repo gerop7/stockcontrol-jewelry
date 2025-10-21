@@ -27,7 +27,6 @@ public class Metal extends Material {
     }
 
     
-
     public List<MetalStockByInventory> getStockByInventory() {
         return stockByInventory;
     }

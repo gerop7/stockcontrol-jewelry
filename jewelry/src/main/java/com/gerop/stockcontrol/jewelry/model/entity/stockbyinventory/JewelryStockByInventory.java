@@ -19,7 +19,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
-@Table(name="jewelry_stock_by_inventory", uniqueConstraints = @UniqueConstraint(columnNames = {"inventory_id", "jewel_id"}))
+@Table(
+    name = "jewelry_stock_by_inventory",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"inventory_id", "jewel_id"})
+    })
 public class JewelryStockByInventory {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

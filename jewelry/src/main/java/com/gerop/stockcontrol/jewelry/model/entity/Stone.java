@@ -5,41 +5,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingStoneRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.StoneStockByInventory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name="stone")
 public class Stone extends Material{
-    @PositiveOrZero
-    private Long stock;
+    @OneToMany(mappedBy = "stone", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StoneStockByInventory> stockByInventory;
 
-    @OneToOne(mappedBy = "stone", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "stone", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PendingStoneRestock> pendingStoneRestock;
 
     public Stone() {
         super();
-        this.stock=0L;
+        this.stockByInventory=new ArrayList<>();
         this.pendingStoneRestock = new ArrayList<>();
     }
 
-    public Stone(List<PendingStoneRestock> pendingStoneRestock, Long stock) {
-        this.pendingStoneRestock = pendingStoneRestock;
-        this.stock = stock;
-    }
-
-
-    public Long getStock() {
-        return stock;
-    }
-
-    public void setStock(Long stock) {
-        this.stock = stock;
-    }
+    
 
     public List<PendingStoneRestock> getPendingStoneRestock() {
         return pendingStoneRestock;
@@ -47,6 +35,14 @@ public class Stone extends Material{
 
     public void setPendingStoneRestock(List<PendingStoneRestock> pendingStoneRestock) {
         this.pendingStoneRestock = pendingStoneRestock;
+    }
+
+    public List<StoneStockByInventory> getStockByInventory() {
+        return stockByInventory;
+    }
+
+    public void setStockByInventory(List<StoneStockByInventory> stockByInventory) {
+        this.stockByInventory = stockByInventory;
     }
 
 
