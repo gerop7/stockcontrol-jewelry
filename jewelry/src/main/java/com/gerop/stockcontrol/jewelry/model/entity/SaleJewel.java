@@ -28,6 +28,12 @@ public class SaleJewel {
     private Float total;
 
     public SaleJewel() {
+    } 
+
+    public SaleJewel(Jewel jewel, Long quantity, Float total) {
+        this.jewel = jewel;
+        this.quantity = quantity;
+        this.total = total;
     }
 
     public Long getId() {

@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +28,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name="jewelry")
+@Table(name="jewelry",
+    uniqueConstraints= @UniqueConstraint(columnNames={"sku", "user_id"}))
 public class Jewel {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

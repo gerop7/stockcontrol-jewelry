@@ -48,6 +48,14 @@ public class Sale {
         this.timestamp = LocalDateTime.now();
     }
 
+    public Sale(List<SaleJewel> jewels, String description, Inventory inventory, User user) {
+        this.timestamp = LocalDateTime.now();
+        this.jewels = jewels;
+        this.description = description;
+        this.inventory = inventory;
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }
