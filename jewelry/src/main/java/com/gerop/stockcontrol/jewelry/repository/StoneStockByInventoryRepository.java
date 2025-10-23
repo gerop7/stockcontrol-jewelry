@@ -6,4 +6,6 @@ import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 
 public interface StoneStockByInventoryRepository extends JpaRepository<Stone, Long>{
 
+    boolean existsByStoneIdAndInventoryId(Long materialId, Long inventoryId);
+
 }

@@ -34,6 +34,8 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
 
     @Override
     public boolean isOwner(Long inventoryId, Long userId) {
+        if (!inventoryRepository.existsById(inventoryId))
+            throw new EntityNotFoundException("El inventario no existe.");
         return inventoryRepository.existsByIdAndOwnerId(inventoryId, userId);
     }
 
