@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.enums.CompositionMovementType;
@@ -25,37 +26,40 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     }
 
     @Override
-    public StoneMovement inflow(Long quantity, Stone mat) {
+    public StoneMovement inflow(Long quantity, Stone mat, Inventory inventory) {
         StringBuilder description = new StringBuilder("Se agregaron ");
-        description.append(quantity).append(" unidades de ").append(mat.getName()).append(".");
-        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_INFLOW);
+        description.append(quantity).append(" unidades de ").append(mat.getName()).append(" al inventario ")
+        .append(inventory.getName()).append(".");
+        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_INFLOW,inventory);
     }
 
     @Override
-    public StoneMovement outflow(Long quantity, Stone mat) {
+    public StoneMovement outflow(Long quantity, Stone mat, Inventory inventory) {
         StringBuilder description = new StringBuilder("Se quitaron ");
-        description.append(quantity).append(" unidades de ").append(mat.getName()).append(".");
-        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_OUTFLOW);
+        description.append(quantity).append(" unidades de ").append(mat.getName()).append(" al inventario ")
+        .append(inventory.getName()).append(".");
+        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_OUTFLOW, inventory);
     }
 
     @Override
-    public StoneMovement jewelRegister(Stone mat, Jewel jewel) {
-        String description = "Se creo una joya compuesta de "+mat.getName()+".";
-        return saveMovement(mat, 0L, jewel, description, CompositionMovementType.JEWEL_REGISTER);
+    public StoneMovement jewelRegister(Stone mat, Jewel jewel, Inventory inventory) {
+        String description =("Se creo "+jewel.getSku()+" compuesta de "+mat.getName()+"en el inventario"+mat.getName()+".");
+        return saveMovement(mat, 0L, jewel, description, CompositionMovementType.JEWEL_REGISTER, inventory);
     }
 
     @Override
-    public StoneMovement replacement(Stone mat, Long quantity) {
+    public StoneMovement replacement(Stone mat, Long quantity, Inventory inventory) {
         StringBuilder description= new StringBuilder("Se repuso ");
         if(quantity>1)
             description.append(quantity).append(" unidades ");
         else
             description.append(quantity).append(" unidad ");
-        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.REPLACEMENT);
+        description.append("de ").append(mat.getName()).append(" en el inventario ").append(inventory.getName()).append(".");
+        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.REPLACEMENT, inventory);
     }
 
     @Override
-    public StoneMovement saveMovement(Stone stone, Long quantity, Jewel jewel, String description, CompositionMovementType type) {
+    public StoneMovement saveMovement(Stone stone, Long quantity, Jewel jewel, String description, CompositionMovementType type, Inventory inventory) {
         StoneMovement movement = new StoneMovement();
 
         movement.setDescription(description);
@@ -64,6 +68,7 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
         movement.setStone(stone);
         movement.setType(type);
         movement.setUser(userServiceHelper.getCurrentUser());
+        movement.setInventory(inventory);
         
         return stoneMovementRepository.save(movement);
     }
