@@ -1,44 +1,90 @@
 package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 
-import org.springframework.stereotype.Service;
+import java.util.Objects;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
+import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
-import com.gerop.stockcontrol.jewelry.repository.PendingRestockRepository;
+import com.gerop.stockcontrol.jewelry.repository.PendingJewelRestockRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
-public class PendingJewelRestockService implements IPendingRestockService<PendingJewelRestock, Long>{
+public class PendingJewelRestockService implements IPendingRestockService<PendingJewelRestock, Long, Jewel>{
 
-    private final PendingRestockRepository pendingRestockRepository;
-
-    public PendingJewelRestockService(PendingRestockRepository pendingRestockRepository) {
-        this.pendingRestockRepository = pendingRestockRepository;
+    private final PendingJewelRestockRepository repository;
+    
+    public PendingJewelRestockService(PendingJewelRestockRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public PendingJewelRestock create() {
-        PendingJewelRestock pendingJewelRestock = new PendingJewelRestock();
-        pendingJewelRestock.setQuantity(0L);
-        return save(pendingJewelRestock);
+    public PendingJewelRestock create(Jewel jewel, Inventory inventory) {
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        Objects.requireNonNull(jewel, "Jewel cannot be null");
+        return repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+            .orElseGet(() -> {
+                PendingJewelRestock pending = new PendingJewelRestock();
+                pending.setQuantity(0L);
+                pending.setInventory(inventory);
+                pending.setJewel(jewel);
+                return pending;
+            });
     }
 
+    @Transactional
+    @Override
+    public PendingJewelRestock createSave(Jewel jewel, Inventory inventory) {
+        return save(create(jewel,inventory));
+    }
+
+    @Transactional
     @Override
     public PendingJewelRestock save(PendingJewelRestock entity) {
-        return pendingRestockRepository.save(entity);
+        return repository.save(entity);
+    }
+    
+    @Transactional
+    @Override
+    public void addToRestock(PendingJewelRestock entity,Long quantity) {
+        validateRestockOperation(entity, quantity);
+        entity.setQuantity(entity.getQuantity() + quantity);
+        save(entity);
     }
 
+    @Transactional
     @Override
-    public void addToRestock(Long id,Long quantity) {
-        PendingJewelRestock pendingJewelRestock = (PendingJewelRestock)pendingRestockRepository.findById(id).orElseThrow();
-        pendingJewelRestock.setQuantity(pendingJewelRestock.getQuantity() + quantity);
-        save(pendingJewelRestock);
+    public void removeFromRestock(PendingJewelRestock entity,Long quantity) {
+        validateRestockOperation(entity, quantity);
+        Long q = entity.getQuantity() - quantity;
+        entity.setQuantity(q < 0 ? 0 : q);
+        save(entity);
     }
 
+    @Transactional
     @Override
-    public void removeFromRestock(Long id,Long quantity) {
-        PendingJewelRestock pendingJewelRestock = (PendingJewelRestock)pendingRestockRepository.findById(id).orElseThrow();
-        Long q = pendingJewelRestock.getQuantity() - quantity;
-        pendingJewelRestock.setQuantity(q < 0 ? 0 : q);
-        save(pendingJewelRestock);
+    public void addToRestock(Long jewelId, Long inventoryId, Long quantity) {
+        PendingJewelRestock pending = repository.findByJewelIdAndInventoryId(jewelId, inventoryId)
+            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
+        addToRestock(pending, quantity);
+    }
+
+    @Transactional
+    @Override
+    public void removeFromRestock(Long jewelId, Long inventoryId, Long quantity) {
+        PendingJewelRestock pending = repository.findByJewelIdAndInventoryId(jewelId, inventoryId)
+            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
+        removeFromRestock(pending, quantity);
+    }
+
+    private void validateRestockOperation(PendingJewelRestock entity, Long quantity) {
+        if (entity == null)
+            throw new IllegalArgumentException("PendingJewelRestock cannot be null");
+        if (quantity == null || quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be greater than zero");
     }
 
 }

@@ -1,44 +1,90 @@
 package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 
-import org.springframework.stereotype.Service;
+import java.util.Objects;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
+import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingMetalRestock;
-import com.gerop.stockcontrol.jewelry.repository.PendingRestockRepository;
+import com.gerop.stockcontrol.jewelry.repository.PendingMetalRestockRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
-public class PendingMetalRestockService implements IPendingRestockService<PendingMetalRestock,Float>{
-    private final PendingRestockRepository pendingRestockRepository;
+public class PendingMetalRestockService implements IPendingRestockService<PendingMetalRestock,Float, Metal>{
+    private final PendingMetalRestockRepository repository;
 
-    public PendingMetalRestockService(PendingRestockRepository pendingRestockRepository) {
-        this.pendingRestockRepository = pendingRestockRepository;
+    public PendingMetalRestockService(PendingMetalRestockRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public PendingMetalRestock create() {
-        PendingMetalRestock pending = new PendingMetalRestock();
-        pending.setWeight(0F);
-        return save(pending);
+    public PendingMetalRestock create(Metal metal, Inventory inventory) {
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        Objects.requireNonNull(metal, "Metal cannot be null");
+
+        return repository.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
+            .orElseGet(() -> {
+                PendingMetalRestock pending = new PendingMetalRestock();
+                pending.setWeight(0F);
+                pending.setInventory(inventory);
+                pending.setMetal(metal);
+                return pending;
+            });
     }
     
     @Override
+    @Transactional
+    public PendingMetalRestock createSave(Metal metal,Inventory inventory) {
+        return save(create(metal, inventory));
+    }
+
+    @Override
+    @Transactional
     public PendingMetalRestock save(PendingMetalRestock entity) {
-        return pendingRestockRepository.save(entity);
+        return repository.save(entity);
     }
 
     @Override
-    public void addToRestock(Long id,Float quantity) {
-        PendingMetalRestock pending = (PendingMetalRestock)pendingRestockRepository.findById(id).orElseThrow();
-        pending.setWeight(pending.getWeight()+quantity);
-        save(pending);
+    @Transactional
+    public void addToRestock(PendingMetalRestock entity,Float quantity) {
+        validateRestockOperation(entity, quantity);
+        entity.setWeight(entity.getWeight()+quantity);
+        save(entity);
     }
 
     @Override
-    public void removeFromRestock(Long id,Float quantity) {
-        PendingMetalRestock pending = (PendingMetalRestock)pendingRestockRepository.findById(id).orElseThrow();
-        Float q = pending.getWeight() - quantity;
-        pending.setWeight(q<0?0:q);
-        save(pending);
+    @Transactional
+    public void removeFromRestock(PendingMetalRestock entity,Float quantity) {
+        validateRestockOperation(entity, quantity);
+        Float q = entity.getWeight() - quantity;
+        entity.setWeight(q<0?0:q);
+        save(entity);
     }   
 
 
+    @Override
+    @Transactional
+    public void addToRestock(Long entityId, Long inventoryId, Float quantity) {
+        PendingMetalRestock pending = repository.findByMetalIdAndInventoryId(entityId, inventoryId)
+            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
+        addToRestock(pending, quantity);
+    }
+
+    @Override
+    @Transactional
+    public void removeFromRestock(Long entityId, Long inventoryId, Float quantity) {
+        PendingMetalRestock pending = repository.findByMetalIdAndInventoryId(entityId, inventoryId)
+            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
+        removeFromRestock(pending, quantity);
+    }
+
+    private void validateRestockOperation(PendingMetalRestock entity, Float quantity) {
+        if (entity == null)
+            throw new IllegalArgumentException("PendingMetalRestock cannot be null");
+        if (quantity == null || quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
 }
