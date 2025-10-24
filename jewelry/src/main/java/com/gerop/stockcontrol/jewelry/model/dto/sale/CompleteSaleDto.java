@@ -15,7 +15,7 @@ public class CompleteSaleDto {
     private Long inventoryId;
 
 
-    public CompleteSaleDto(@NotNull String description, @NotEmpty List<JewelSaleWithPendingRestockDto> jewels,
+    public CompleteSaleDto(String description, List<JewelSaleWithPendingRestockDto> jewels,
             Long inventoryId) {
         this.description = description;
         this.jewels = jewels;
