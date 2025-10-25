@@ -48,9 +48,8 @@ public class Sale {
         this.timestamp = LocalDateTime.now();
     }
 
-    public Sale(List<SaleJewel> jewels, String description, Inventory inventory, User user) {
-        this.timestamp = LocalDateTime.now();
-        this.jewels = jewels;
+    public Sale(String description, Inventory inventory, User user) {
+        this();
         this.description = description;
         this.inventory = inventory;
         this.user = user;

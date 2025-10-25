@@ -13,4 +13,5 @@ public interface IInventoryPermissionsService {
     boolean respondToInvitation(Long inventoryId, boolean accept);
     boolean deleteInvitation(Long inventoryId, Long targetUser, InventoryUserPermissionType type);
     public List<InventoryUserPermissions> listPendingInvitations();
+    void validatePermission(Long inventoryId, Long userId, InventoryUserPermissionType type, String action);
 }

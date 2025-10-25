@@ -12,6 +12,6 @@ public interface PendingJewelRestockRepository extends JpaRepository<PendingJewe
 
     Optional<PendingJewelRestock> findByJewelIdAndInventoryId(Long jewelId, Long inventoryId);
 
-    boolean existsByJewelIdAndInventoryId(Long id, Long id2);
+    boolean existsByJewelIdAndInventoryId(Long jewelId, Long inventoryId);
 
 }

@@ -1,7 +1,9 @@
 package com.gerop.stockcontrol.jewelry.model.entity;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
@@ -93,7 +95,7 @@ public class Jewel {
         joinColumns = @JoinColumn(name = "jewel_id"),
         inverseJoinColumns = @JoinColumn(name = "inventory_id")
     )
-    private List<Inventory> inventories;
+    private Set<Inventory> inventories;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name="user_id")
@@ -104,7 +106,7 @@ public class Jewel {
     public Jewel() {
         this.metal = new ArrayList<>();
         this.stone = new ArrayList<>();
-        this.inventories=new ArrayList<>();
+        this.inventories=new LinkedHashSet<>();
         this.pendingRestock = new ArrayList<>();
         this.stockByInventory = new ArrayList<>();
         this.weight=0f;
@@ -115,7 +117,7 @@ public class Jewel {
         Float weight, Float size, User user) {
         this.metal = new ArrayList<>();
         this.stone = new ArrayList<>();
-        this.inventories=new ArrayList<>();
+        this.inventories=new LinkedHashSet<>();
         this.stockByInventory = new ArrayList<>();
         this.pendingRestock = new ArrayList<>();
         this.name = name;
@@ -237,13 +239,6 @@ public class Jewel {
         this.user = user;
     }
 
-    public List<Inventory> getInventories() {
-        return inventories;
-    }
-
-    public void setInventories(List<Inventory> inventories) {
-        this.inventories = inventories;
-    }
 
     public List<JewelryStockByInventory> getStockByInventory() {
         return stockByInventory;
@@ -259,5 +254,13 @@ public class Jewel {
 
     public void setPendingRestock(List<PendingJewelRestock> pendingRestock) {
         this.pendingRestock = pendingRestock;
+    }
+
+    public Set<Inventory> getInventories() {
+        return inventories;
+    }
+
+    public void setInventories(Set<Inventory> inventories) {
+        this.inventories = inventories;
     }
 }    

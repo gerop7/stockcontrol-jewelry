@@ -9,6 +9,7 @@ import com.gerop.stockcontrol.jewelry.model.dto.sale.SaleResultDto;
 public interface ISaleService {
     SaleResultDto processSale(CompleteSaleDto sale);
     List<SaleListDto> listAll();
-    List<SaleListDto> listAllOrderByTotalAsc();
-    List<SaleListDto> listAllOrderByTotalDesc();
+    List<SaleListDto> listAllAsc();
+    List<SaleListDto> listAllFromInventory(Long inventoryId);
+    List<SaleListDto> listAllFromInventoryAsc(Long inventoryId);
 }

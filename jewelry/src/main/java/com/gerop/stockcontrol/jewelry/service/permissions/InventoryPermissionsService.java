@@ -18,7 +18,7 @@ import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 
 import jakarta.persistence.EntityNotFoundException;
 
-@Service
+@Service("inventoryPermissionService")
 public class InventoryPermissionsService implements IInventoryPermissionsService{
     private final InventoryRepository inventoryRepository;
     private final InventoryUserPermissionsRepository permissionsRepository;
@@ -182,4 +182,11 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
     public List<InventoryUserPermissions> listPendingInvitations() {
         return permissionsRepository.findAllByUserIdAndStatus(helper.getCurrentUser().getId(),InventoryPermissionsStatus.PENDING);
     } 
+
+    @Override
+    public void validatePermission(Long inventoryId, Long userId, InventoryUserPermissionType type, String action){
+        if((type==InventoryUserPermissionType.WRITE && !canWrite(inventoryId, userId))|| 
+            (type==InventoryUserPermissionType.READ && !canRead(inventoryId, userId)))
+            throw new SecurityException("No tienes permisos para "+action+" en este inventario.");
+    }
 }

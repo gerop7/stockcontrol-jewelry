@@ -2,31 +2,17 @@ package com.gerop.stockcontrol.jewelry.model.dto;
 
 import jakarta.validation.constraints.Positive;
 
-public class StoneQuantityDto {
-    @Positive
-    private Long stoneId;
-    @Positive
-    private Long quantity;
-
-    public StoneQuantityDto(Long quantity, Long stoneId) {
-        this.quantity = quantity;
-        this.stoneId = stoneId;
+public record StoneQuantityDto(@Positive Long stoneId, @Positive Long quantity
+){
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StoneQuantityDto other)) return false;
+        return stoneId != null && stoneId.equals(other.stoneId);
     }
 
-    public Long getStoneId() {
-        return stoneId;
+    @Override
+    public int hashCode() {
+        return stoneId != null ? stoneId.hashCode():0;
     }
-
-    public void setStoneId(Long stoneId) {
-        this.stoneId = stoneId;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
-    }
-
 }

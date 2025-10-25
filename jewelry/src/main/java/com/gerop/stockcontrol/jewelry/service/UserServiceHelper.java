@@ -18,5 +18,4 @@ public class UserServiceHelper {
         String username = auth.getName();
         return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
-
 }

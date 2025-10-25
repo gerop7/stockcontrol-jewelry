@@ -87,4 +87,9 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
         if (quantity == null || quantity <= 0)
             throw new IllegalArgumentException("Quantity must be greater than zero");
     }
+
+    @Override
+    public boolean existsByInventory(Long stoneId, Long inventoryId){
+        return repository.existsByStoneIdAndInventoryId(stoneId, inventoryId);
+    }
 }

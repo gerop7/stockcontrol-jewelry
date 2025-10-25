@@ -4,54 +4,72 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.SaleJewel;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
 import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
+import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
+import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMetalService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IStoneService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockService;
+import com.gerop.stockcontrol.jewelry.service.permissions.JewelPermissionsService;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 
 @Service
 public class JewelService implements IJewelService{
 
+    private final JewelPermissionsService jewelPermissionsService;
     private final JewelRepository jewelRepository;
     private final IJewelMovementService movementService;
     private final UserServiceHelper userServiceHelper;
-    private final IPendingRestockService<PendingJewelRestock, Long> pendingRestockService;
+    private final IPendingRestockService<PendingJewelRestock, Long, Jewel> pendingRestockService;
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
     private final IMetalService metalService;
     private final IStoneService stoneService;
+    private final JewelryStockByInventoryRepository stockRepository;
+    private final InventoryRepository inventoryRepository;
 
-    public JewelService(CategoryRepository categoryRepository, JewelRepository jewelRepository, 
-        IMetalService metalService, IJewelMovementService movementService, 
-        IPendingRestockService<PendingJewelRestock, Long> pendingRestockService, IStoneService stoneService,
-        SubcategoryRepository subcategoryRepository, UserServiceHelper userServiceHelper){
-            this.categoryRepository = categoryRepository;
-            this.jewelRepository = jewelRepository;
-            this.metalService = metalService;
-            this.movementService = movementService;
-            this.pendingRestockService = pendingRestockService;
-            this.stoneService = stoneService;
-            this.subcategoryRepository = subcategoryRepository;
-            this.userServiceHelper = userServiceHelper;
-    }
     
+    
+    
+
+    public JewelService(JewelPermissionsService jewelPermissionsService, JewelRepository jewelRepository,
+            IJewelMovementService movementService, UserServiceHelper userServiceHelper,
+            IPendingRestockService<PendingJewelRestock, Long, Jewel> pendingRestockService,
+            CategoryRepository categoryRepository, SubcategoryRepository subcategoryRepository,
+            IMetalService metalService, IStoneService stoneService, JewelryStockByInventoryRepository stockRepository,
+            InventoryRepository inventoryRepository) {
+        this.jewelPermissionsService = jewelPermissionsService;
+        this.jewelRepository = jewelRepository;
+        this.movementService = movementService;
+        this.userServiceHelper = userServiceHelper;
+        this.pendingRestockService = pendingRestockService;
+        this.categoryRepository = categoryRepository;
+        this.subcategoryRepository = subcategoryRepository;
+        this.metalService = metalService;
+        this.stoneService = stoneService;
+        this.stockRepository = stockRepository;
+        this.inventoryRepository = inventoryRepository;
+    }
+
     @Override
     @Transactional
     public Jewel create(JewelDto jewelDto) {
@@ -145,8 +163,34 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public JewelDto sale(Long id, Long quantity, Long quantityToRestock) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Transactional
+    public SaleJewel sale(Long jewelId, Long quantity, Long quantityToRestock, Float total, Long inventoryId) {
+        Jewel jewel = jewelRepository.findById(jewelId).orElseThrow(()-> new EntityNotFoundException("La joya con "+id+" no existe!"));
+        if(!jewelPermissionsService.canModifyStock(jewelId, inventoryId, userServiceHelper.getCurrentUser().getId())){
+            throw new SecurityException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en este");
+        }
+        if(quantity==null || quantity<=0){
+            throw new IllegalArgumentException("La cantidad a vender de la joya "+jewel.getSku()+" debe ser mayor que 0.");
+        }
+
+        JewelryStockByInventory jewelryStock = stockRepository.findByJewelIdAndInventoryId(jewelId, inventoryId).get();
+        
+        Long q = (quantity>jewelryStock.getStock())?0L:(jewelryStock.getStock()-quantity);
+        jewelryStock.setStock(q);
+
+        stockRepository.save(jewelryStock);
+
+        if(quantityToRestock!= null && quantityToRestock>0){
+            if(pendingRestockService.existsByInventory(jewelId,inventoryId)){
+                pendingRestockService.addToRestock(jewelId, inventoryId, quantityToRestock);
+            }else{
+                Inventory inventory = inventoryRepository.findById(inventoryId)
+                    .orElseThrow(() -> new EntityNotFoundException("Inventario no encontrado."));
+                jewel.getPendingRestock().add(pendingRestockService.createSave(jewel, inventory, quantityToRestock));
+            }
+        }
+
+        return new SaleJewel(jewel, quantity, total);
     }
 
     @Override
@@ -159,5 +203,9 @@ public class JewelService implements IJewelService{
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    
+    @Override
+    @Transactional(readOnly=true)
+    public boolean haveStones(Long jewelId){
+        return jewelRepository.existsByIdAndHasStones(jewelId);
+    }
 }

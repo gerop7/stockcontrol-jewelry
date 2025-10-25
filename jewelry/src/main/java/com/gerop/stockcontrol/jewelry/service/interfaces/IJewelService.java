@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
+import com.gerop.stockcontrol.jewelry.model.entity.SaleJewel;
 
 public interface IJewelService {
     Jewel create(JewelDto jewelDto);
@@ -15,8 +16,9 @@ public interface IJewelService {
     JewelDto update(Long id, UpdateJewelDataDto updateData);
 
     JewelDto addStock(Long id, Long quantity);
-    JewelDto sale(Long id,Long quantity, Long quantityToRestock);
+    SaleJewel sale(Long id,Long quantity, Long quantityToRestock, Float total, Long inventoryId);
 
     Optional<Jewel> findById(Long id);
     List<Jewel> findAll();
+    boolean haveStones(Long jewelId);
 }

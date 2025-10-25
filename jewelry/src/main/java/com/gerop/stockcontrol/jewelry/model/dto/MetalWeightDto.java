@@ -2,26 +2,17 @@ package com.gerop.stockcontrol.jewelry.model.dto;
 
 import jakarta.validation.constraints.Positive;
 
-public class MetalWeightDto {
-    @Positive
-    private Long metalId;
-    @Positive
-    private Float weight;
+public record MetalWeightDto(@Positive Long metalId, @Positive Float weight
+){
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MetalWeightDto other)) return false;
+        return metalId != null && metalId.equals(other.metalId);
+    }
 
-    public MetalWeightDto(Long metalId, Float weight) {
-        this.metalId = metalId;
-        this.weight = weight;
-    }
-    public Long getMetalId() {
-        return metalId;
-    }
-    public void setMetalId(Long metalId) {
-        this.metalId = metalId;
-    }
-    public Float getWeight() {
-        return weight;
-    }
-    public void setWeight(Float weight) {
-        this.weight = weight;
+    @Override
+    public int hashCode() {
+        return metalId!=null?metalId.hashCode():0;
     }
 }

@@ -10,6 +10,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Sale;
 @Repository
 public interface SaleRepository extends CrudRepository<Sale, Long> {
     List<Sale> findAllByUserIdOrderByTimestampDesc(Long id);
-    List<Sale> findAllByUserIdOrderByTotalAsc(Long id);
-    List<Sale> findAllByUserIdOrderByTotalDesc(Long id);
+    List<Sale> findAllByUserIdOrderByTimestampAsc(Long id);
+    List<Sale> findAllByInventoryIdOrderByTimestampDesc(Long inventoryId);
+    List<Sale> findAllByInventoryIdOrderByTimestampAsc(Long inventoryId);
 }

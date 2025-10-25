@@ -23,7 +23,7 @@ public class PendingJewelRestock extends PendingRestock {
     private Long quantity;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "jewel_id")
+    @JoinColumn(name = "jewel_id", nullable=false)
     private Jewel jewel;
 
     public PendingJewelRestock() {

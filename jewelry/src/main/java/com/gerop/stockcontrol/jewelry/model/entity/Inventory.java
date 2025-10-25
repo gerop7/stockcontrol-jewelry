@@ -64,5 +64,21 @@ public class Inventory {
         this.owner = owner;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Inventory other)) return false;
 
+        if (id != null && other.id != null)
+            return id.equals(other.id);
+
+        return name.equals(other.name) && owner.equals(other.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return (id != null)
+            ? id.hashCode()
+            : (name + "_" + owner.getId()).hashCode();
+    }
 }

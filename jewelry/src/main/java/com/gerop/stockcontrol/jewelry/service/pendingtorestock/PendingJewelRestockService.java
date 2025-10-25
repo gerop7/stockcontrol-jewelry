@@ -35,10 +35,32 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
             });
     }
 
+    @Override
+    public PendingJewelRestock create(Jewel jewel, Inventory inventory, Long quantity) {
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        Objects.requireNonNull(jewel, "Jewel cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+
+        return repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+            .orElseGet(() -> {
+                PendingJewelRestock pending = new PendingJewelRestock();
+                pending.setQuantity(quantity);
+                pending.setInventory(inventory);
+                pending.setJewel(jewel);
+                return pending;
+            });
+    }
+
     @Transactional
     @Override
     public PendingJewelRestock createSave(Jewel jewel, Inventory inventory) {
         return save(create(jewel,inventory));
+    }
+
+    @Transactional
+    @Override
+    public PendingJewelRestock createSave(Jewel jewel, Inventory inventory, Long quantity) {
+        return save(create(jewel,inventory,quantity));
     }
 
     @Transactional
@@ -80,11 +102,15 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
         removeFromRestock(pending, quantity);
     }
 
-    private void validateRestockOperation(PendingJewelRestock entity, Long quantity) {
+    public void validateRestockOperation(PendingJewelRestock entity, Long quantity) {
         if (entity == null)
             throw new IllegalArgumentException("PendingJewelRestock cannot be null");
         if (quantity == null || quantity <= 0)
             throw new IllegalArgumentException("Quantity must be greater than zero");
     }
 
+    @Override
+    public boolean existsByInventory(Long jewelId, Long inventoryId){
+        return repository.existsByJewelIdAndInventoryId(jewelId, inventoryId);
+    }
 }

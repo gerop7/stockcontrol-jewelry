@@ -12,4 +12,6 @@ public interface PendingMetalRestockRepository extends JpaRepository<PendingMeta
 
     Optional<PendingMetalRestock> findByMetalIdAndInventoryId(Long entityId, Long inventoryId);
 
+    boolean existsByMetalIdAndInventoryId(Long metalId, Long inventoryId);
+
 }

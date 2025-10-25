@@ -28,6 +28,4 @@ public class SaleResultDto {
     public void setFails(List<String> fails) {
         this.fails = fails;
     }
-
-
 }
