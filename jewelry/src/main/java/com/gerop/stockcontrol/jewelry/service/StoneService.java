@@ -66,15 +66,12 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
 
     @Transactional
     @Override
-    public void addPendingToRestock(Long materialId, Long quantity, Long inventoryId) {
-        if(!stonePermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventoryId))
+    public void addPendingToRestock(Long materialId, Long quantity, Inventory inventory) {
+        if(!stonePermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
             throw new SecurityException("No tienes permiso para modificar stock pendiente de reposición!");
         
         Stone stone = repository.findById(materialId)
             .orElseThrow(()-> new EntityNotFoundException("Piedra no encontrada!"));
-
-        Inventory inventory = inventoryRepository.findById(inventoryId)
-            .orElseThrow(()-> new EntityNotFoundException("Inventario no encontrado!"));
 
         handleAddPendingToRestock(stone, quantity, inventory);
     }

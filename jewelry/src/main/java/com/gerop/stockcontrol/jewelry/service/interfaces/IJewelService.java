@@ -17,7 +17,7 @@ public interface IJewelService {
     JewelDto update(Long id, UpdateJewelDataDto updateData);
 
     JewelDto addStock(Long id, Long inventoryId, Long quantity, String description);
-    SaleJewel sale(Long id,Long quantity, Long quantityToRestock, Float total, Long inventoryId);
+    SaleJewel sale(Long id,Long quantity, Long quantityToRestock, Float total, Inventory inventory);
 
     void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity);
@@ -25,6 +25,6 @@ public interface IJewelService {
     Optional<Jewel> findById(Long id);
     List<Jewel> findAll();
     boolean haveStones(Long jewelId);
-    boolean existsByIdAndHasOneMetal(Long jewelId, Long metalId);
-    public boolean existsByIdAndHasOneStone(Long jewelId, Long stoneId);
+    boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);
+    public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);
 }

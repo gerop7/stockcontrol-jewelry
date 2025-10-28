@@ -68,28 +68,34 @@ public class SaleService implements ISaleService {
         List<String> fails = new ArrayList<>();
 
         for(JewelSaleWithPendingRestockDto saleJewelDto:saleDto.jewels()){
-
             try {
-                SaleJewel saleJewel = jewelService.sale(saleJewelDto.jewelId(), saleJewelDto.quantity(), 
-                    saleJewelDto.quantityToRestock(), saleJewelDto.total(), inventory.getId()); 
+                SaleJewel saleJewel = jewelService.sale(
+                    saleJewelDto.jewelId(),
+                    saleJewelDto.quantity(), 
+                    saleJewelDto.quantityToRestock(), 
+                    saleJewelDto.total(), 
+                    inventory
+                ); 
 
-                for(MetalWeightDto metalWeightDto:saleJewelDto.metalToRestock()){
-                    if(jewelService.existsByIdAndHasOneMetal(saleJewelDto.jewelId(), metalWeightDto.metalId())){
-                        try {
-                            metalService.addPendingToRestock(metalWeightDto.metalId(), metalWeightDto.weight(), inventory.getId());
-                        } catch (EntityNotFoundException | SecurityException e) {
-                            fails.add(e.getMessage());
+                if(!saleJewel.getJewel().getMetal().isEmpty()){
+                    for(MetalWeightDto metalWeightDto:saleJewelDto.metalToRestock()){
+                        if(jewelService.existsByIdAndHasOneMetal(saleJewel.getJewel(), metalWeightDto.metalId())){
+                            try {
+                                metalService.addPendingToRestock(metalWeightDto.metalId(), metalWeightDto.weight(), inventory);
+                            } catch (EntityNotFoundException | SecurityException e) {
+                                fails.add(e.getMessage());
+                            }
+                        }else{
+                            fails.add("El metal "+metalWeightDto.metalId()+" no pertenece a la joya "+saleJewelDto.jewelId()+" y no se pudo marcar su reposición.");
                         }
-                    }else{
-                        fails.add("El metal "+metalWeightDto.metalId()+" no pertenece a la joya "+saleJewelDto.jewelId()+" y no se pudo marcar su reposición.");
                     }
                 }
 
-                if(jewelService.haveStones(saleJewelDto.jewelId())){
+                if(!saleJewel.getJewel().getStone().isEmpty()){
                     for(StoneQuantityDto stoneQuantityDto:saleJewelDto.stoneToRestock()){
-                        if(jewelService.existsByIdAndHasOneStone(saleJewelDto.jewelId(), stoneQuantityDto.stoneId())){
+                        if(jewelService.existsByIdAndHasOneStone(saleJewel.getJewel(), stoneQuantityDto.stoneId())){
                             try {
-                                stoneService.addPendingToRestock(stoneQuantityDto.stoneId(), stoneQuantityDto.quantity(), inventory.getId());
+                                stoneService.addPendingToRestock(stoneQuantityDto.stoneId(), stoneQuantityDto.quantity(), inventory);
                             } catch (EntityNotFoundException | SecurityException e) {
                                 fails.add(e.getMessage());
                             }

@@ -67,15 +67,12 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
 
     @Override
     @Transactional
-    public void addPendingToRestock(Long materialId, Float quantity, Long inventoryId) {
-        if(!metalPermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventoryId))
+    public void addPendingToRestock(Long materialId, Float quantity, Inventory inventory) {
+        if(!metalPermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
             throw new SecurityException("No tienes permiso para modificar stock pendiente de reposición!");
         
         Metal metal = repository.findById(materialId)
             .orElseThrow(()-> new EntityNotFoundException("Metal no encontrado!"));
-
-        Inventory inventory = inventoryRepository.findById(inventoryId)
-            .orElseThrow(()-> new EntityNotFoundException("Inventario no encontrado!"));
 
         handleAddPendingToRestock(metal, quantity, inventory);
     }

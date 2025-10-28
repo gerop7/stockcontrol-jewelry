@@ -156,18 +156,16 @@ public class JewelService implements IJewelService{
 
     @Override
     @Transactional
-    public SaleJewel sale(Long jewelId, Long quantity, Long quantityToRestock, Float total, Long inventoryId) {
-        Jewel jewel = jewelRepository.findById(jewelId).orElseThrow(()-> new EntityNotFoundException("La joya con "+jewelId+" no existe!"));
-        if(!jewelPermissionsService.canModifyStock(jewelId, inventoryId, userServiceHelper.getCurrentUser().getId())){
-            throw new SecurityException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en este");
+    public SaleJewel sale(Long jewelId, Long quantity, Long quantityToRestock, Float total, Inventory inventory) {
+        Jewel jewel = jewelRepository.findByIdWithMaterials(jewelId).orElseThrow(()-> new EntityNotFoundException("La joya con "+jewelId+" no existe!"));
+        if(!jewelPermissionsService.canModifyStock(jewelId, inventory.getId(), userServiceHelper.getCurrentUser().getId())){
+            throw new SecurityException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en este inventario.");
         }
         if(quantity==null || quantity<=0){
             throw new IllegalArgumentException("La cantidad a vender de la joya "+jewel.getSku()+" debe ser mayor que 0.");
         }
-        Inventory inventory = inventoryRepository.findById(inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("Inventario no encontrado."));
 
-        JewelryStockByInventory jewelryStock = stockRepository.findByJewelIdAndInventoryId(jewelId, inventoryId)
+        JewelryStockByInventory jewelryStock = stockRepository.findByJewelIdAndInventoryId(jewelId, inventory.getId())
             .orElseThrow(() -> new EntityNotFoundException("No se encontró stock para la joya"+ jewel.getSku()+"en el inventario"+inventory.getName()+"."));
         
         Long q = (quantity>jewelryStock.getStock())?0L:(jewelryStock.getStock()-quantity);
@@ -219,15 +217,22 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public boolean existsByIdAndHasOneMetal(Long jewelId, Long metalId){
-        return jewelRepository.existsByIdAndMetal_Id(jewelId, metalId);
+    public boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId){
+        boolean hasMetal = jewel
+            .getMetal().stream()
+            .anyMatch(m -> m.getId().equals(metalId));
+        
+        return hasMetal;
     }
 
     @Override
     @Transactional(readOnly=true)
-    public boolean existsByIdAndHasOneStone(Long jewelId, Long stoneId){
-        return jewelRepository.existsByIdAndStone_Id(jewelId, stoneId);
+    public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId){
+        boolean hasStone = jewel
+            .getStone().stream()
+            .anyMatch(s -> s.getId().equals(stoneId));
+
+        return hasStone;
     }
 
 }

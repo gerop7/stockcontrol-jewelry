@@ -27,4 +27,12 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
     boolean existsByIdAndHasStones(@Param("jewelId") Long jewelId);
     boolean existsByIdAndMetal_Id(Long jewelId, Long metalId);
     boolean existsByIdAndStone_Id(Long jewelId, Long stoneId);
+
+    @Query("""
+        SELECT j FROM Jewel j
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        WHERE j.id = :id
+    """)
+    Optional<Jewel> findByIdWithMaterials(Long id);
 }
