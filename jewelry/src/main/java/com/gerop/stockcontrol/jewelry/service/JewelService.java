@@ -150,7 +150,7 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public JewelDto addStock(Long id, Long quantity) {
+    public JewelDto addStock(Long id, Long inventoryId, Long quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -174,7 +174,7 @@ public class JewelService implements IJewelService{
         jewelryStock.setStock(q);
         stockRepository.save(jewelryStock);
 
-        addPendingToRestock(jewel, inventory, quantityToRestock);
+        handleAddPendingToRestock(jewel, inventory, quantityToRestock);
 
         movementService.sale(jewel, quantity, total, inventory);
 
@@ -196,9 +196,14 @@ public class JewelService implements IJewelService{
     public boolean haveStones(Long jewelId){
         return jewelRepository.existsByIdAndHasStones(jewelId);
     }
-
+    
     @Override
-    public void addPendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
+    public void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity) {
+        throw new UnsupportedOperationException("Unimplemented method 'addPendingToRestock'");
+    }
+    
+    @Transactional
+    public void handleAddPendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
         if(quantity!= null && quantity>0){
             if(pendingRestockService.existsByInventory(jewel.getId(),inventory.getId())){
                 pendingRestockService.addToRestock(jewel.getId(),inventory.getId(), quantity);
@@ -218,9 +223,11 @@ public class JewelService implements IJewelService{
     public boolean existsByIdAndHasOneMetal(Long jewelId, Long metalId){
         return jewelRepository.existsByIdAndMetal_Id(jewelId, metalId);
     }
+
     @Override
     @Transactional(readOnly=true)
     public boolean existsByIdAndHasOneStone(Long jewelId, Long stoneId){
         return jewelRepository.existsByIdAndStone_Id(jewelId, stoneId);
     }
+
 }

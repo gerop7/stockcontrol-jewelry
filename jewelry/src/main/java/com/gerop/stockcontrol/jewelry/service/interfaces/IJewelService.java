@@ -16,10 +16,10 @@ public interface IJewelService {
     
     JewelDto update(Long id, UpdateJewelDataDto updateData);
 
-    JewelDto addStock(Long id, Long quantity);
+    JewelDto addStock(Long id, Long inventoryId, Long quantity, String description);
     SaleJewel sale(Long id,Long quantity, Long quantityToRestock, Float total, Long inventoryId);
 
-    void addPendingToRestock(Jewel jewel, Inventory inventory, Long quantity);
+    void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity);
 
     Optional<Jewel> findById(Long id);

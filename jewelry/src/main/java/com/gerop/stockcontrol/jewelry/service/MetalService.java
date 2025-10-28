@@ -1,16 +1,44 @@
 package com.gerop.stockcontrol.jewelry.service;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.model.dto.MetalDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
+import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
+import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
+import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
+import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingMetalRestockService;
+import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
+    private final MetalRepository repository;
+    private final MetalStockByInventoryRepository stockRepository;
+    private final UserServiceHelper helperService;
+    private final IMaterialPermissionsService<Metal> metalPermissionsService;
+    private final PendingMetalRestockService pendingRestockService;
+    private final InventoryRepository inventoryRepository;
+
+    public MetalService(UserServiceHelper helperService, InventoryRepository inventoryRepository, IMaterialPermissionsService<Metal> metalPermissionsService, PendingMetalRestockService pendingRestockService, MetalRepository repository, MetalStockByInventoryRepository stockRepository) {
+        this.helperService = helperService;
+        this.inventoryRepository = inventoryRepository;
+        this.metalPermissionsService = metalPermissionsService;
+        this.pendingRestockService = pendingRestockService;
+        this.repository = repository;
+        this.stockRepository = stockRepository;
+    }
+
 
     @Override
     public Metal create(MetalDto material) {
@@ -28,7 +56,7 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     }
 
     @Override
-    public MetalDto addStock(Long materialid, Long inventoryId, Float quantity) {
+    public MetalDto addStock(Long materialid, Long inventoryId, Float quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -38,8 +66,33 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     }
 
     @Override
+    @Transactional
     public void addPendingToRestock(Long materialId, Float quantity, Long inventoryId) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(!metalPermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventoryId))
+            throw new SecurityException("No tienes permiso para modificar stock pendiente de reposición!");
+        
+        Metal metal = repository.findById(materialId)
+            .orElseThrow(()-> new EntityNotFoundException("Metal no encontrado!"));
+
+        Inventory inventory = inventoryRepository.findById(inventoryId)
+            .orElseThrow(()-> new EntityNotFoundException("Inventario no encontrado!"));
+
+        handleAddPendingToRestock(metal, quantity, inventory);
+    }
+
+    @Transactional
+    public void handleAddPendingToRestock(Metal metal, Float quantity, Inventory inventory) {
+        
+        Objects.requireNonNull(metal, "Metal cannot be null");
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        if (quantity == null || quantity <= 0) return;
+
+        pendingRestockService.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
+            .ifPresentOrElse(
+                r -> pendingRestockService.addToRestock(r, quantity),
+                () -> metal.getPendingMetalRestock().add(
+                    pendingRestockService.createSave(metal, inventory, quantity))
+        );
     }
 
     @Override
@@ -51,5 +104,23 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     public Optional<Metal> findOne(Long materialId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public List<Metal> findAllByIds(Set<Long> materialIds) {
+        throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
+    }
+
+    @Override
+    public boolean canUseToCreate(Long materialId, Long userId, Long inventoryId) {
+        throw new UnsupportedOperationException("Unimplemented method 'canUseToCreate'");
+    }
+
+    @Override
+    public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
+        throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
+    }
+
+
+
 
 }

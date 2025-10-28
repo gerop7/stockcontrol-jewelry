@@ -1,6 +1,7 @@
 package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,22 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
                 return pending;
             });
     }
+
+    @Override
+    public PendingMetalRestock create(Metal metal, Inventory inventory, Float quantity) {
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        Objects.requireNonNull(metal, "Metal cannot be null");
+        Objects.requireNonNull(quantity,"Quantity cannot be null");
+
+        return repository.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
+            .orElseGet(() -> {
+                PendingMetalRestock pending = new PendingMetalRestock();
+                pending.setWeight(quantity);
+                pending.setInventory(inventory);
+                pending.setMetal(metal);
+                return pending;
+            });
+    }
     
     @Override
     @Transactional
@@ -43,9 +60,16 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
 
     @Override
     @Transactional
+    public PendingMetalRestock createSave(Metal entity, Inventory inventory, Float quantity) {
+        return save(create(entity, inventory,quantity));
+    }
+    
+    @Override
+    @Transactional
     public PendingMetalRestock save(PendingMetalRestock entity) {
         return repository.save(entity);
     }
+
 
     @Override
     @Transactional
@@ -92,4 +116,10 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
     public boolean existsByInventory(Long metalId, Long inventoryId){
         return repository.existsByMetalIdAndInventoryId(metalId, inventoryId);
     }
+
+    @Transactional(readOnly=true)
+    public Optional<PendingMetalRestock> findByMetalIdAndInventoryId(Long metalId, Long inventoryId){
+        return repository.findByMetalIdAndInventoryId(metalId, inventoryId);
+    }
+
 }

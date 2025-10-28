@@ -1,6 +1,7 @@
 package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +36,31 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
                 return pending;
             });
     }
-
+    
     @Override
     @Transactional
     public PendingStoneRestock createSave(Stone stone, Inventory inventory) {
         return repository.save(create(stone, inventory));
+    }
+    @Override
+    public PendingStoneRestock create(Stone entity, Inventory inventory, Long quantity) {
+        Objects.requireNonNull(inventory, "Inventory cannot be null");
+        Objects.requireNonNull(entity, "Stone cannot be null");
+        Objects.requireNonNull(quantity, "Quantity cannot be null");
+
+        return repository.findByStoneIdAndInventoryId(entity.getId(), inventory.getId())
+            .orElseGet(() -> {
+                PendingStoneRestock pending = new PendingStoneRestock();
+                pending.setQuantity(quantity);
+                pending.setInventory(inventory);
+                pending.setStone(entity);
+                return pending;
+            });
+    }
+
+    @Override
+    public PendingStoneRestock createSave(Stone entity, Inventory inventory, Long quantity) {
+        return repository.save(create(entity, inventory, quantity));
     }
     
     @Override
@@ -92,4 +113,9 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
     public boolean existsByInventory(Long stoneId, Long inventoryId){
         return repository.existsByStoneIdAndInventoryId(stoneId, inventoryId);
     }
+
+    public Optional<PendingStoneRestock> findByStoneIdAndInventoryId(Long stoneId, Long inventoryId) {
+        return repository.findByStoneIdAndInventoryId(stoneId, inventoryId);
+    }
+
 }
