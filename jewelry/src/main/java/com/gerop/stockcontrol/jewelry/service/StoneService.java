@@ -5,8 +5,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.dto.StoneDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
@@ -18,8 +21,7 @@ import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingStoneRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 
-import jakarta.persistence.EntityNotFoundException;
-
+@Service
 public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
 
     private final StoneRepository repository;
@@ -68,10 +70,10 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     @Override
     public void addPendingToRestock(Long materialId, Long quantity, Inventory inventory) {
         if(!stonePermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new SecurityException("No tienes permiso para modificar stock pendiente de reposición!");
+            throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
         
         Stone stone = repository.findById(materialId)
-            .orElseThrow(()-> new EntityNotFoundException("Piedra no encontrada!"));
+            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Stone"));
 
         handleAddPendingToRestock(stone, quantity, inventory);
     }

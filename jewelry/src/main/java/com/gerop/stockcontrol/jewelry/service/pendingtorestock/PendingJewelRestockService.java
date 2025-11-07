@@ -23,16 +23,7 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
 
     @Override
     public PendingJewelRestock create(Jewel jewel, Inventory inventory) {
-        Objects.requireNonNull(inventory, "Inventory cannot be null");
-        Objects.requireNonNull(jewel, "Jewel cannot be null");
-        return repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
-            .orElseGet(() -> {
-                PendingJewelRestock pending = new PendingJewelRestock();
-                pending.setQuantity(0L);
-                pending.setInventory(inventory);
-                pending.setJewel(jewel);
-                return pending;
-            });
+        return create(jewel, inventory, 0L);
     }
 
     @Override
@@ -88,10 +79,17 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
 
     @Transactional
     @Override
-    public void addToRestock(Long jewelId, Long inventoryId, Long quantity) {
-        PendingJewelRestock pending = repository.findByJewelIdAndInventoryId(jewelId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        addToRestock(pending, quantity);
+    public void addToRestock(Jewel jewel, Inventory inventory, Long quantity) {
+        if(inventory!=null && jewel!=null && quantity!=null){
+            repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+                .ifPresentOrElse(
+                    p->{
+                        p.setQuantity(p.getQuantity()+quantity);
+                        save(p);
+                    },
+                    () -> createSave(jewel, inventory, quantity)
+                );
+        }
     }
 
     @Transactional

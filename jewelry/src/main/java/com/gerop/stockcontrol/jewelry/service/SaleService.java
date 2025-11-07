@@ -6,6 +6,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
+import com.gerop.stockcontrol.jewelry.exception.SaleProcessingException;
+import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundException;
+import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialMismatchException;
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.mapper.SaleMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
 import com.gerop.stockcontrol.jewelry.model.dto.StoneQuantityDto;
@@ -23,8 +31,6 @@ import com.gerop.stockcontrol.jewelry.repository.SaleRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.ISaleService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IInventoryPermissionsService;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class SaleService implements ISaleService {
@@ -59,10 +65,10 @@ public class SaleService implements ISaleService {
         invPermissions.validatePermission(saleDto.inventoryId(), currentUser.getId(), InventoryUserPermissionType.WRITE,"registrar ventas");
 
         Inventory inventory = inventoryRepository.findById(saleDto.inventoryId())
-            .orElseThrow(() -> new EntityNotFoundException("No existe el inventario!"));
+            .orElseThrow(() -> new InventoryNotFoundException("No existe el inventario!"));
 
         if (saleDto.jewels().isEmpty())
-            throw new IllegalArgumentException("La venta debe incluir al menos una joya");
+            throw new SaleProcessingException("La venta debe incluir al menos una joya");
 
         Sale sale = new Sale(saleDto.description(), inventory, currentUser);
         List<String> fails = new ArrayList<>();
@@ -82,11 +88,11 @@ public class SaleService implements ISaleService {
                         if(jewelService.existsByIdAndHasOneMetal(saleJewel.getJewel(), metalWeightDto.metalId())){
                             try {
                                 metalService.addPendingToRestock(metalWeightDto.metalId(), metalWeightDto.weight(), inventory);
-                            } catch (EntityNotFoundException | SecurityException e) {
+                            } catch (MaterialNotFoundException | InventoryAccessDeniedException e) {
                                 fails.add(e.getMessage());
                             }
                         }else{
-                            fails.add("El metal "+metalWeightDto.metalId()+" no pertenece a la joya "+saleJewelDto.jewelId()+" y no se pudo marcar su reposición.");
+                            fails.add(new MaterialMismatchException(saleJewelDto.jewelId(),metalWeightDto.metalId(),"Metal").getMessage());
                         }
                     }
                 }
@@ -96,17 +102,17 @@ public class SaleService implements ISaleService {
                         if(jewelService.existsByIdAndHasOneStone(saleJewel.getJewel(), stoneQuantityDto.stoneId())){
                             try {
                                 stoneService.addPendingToRestock(stoneQuantityDto.stoneId(), stoneQuantityDto.quantity(), inventory);
-                            } catch (EntityNotFoundException | SecurityException e) {
+                            } catch (MaterialNotFoundException | InventoryAccessDeniedException e) {
                                 fails.add(e.getMessage());
                             }
                         }else{
-                            fails.add("La piedra "+stoneQuantityDto.stoneId()+" no pertenece a la joya "+saleJewelDto.jewelId()+" y no se pudo marcar su reposición.");
+                            fails.add(new MaterialMismatchException(saleJewelDto.jewelId(),stoneQuantityDto.stoneId(),"Stone").getMessage());
                         }
                     }
                 }
                 
                 sale.getJewels().add(saleJewel);
-            } catch (EntityNotFoundException | SecurityException e) {
+            } catch (JewelNotFoundException | InventoryAccessDeniedException | InvalidQuantityException | StockNotFoundException e) {
                 fails.add(e.getMessage());
             }
         }

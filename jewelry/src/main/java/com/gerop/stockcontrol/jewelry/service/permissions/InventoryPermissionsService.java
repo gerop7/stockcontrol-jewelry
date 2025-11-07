@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.InventoryUserPermissions;
 import com.gerop.stockcontrol.jewelry.model.entity.User;
@@ -59,7 +60,7 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
             throw new IllegalArgumentException("No puedes invitarte a ti mismo.");
 
         if(!isOwner(inventoryId, currentUserId))
-            throw new SecurityException("Solo el creador del inventario puede invitar usuarios");
+            throw new InventoryAccessDeniedException("Solo el creador del inventario puede invitar usuarios");
         
 
         User targetUser = userRepository.findById(targetUserId)
@@ -77,7 +78,7 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
         if(permissionOpt.isPresent()){
             InventoryUserPermissions permission = permissionOpt.get();
             if(permission.getStatus() == InventoryPermissionsStatus.PENDING || permission.getStatus() == InventoryPermissionsStatus.ACCEPTED)
-                throw new IllegalStateException("Ya existe una invitacion pendiente o aceptada para este usuario");
+                throw new IllegalStateException("Ya existe una invitacion pendiente o aceptada para este usuario.");
             else if(permission.getStatus() == InventoryPermissionsStatus.REJECTED){
                 permission.setStatus(InventoryPermissionsStatus.PENDING);
                 permissionsRepository.save(permission);
@@ -138,7 +139,7 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
             return permission;
         
         if(!permission.getUser().getId().equals(helper.getCurrentUser().getId()))
-            throw new SecurityException("No puedes responder esta invitacion.");
+            throw new InventoryAccessDeniedException("No puedes responder esta invitacion.");
 
         permission.setStatus(accept?InventoryPermissionsStatus.ACCEPTED:InventoryPermissionsStatus.REJECTED);
 
@@ -187,6 +188,6 @@ public class InventoryPermissionsService implements IInventoryPermissionsService
     public void validatePermission(Long inventoryId, Long userId, InventoryUserPermissionType type, String action){
         if((type==InventoryUserPermissionType.WRITE && !canWrite(inventoryId, userId))|| 
             (type==InventoryUserPermissionType.READ && !canRead(inventoryId, userId)))
-            throw new SecurityException("No tienes permisos para "+action+" en este inventario.");
+            throw new InventoryAccessDeniedException("No tienes permisos para "+action+" en este inventario.");
     }
 }

@@ -10,7 +10,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.SaleJewel;
 
 public interface IJewelService {
-    Jewel create(JewelDto jewelDto);
+    JewelDto create(JewelDto jewelDto);
     Boolean delete(Long id);
     Jewel save(Jewel jewel);
     
@@ -22,8 +22,8 @@ public interface IJewelService {
     void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity);
 
-    Optional<Jewel> findById(Long id);
-    List<Jewel> findAll();
+    Optional<JewelDto> findById(Long id);
+    List<JewelDto> findAll();
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);
     public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);

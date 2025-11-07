@@ -1,29 +1,21 @@
 package com.gerop.stockcontrol.jewelry.model.dto;
 
-public class InventoryStockDto {
-    private Long inventoryId;
-    private Long stock;
+import java.util.Objects;
 
-    public InventoryStockDto() {
-    }
-    
-    public InventoryStockDto(Long inventoryId, Long stock) {
-        this.inventoryId = inventoryId;
-        this.stock = stock;
-    }
-
-    public Long getInventoryId() {
-        return inventoryId;
-    }
-    public void setInventoryId(Long inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-    public Long getStock() {
-        return stock;
-    }
-    public void setStock(Long stock) {
-        this.stock = stock;
+public record InventoryStockDto(
+    Long inventoryId,
+    Long stock
+) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof InventoryStockDto other)) return false;
+        return Objects.equals(inventoryId, other.inventoryId)
+            && Objects.equals(stock, other.stock);
     }
 
-    
+    @Override
+    public int hashCode() {
+        return Objects.hash(inventoryId, stock);
+    }
 }

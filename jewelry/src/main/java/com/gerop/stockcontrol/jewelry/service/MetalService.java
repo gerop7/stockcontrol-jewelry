@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.dto.MetalDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
@@ -18,8 +20,6 @@ import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingMetalRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
@@ -69,10 +69,10 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     @Transactional
     public void addPendingToRestock(Long materialId, Float quantity, Inventory inventory) {
         if(!metalPermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new SecurityException("No tienes permiso para modificar stock pendiente de reposición!");
+            throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
         
         Metal metal = repository.findById(materialId)
-            .orElseThrow(()-> new EntityNotFoundException("Metal no encontrado!"));
+            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Metal"));
 
         handleAddPendingToRestock(metal, quantity, inventory);
     }

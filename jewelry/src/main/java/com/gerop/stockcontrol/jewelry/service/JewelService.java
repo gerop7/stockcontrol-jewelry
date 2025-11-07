@@ -6,31 +6,31 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
+import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
+import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
+import com.gerop.stockcontrol.jewelry.mapper.JewelMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
-import com.gerop.stockcontrol.jewelry.model.entity.Category;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
-import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.SaleJewel;
-import com.gerop.stockcontrol.jewelry.model.entity.Stone;
-import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
-import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
-import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryRepository;
-import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
+import com.gerop.stockcontrol.jewelry.service.interfaces.ICategoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
+import com.gerop.stockcontrol.jewelry.service.interfaces.ISubcategoryService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.JewelPermissionsService;
 
-import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JewelService implements IJewelService{
 
     private final JewelPermissionsService jewelPermissionsService;
@@ -38,100 +38,23 @@ public class JewelService implements IJewelService{
     private final IJewelMovementService movementService;
     private final UserServiceHelper userServiceHelper;
     private final IPendingRestockService<PendingJewelRestock, Long, Jewel> pendingRestockService;
-    private final CategoryRepository categoryRepository;
-    private final SubcategoryRepository subcategoryRepository;
-
+    private final ICategoryService categoryService;
+    private final ISubcategoryService subcategoryService;
     private final JewelryStockByInventoryRepository stockRepository;
-    private final InventoryRepository inventoryRepository;
-
-    
-    public JewelService(JewelPermissionsService jewelPermissionsService, JewelRepository jewelRepository,
-            IJewelMovementService movementService, UserServiceHelper userServiceHelper,
-            IPendingRestockService<PendingJewelRestock, Long, Jewel> pendingRestockService,
-            CategoryRepository categoryRepository, SubcategoryRepository subcategoryRepository,
-            JewelryStockByInventoryRepository stockRepository,
-            InventoryRepository inventoryRepository) {
-        this.jewelPermissionsService = jewelPermissionsService;
-        this.jewelRepository = jewelRepository;
-        this.movementService = movementService;
-        this.userServiceHelper = userServiceHelper;
-        this.pendingRestockService = pendingRestockService;
-        this.categoryRepository = categoryRepository;
-        this.subcategoryRepository = subcategoryRepository;
-        this.stockRepository = stockRepository;
-        this.inventoryRepository = inventoryRepository;
-    }
+    private final JewelMapper mapper;
 
     @Override
     @Transactional
-    public Jewel create(JewelDto jewelDto) {
-        Jewel jewel = new Jewel(
-            jewelDto.getName(), 
-            jewelDto.getDescription(), 
-            jewelDto.getSku(),
-            jewelDto.getImageUrl(), 
-            jewelDto.getWeight(),
-            jewelDto.getSize(), 
-            userServiceHelper.getCurrentUser()
-        );
-
-        Long userId = userServiceHelper.getCurrentUser().getId();
-
+    public JewelDto create(JewelDto jewelDto) {
         
-        if (jewelDto.getCategoryId()!=null  && jewelDto.getCategoryId()>0) {
-            Category category = categoryRepository.findByIdAndUserId(jewelDto.getCategoryId(), userId)
-            .orElseThrow(()-> new EntityNotFoundException("Category not found"));
-
-            jewel.setCategory(category);
-
-            if(jewelDto.getSubcategoryId()!=null){
-                Subcategory subcategory = subcategoryRepository.findByIdAndUserId(jewelDto.getSubcategoryId(), userId)
-                .orElseThrow(()-> new EntityNotFoundException("Subcategory not found"));
-
-                if(!subcategory.getPrincipalCategory().getId().equals(category.getId())){
-                    throw new RequiredFieldException("Subcategory does not belong to the selected category");
-                }
-                jewel.setSubcategory(subcategory);
-            }
-            
-        }else{
-            throw new RequiredFieldException("Category is required!");
-        }
 
 
-        List<Long> metalIds = jewelDto.getMetalIds();
-        if (metalIds ==null || metalIds.isEmpty()) {
-            throw new RequiredFieldException("Metal is required!");
-        }
-
-        List<Metal> metals = metalService.findAllById(metalIds);
-        if (metals.size() != metalIds.size()) {
-            throw new EntityNotFoundException("One or more metals not found");
-        }
-        jewel.setMetal(metals);
-
-
-        List<Long> stoneIds = jewelDto.getStoneIds();
-        if (stoneIds!=null && !stoneIds.isEmpty()) {
-            List<Stone> stones = stoneService.findAllById(stoneIds);
-            if (stones.size()!=stoneIds.size()) {
-                throw new EntityNotFoundException("One or more stones not found");
-            }
-            jewel.setStone(stones);
-        }
-
-
-        jewel.setPendingRestock(pendingRestockService.create());
-
-        Jewel saved = save(jewel);
-        movementService.create(jewel);
-
-        return saved;
+        return null;
     }
 
     @Override
     public Boolean delete(Long id) {
-        Jewel jewel = jewelRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Jewel not found"));
+        Jewel jewel = jewelRepository.findById(id).orElseThrow(()-> new JewelNotFoundException(id));
         jewel.setActive(false);
 
         save(jewel);
@@ -140,6 +63,7 @@ public class JewelService implements IJewelService{
     }
 
     @Override
+    @Transactional
     public Jewel save(Jewel jewel) {
         return jewelRepository.save(jewel);
     }
@@ -157,16 +81,16 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional
     public SaleJewel sale(Long jewelId, Long quantity, Long quantityToRestock, Float total, Inventory inventory) {
-        Jewel jewel = jewelRepository.findByIdWithMaterials(jewelId).orElseThrow(()-> new EntityNotFoundException("La joya con "+jewelId+" no existe!"));
+        Jewel jewel = jewelRepository.findByIdWithMaterials(jewelId).orElseThrow(()-> new JewelNotFoundException("La joya con "+jewelId+" no existe!"));
         if(!jewelPermissionsService.canModifyStock(jewelId, inventory.getId(), userServiceHelper.getCurrentUser().getId())){
-            throw new SecurityException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en este inventario.");
+            throw new InventoryAccessDeniedException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en el inventario "+inventory.getName());
         }
         if(quantity==null || quantity<=0){
-            throw new IllegalArgumentException("La cantidad a vender de la joya "+jewel.getSku()+" debe ser mayor que 0.");
+            throw new InvalidQuantityException("La cantidad a vender de la joya "+jewel.getSku()+" debe ser mayor que 0.");
         }
 
         JewelryStockByInventory jewelryStock = stockRepository.findByJewelIdAndInventoryId(jewelId, inventory.getId())
-            .orElseThrow(() -> new EntityNotFoundException("No se encontró stock para la joya"+ jewel.getSku()+"en el inventario"+inventory.getName()+"."));
+            .orElseThrow(() -> new StockNotFoundException("No se encontró stock para la joya"+ jewel.getSku()+"en el inventario"+inventory.getName()+"."));
         
         Long q = (quantity>jewelryStock.getStock())?0L:(jewelryStock.getStock()-quantity);
         jewelryStock.setStock(q);
@@ -180,12 +104,12 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public Optional<Jewel> findById(Long id) {
+    public Optional<JewelDto> findById(Long id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<Jewel> findAll() {
+    public List<JewelDto> findAll() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
@@ -204,7 +128,7 @@ public class JewelService implements IJewelService{
     public void handleAddPendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
         if(quantity!= null && quantity>0){
             if(pendingRestockService.existsByInventory(jewel.getId(),inventory.getId())){
-                pendingRestockService.addToRestock(jewel.getId(),inventory.getId(), quantity);
+                pendingRestockService.addToRestock(jewel, inventory, quantity);
             }else{
                 jewel.getPendingRestock().add(pendingRestockService.createSave(jewel, inventory, quantity));
             }
