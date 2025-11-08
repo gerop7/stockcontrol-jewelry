@@ -35,4 +35,11 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         WHERE j.id = :id
     """)
     Optional<Jewel> findByIdWithMaterials(Long id);
+
+    @Query("""
+        SELECT j FROM Jewel j
+        LEFT JOIN FETCH j.inventories i
+        WHERE j.id = :id
+    """)
+    Optional<Jewel> findByIdWithInventories(Long id);
 }

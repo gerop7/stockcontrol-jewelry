@@ -48,6 +48,12 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
         String description = ("Se repuso "+quantity+" gr. De "+metal.getName()+" en el inventario "+inventory.getName());
         return saveMovement(metal, quantity,null,description,CompositionMovementType.REPLACEMENT,inventory);
     }
+    
+    @Override
+    public MetalMovement marked_replacement(Metal metal, Float quantity, Inventory inventory) {
+        String description = ("Se deben reponer "+quantity+" gr. De "+metal.getName()+" en el inventario "+inventory.getName()+".");
+        return saveMovement(metal, quantity, null, description, CompositionMovementType.MARKED_FOR_RESTOCK, inventory);
+    }
 
     @Override
     public MetalMovement saveMovement(Metal metal, Float quantity, Jewel jewel, String description, CompositionMovementType type, Inventory inventory) {
@@ -74,5 +80,6 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     public List<MetalMovement> findAllByType(CompositionMovementType type) {
         return metalMovementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
+
 
 }

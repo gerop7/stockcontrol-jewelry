@@ -107,7 +107,11 @@ public class JewelService implements IJewelService{
         jewel.getMetal().addAll(metalService.findAllByIds(jewelDto.metalIds()));
         jewel.getStone().addAll(stoneService.findAllByIds(jewelDto.stoneIds()));
 
-        
+        inventories.forEach(
+            i->{
+                movementService.create(jewel, i);
+            }
+        );
         
         save(jewel);
         return mapper.toDto(jewel);
@@ -137,8 +141,8 @@ public class JewelService implements IJewelService{
         if(!jewelPermissionsService.canEditInfo(id, userServiceHelper.getCurrentUser().getId()))
             throw new JewelPermissionDeniedException("No tienes permisos para editar la joya con ID: "+id);
 
-        Jewel jewel = jewelRepository.findById(id)
-            .orElseThrow(()-> new JewelNotFoundException(id));
+        Jewel jewel = jewelRepository.findByIdWithInventories(id)
+            .orElseThrow(() -> new JewelNotFoundException(id));
         
         String name = updateData.name();
         String description = updateData.description();
@@ -147,34 +151,55 @@ public class JewelService implements IJewelService{
         Float weight = updateData.weight();
         Float size = updateData.size();
 
-        StringBuilder desc = new StringBuilder();
+        StringBuilder desc = new StringBuilder("Cambios realizados en la joya ").append(jewel.getSku()).append(": \n");
 
-        if(name!=null)
+        if(name!=null){
+            desc.append(updateDescription(jewel.getName(), name, "el nombre"));
             jewel.setName(name);
+        }
+            
 
-        if(description!=null)
+        if(description!=null){
+            desc.append(updateDescription(jewel.getDescription(), description, "la descripcion"));
             jewel.setDescription(description);
+        }
 
-        if(url!=null)
+        if(url!=null){
+            desc.append("Se modifico la Imagen.");
             jewel.setImageUrl(url);
+        }
 
-        if(sku!=null)
+        if(sku!=null){
+            desc.append(updateDescription(jewel.getSku(),sku,"el código"));
             jewel.setSku(sku);
+        }
     
         if(weight!=null){
             if(weight<0)
                 throw new InvalidQuantityException(weight);
+            desc.append(updateDescription(jewel.getWeight().toString(),weight.toString(),"el peso"));
             jewel.setWeight(weight);
         }
         
         if(size!=null){
             if(size<0)
-                throw new InvalidQuantityException(size);    
+                throw new InvalidQuantityException(size);   
+            desc.append(updateDescription(jewel.getSize().toString(),size.toString(),"el largo"));
             jewel.setSize(size);
         }
+
+        jewel.getInventories().forEach(
+            inventory -> {
+                movementService.modify(desc.toString(), jewel, inventory);
+            }
+        );
         
         save(jewel);
         return mapper.toDto(jewel);
+    }
+
+    public String updateDescription(String original, String update, String field){
+        return "Se modifico "+field+". Antes: "+original+". Ahora: "+update+".\n";
     }
 
     @Override

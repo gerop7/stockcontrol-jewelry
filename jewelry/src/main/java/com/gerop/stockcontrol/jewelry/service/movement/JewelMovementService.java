@@ -72,13 +72,24 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
+    public JewelMovement marked_replacement(Jewel jewel, Long quantity, Inventory inventory) {
+        StringBuilder description = new StringBuilder("Se debe reponer ").append(jewel.getSku()).append(" en el Inventario ").append(inventory.getName());
+        if(quantity>1)
+            description.append(".\nUn total de ").append(quantity).append(" Unidades.");
+        else
+            description.append(".\nUna unica unidad.");
+        
+        return saveMovement(jewel, quantity, description.toString(), JewelMovementType.MARKED_FOR_RESTOCK, inventory);
+    }
+
+    @Override
     public JewelMovement replacement(Jewel jewel, Long quantity, Inventory inventory) {
         StringBuilder description = new StringBuilder("Se repuso ").append(jewel.getSku()).append(" en el Inventario ").append(inventory.getName());
         if(quantity>1)
             description.append(".\nUn total de ").append(quantity).append(" Unidades.");
         else
             description.append(".\nUna unica unidad.");
-
+            
         return saveMovement(jewel, quantity, description.toString(), JewelMovementType.REPLACEMENT, inventory);
     }
 
@@ -107,4 +118,5 @@ public class JewelMovementService implements IJewelMovementService {
     public List<JewelMovement> findAllByType(JewelMovementType type) {
         return movementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
+
 }

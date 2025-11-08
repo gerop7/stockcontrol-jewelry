@@ -13,6 +13,7 @@ public interface IMaterialMovementService<T extends Movement, M extends Material
     T outflow(Q quantity, M mat, Inventory inventory);
     T jewelRegister(M mat, Jewel jewel, Inventory inventory);
     T replacement(M mat, Q quantity, Inventory inventory);
+    T marked_replacement(M mat, Q quantity, Inventory inventory);
     T saveMovement(M mat, Q quantity, Jewel jewel, String description, CompositionMovementType type, Inventory inventory);
     List<T> findAll();
     List<T> findAllByType(CompositionMovementType type);

@@ -13,6 +13,7 @@ public interface IJewelMovementService {
     JewelMovement addStock(Jewel jewel, Long quantity, Inventory inventory);
     JewelMovement sale(Jewel jewel, Long quantity, Float total, Inventory inventory);
     JewelMovement replacement(Jewel jewel, Long quantity, Inventory inventory);
+    JewelMovement marked_replacement(Jewel jewel, Long quantity, Inventory inventory);
     List<JewelMovement> findAll();
     List<JewelMovement> findAllByType(JewelMovementType type);
 }

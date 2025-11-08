@@ -57,6 +57,17 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
         description.append("de ").append(mat.getName()).append(" en el inventario ").append(inventory.getName()).append(".");
         return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.REPLACEMENT, inventory);
     }
+    
+    @Override
+    public StoneMovement marked_replacement(Stone stone, Long quantity, Inventory inventory) {
+        StringBuilder description= new StringBuilder("Se deben reponer ");
+        if(quantity>1)
+            description.append(quantity).append(" unidades ");
+        else
+            description.append(quantity).append(" unidad ");
+        description.append("de ").append(stone.getName()).append(" en el inventario ").append(inventory.getName()).append(".");
+        return saveMovement(stone, quantity, null, description.toString(), CompositionMovementType.REPLACEMENT, inventory);
+    }
 
     @Override
     public StoneMovement saveMovement(Stone stone, Long quantity, Jewel jewel, String description, CompositionMovementType type, Inventory inventory) {
@@ -84,4 +95,5 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     public List<StoneMovement> findAllByType(CompositionMovementType type) {
         return stoneMovementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
+
 }

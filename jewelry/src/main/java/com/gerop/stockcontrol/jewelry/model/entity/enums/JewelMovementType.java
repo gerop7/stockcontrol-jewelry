@@ -5,5 +5,6 @@ public enum JewelMovementType {
     MODIFY,
     STOCK_ADD,
     SALE,
-    REPLACEMENT
+    REPLACEMENT,
+    MARKED_FOR_RESTOCK
 }
