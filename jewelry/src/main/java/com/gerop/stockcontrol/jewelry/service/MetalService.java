@@ -21,7 +21,10 @@ import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingMetalRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     private final MetalRepository repository;
     private final MetalStockByInventoryRepository stockRepository;
@@ -29,16 +32,6 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     private final IMaterialPermissionsService<Metal> metalPermissionsService;
     private final PendingMetalRestockService pendingRestockService;
     private final InventoryRepository inventoryRepository;
-
-    public MetalService(UserServiceHelper helperService, InventoryRepository inventoryRepository, IMaterialPermissionsService<Metal> metalPermissionsService, PendingMetalRestockService pendingRestockService, MetalRepository repository, MetalStockByInventoryRepository stockRepository) {
-        this.helperService = helperService;
-        this.inventoryRepository = inventoryRepository;
-        this.metalPermissionsService = metalPermissionsService;
-        this.pendingRestockService = pendingRestockService;
-        this.repository = repository;
-        this.stockRepository = stockRepository;
-    }
-
 
     @Override
     public Metal create(MetalDto material) {

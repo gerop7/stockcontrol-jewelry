@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,7 @@ import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
+import com.gerop.stockcontrol.jewelry.exception.jewel.JewelPermissionDeniedException;
 import com.gerop.stockcontrol.jewelry.mapper.JewelMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
@@ -66,6 +68,7 @@ public class JewelService implements IJewelService{
         save(jewel);
         
         Long subId=jewelDto.subcategoryId();
+
         if(subId!=null){
             Subcategory sub = subcategoryService.findOne(subId).orElseThrow(()-> new CategoryNotFoundException(subId,"Subcategoría"));
             jewel.setSubcategory(sub);
@@ -80,29 +83,33 @@ public class JewelService implements IJewelService{
             }
         }
 
+        List<Inventory> inventories = new ArrayList<>();
+
         jewelDto.stockByInventory().forEach(
             inv ->
             {
                 Long inventoryId = inv.inventoryId();
                 Inventory inventory = invService.findOne(inventoryId)
                     .orElseThrow(()-> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
-
                 jewelPermissionsService.canCreate(inventoryId, currentUser.getId(), jewelDto.metalIds(), jewelDto.stoneIds());
                 
                 if(inv.stock()!=null && inv.stock()>0 )
-                    jewel.getStockByInventory().add(stockService.create(inventoryId, jewel.getId(), inv.stock()));
+                    jewel.getStockByInventory().add(stockService.create(inventory, jewel, inv.stock()));
                 else
                     throw new InvalidQuantityException(inv.stock());
                 jewel.getPendingRestock().add(pendingRestockService.create(jewel, inventory));
                 jewel.getInventories().add(inventory);  
+
+                inventories.add(inventory);
             }
         );
 
         jewel.getMetal().addAll(metalService.findAllByIds(jewelDto.metalIds()));
         jewel.getStone().addAll(stoneService.findAllByIds(jewelDto.stoneIds()));
+
+        
         
         save(jewel);
-
         return mapper.toDto(jewel);
     }
 
@@ -125,8 +132,49 @@ public class JewelService implements IJewelService{
     }
 
     @Override
+    @Transactional
     public JewelDto update(Long id, UpdateJewelDataDto updateData) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(!jewelPermissionsService.canEditInfo(id, userServiceHelper.getCurrentUser().getId()))
+            throw new JewelPermissionDeniedException("No tienes permisos para editar la joya con ID: "+id);
+
+        Jewel jewel = jewelRepository.findById(id)
+            .orElseThrow(()-> new JewelNotFoundException(id));
+        
+        String name = updateData.name();
+        String description = updateData.description();
+        String url = updateData.imageUrl();
+        String sku = updateData.sku();
+        Float weight = updateData.weight();
+        Float size = updateData.size();
+
+        StringBuilder desc = new StringBuilder();
+
+        if(name!=null)
+            jewel.setName(name);
+
+        if(description!=null)
+            jewel.setDescription(description);
+
+        if(url!=null)
+            jewel.setImageUrl(url);
+
+        if(sku!=null)
+            jewel.setSku(sku);
+    
+        if(weight!=null){
+            if(weight<0)
+                throw new InvalidQuantityException(weight);
+            jewel.setWeight(weight);
+        }
+        
+        if(size!=null){
+            if(size<0)
+                throw new InvalidQuantityException(size);    
+            jewel.setSize(size);
+        }
+        
+        save(jewel);
+        return mapper.toDto(jewel);
     }
 
     @Override
