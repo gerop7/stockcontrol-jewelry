@@ -26,30 +26,18 @@ public class Subcategory {
     @Size(min=3, max=30)
     private String name;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User user;
-
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name="principal_category_id")
     private Category principalCategory;
 
-    private boolean global;
-
     public Subcategory() {
-        this.global=false;
     }
 
-
-    public Subcategory(String name, User user,
-            Category principalCategory, boolean global) {
+    public Subcategory(String name, Category principalCategory) {
         this.name = name;
-        this.user = user;
         this.principalCategory = principalCategory;
-        this.global = global;
     }
-
 
     public Long getId() {
         return id;
@@ -74,26 +62,4 @@ public class Subcategory {
     public void setPrincipalCategory(Category principalCategory) {
         this.principalCategory = principalCategory;
     }
-
-
-    public User getUser() {
-        return user;
-    }
-
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-
-    public boolean isGlobal() {
-        return global;
-    }
-
-
-    public void setGlobal(boolean global) {
-        this.global = global;
-    }
-
-    
 }

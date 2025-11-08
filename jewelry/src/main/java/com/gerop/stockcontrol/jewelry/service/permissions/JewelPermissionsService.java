@@ -1,25 +1,29 @@
 package com.gerop.stockcontrol.jewelry.service.permissions;
+import java.util.Set;
+
 import org.springframework.stereotype.Service;
 
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialPermissionDeniedException;
+import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.Stone;
+import com.gerop.stockcontrol.jewelry.model.entity.enums.InventoryUserPermissionType;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class JewelPermissionsService implements IJewelPermissionsService {
 
     private final UserServiceHelper userServiceHelper;
     private final JewelRepository jewelRepository;
     private final IInventoryPermissionsService invPermissions;
     private final JewelryStockByInventoryRepository stockRepository;
+    private final IMaterialPermissionsService<Metal> metalPermissions;
+    private final IMaterialPermissionsService<Stone> stonePermissions;
 
-    public JewelPermissionsService(JewelRepository jewelRepository, InventoryPermissionsService invPermissions,
-            JewelryStockByInventoryRepository stockRepository, UserServiceHelper userServiceHelper) {
-        this.jewelRepository = jewelRepository;
-        this.invPermissions = invPermissions;
-        this.stockRepository = stockRepository;
-        this.userServiceHelper = userServiceHelper;
-    }
 
     @Override
     public boolean canView(Long jewelId, Long inventoryId, Long userId) {
@@ -51,6 +55,27 @@ public class JewelPermissionsService implements IJewelPermissionsService {
     @Override
     public boolean canDelete(Long jewelId) {
         return isOwner(jewelId, userServiceHelper.getCurrentUser().getId());
+    }
+
+    @Override
+    public boolean canCreate(Long inventoryId, Long userId, Set<Long> metalIds, Set<Long> stoneIds) {
+        invPermissions.validatePermission(inventoryId, userId, InventoryUserPermissionType.WRITE, "Crear una joya");
+
+        metalIds.forEach(
+            mId -> {
+                if(!metalPermissions.canUseToCreateWithoutInvPermission(mId, userId, inventoryId))
+                    throw new MaterialPermissionDeniedException("No tienes permisos para usar el metal con ID: "+mId+", en el Inventario con ID: "+inventoryId+".");
+            }
+        );
+
+        stoneIds.forEach(
+            sId -> {
+                if(!stonePermissions.canUseToCreateWithoutInvPermission(sId, userId, inventoryId))
+                    throw new MaterialPermissionDeniedException("No tienes permisos para usar la piedra con ID: "+sId+", en el Inventario con ID: "+inventoryId+".");
+            }
+        );
+
+        return true;
     }
 
 }

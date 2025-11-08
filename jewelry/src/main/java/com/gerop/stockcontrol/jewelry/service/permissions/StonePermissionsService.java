@@ -46,13 +46,15 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
 
     @Override
     public boolean canUseToCreate(Long materialId, Long userId, Long inventoryId) {
-         Stone stone = stoneRepository.findById(materialId)
+         return canUseToCreateWithoutInvPermission(materialId,userId,inventoryId) && invPermissions.canWrite(inventoryId, userId);
+    }
+
+    public boolean canUseToCreateWithoutInvPermission(Long materialId, Long userId, Long inventoryId){
+        Stone stone = stoneRepository.findById(materialId)
             .orElseThrow(() -> new EntityNotFoundException("Piedra no encontrada"));
 
         return stone.isGlobal() || 
-            (invPermissions.canWrite(inventoryId, userId) && 
-                (isOwner(materialId, userId) || stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId)
-            ));
+                (isOwner(materialId, userId) || stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId));
     }
 
     @Override

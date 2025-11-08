@@ -23,18 +23,9 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
     }
 
     @Override
+    @Transactional
     public PendingStoneRestock create(Stone stone, Inventory inventory) {
-        Objects.requireNonNull(inventory, "Inventory cannot be null");
-        Objects.requireNonNull(stone, "Stone cannot be null");
-
-        return repository.findByStoneIdAndInventoryId(stone.getId(), inventory.getId())
-            .orElseGet(() -> {
-                PendingStoneRestock pending = new PendingStoneRestock();
-                pending.setQuantity(0L);
-                pending.setInventory(inventory);
-                pending.setStone(stone);
-                return pending;
-            });
+        return create(stone, inventory, 0L);
     }
     
     @Override
@@ -43,6 +34,7 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
         return repository.save(create(stone, inventory));
     }
     @Override
+    @Transactional
     public PendingStoneRestock create(Stone entity, Inventory inventory, Long quantity) {
         Objects.requireNonNull(inventory, "Inventory cannot be null");
         Objects.requireNonNull(entity, "Stone cannot be null");
@@ -88,10 +80,17 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
 
     @Override
     @Transactional
-    public void addToRestock(Long entityId, Long inventoryId, Long quantity) {
-        PendingStoneRestock pending = repository.findByStoneIdAndInventoryId(entityId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        addToRestock(pending, quantity);
+    public void addToRestock(Stone stone, Inventory inventory, Long quantity) {
+        if(inventory!=null && stone!=null && quantity!=null){
+            repository.findByStoneIdAndInventoryId(stone.getId(), inventory.getId())
+                .ifPresentOrElse(
+                    p->{
+                        p.setQuantity(p.getQuantity()+quantity);
+                        save(p);
+                    },
+                    () -> createSave(stone, inventory, quantity)
+                );
+        }
     }
 
     @Override

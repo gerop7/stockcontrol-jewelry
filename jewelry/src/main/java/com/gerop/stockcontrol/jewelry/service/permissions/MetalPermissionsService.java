@@ -3,12 +3,11 @@ package com.gerop.stockcontrol.jewelry.service.permissions;
 
 import org.springframework.stereotype.Service;
 
+import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
 import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class MetalPermissionsService implements IMaterialPermissionsService<Metal> {
@@ -40,19 +39,23 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     @Override
     public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
         Metal metal = metalRepository.findById(materialId)
-                .orElseThrow(() -> new EntityNotFoundException("Metal no encontrado"));
+                .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
         return (metal.isGlobal() || isOwner(materialId, userId)) 
             && invPermissions.canWrite(inventoryId, userId) && !metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
     }
 
     @Override
     public boolean canUseToCreate(Long materialId, Long userId, Long inventoryId) {
+        return canUseToCreateWithoutInvPermission(materialId, userId, inventoryId) && invPermissions.canWrite(inventoryId, userId);
+    }
+
+    @Override
+    public boolean canUseToCreateWithoutInvPermission(Long materialId, Long userId, Long inventoryId) {
         Metal metal = metalRepository.findById(materialId)
-                .orElseThrow(() -> new EntityNotFoundException("Metal no encontrado"));
+                .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
 
         return metal.isGlobal() || 
-            (invPermissions.canWrite(inventoryId, userId) && 
-            (isOwner(materialId, userId) || metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId)));
+            (isOwner(materialId, userId) || metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId));
     }
     
     @Override
@@ -64,7 +67,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     public boolean canDeleteFromInventory(Long materialId, Long inventoryId) {
         Long currentUserId = userServiceHelper.getCurrentUser().getId();
         Metal metal = metalRepository.findById(materialId)
-                .orElseThrow(() -> new EntityNotFoundException("Metal no encontrado"));
+                .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
 
         if(metal.isGlobal()) return false;
         

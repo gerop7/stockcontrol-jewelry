@@ -22,8 +22,10 @@ public interface IJewelService {
     void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity);
 
-    Optional<JewelDto> findById(Long id);
-    List<JewelDto> findAll();
+    Optional<JewelDto> findByIdDto(Long id);
+    List<JewelDto> findAllDto();
+    Optional<Jewel> findById(Long id);
+    List<Jewel> findAll();
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);
     public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);

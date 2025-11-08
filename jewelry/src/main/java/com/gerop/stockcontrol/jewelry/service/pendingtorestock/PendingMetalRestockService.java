@@ -22,21 +22,13 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
     }
 
     @Override
+    @Transactional
     public PendingMetalRestock create(Metal metal, Inventory inventory) {
-        Objects.requireNonNull(inventory, "Inventory cannot be null");
-        Objects.requireNonNull(metal, "Metal cannot be null");
-
-        return repository.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
-            .orElseGet(() -> {
-                PendingMetalRestock pending = new PendingMetalRestock();
-                pending.setWeight(0F);
-                pending.setInventory(inventory);
-                pending.setMetal(metal);
-                return pending;
-            });
+        return create(metal, inventory, 0f);
     }
 
     @Override
+    @Transactional
     public PendingMetalRestock create(Metal metal, Inventory inventory, Float quantity) {
         Objects.requireNonNull(inventory, "Inventory cannot be null");
         Objects.requireNonNull(metal, "Metal cannot be null");
@@ -91,10 +83,17 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
 
     @Override
     @Transactional
-    public void addToRestock(Long entityId, Long inventoryId, Float quantity) {
-        PendingMetalRestock pending = repository.findByMetalIdAndInventoryId(entityId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        addToRestock(pending, quantity);
+    public void addToRestock(Metal metal, Inventory inventory, Float quantity) {
+        if(inventory!=null && metal!=null && quantity!=null){
+            repository.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
+                .ifPresentOrElse(
+                    p->{
+                        p.setWeight(p.getWeight()+quantity);
+                        save(p);
+                    },
+                    () -> createSave(metal, inventory, quantity)
+                );
+        }
     }
 
     @Override

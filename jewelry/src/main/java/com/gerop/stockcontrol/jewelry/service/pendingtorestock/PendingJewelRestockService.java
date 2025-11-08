@@ -22,11 +22,13 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     }
 
     @Override
+    @Transactional
     public PendingJewelRestock create(Jewel jewel, Inventory inventory) {
         return create(jewel, inventory, 0L);
     }
 
     @Override
+    @Transactional
     public PendingJewelRestock create(Jewel jewel, Inventory inventory, Long quantity) {
         Objects.requireNonNull(inventory, "Inventory cannot be null");
         Objects.requireNonNull(jewel, "Jewel cannot be null");

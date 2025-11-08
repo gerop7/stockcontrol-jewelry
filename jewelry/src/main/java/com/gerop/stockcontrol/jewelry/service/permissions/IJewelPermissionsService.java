@@ -1,8 +1,11 @@
 package com.gerop.stockcontrol.jewelry.service.permissions;
 
+import java.util.Set;
+
 public interface IJewelPermissionsService {
     boolean canView(Long jewelId, Long inventoryId, Long userId);
     
+    boolean canCreate(Long inventoryId, Long userId, Set<Long> metalIds, Set<Long> stoneIds);
     boolean canModifyStock(Long jewelId, Long inventoryId, Long userId);
     boolean canEditInfo(Long jewelId, Long userId);
     boolean canAddToInventory(Long jewelId, Long ownerId, Long inventoryId);
