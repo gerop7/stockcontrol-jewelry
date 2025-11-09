@@ -8,16 +8,19 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.dto.MetalDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.movement.MetalMovement;
 import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
 import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
+import com.gerop.stockcontrol.jewelry.service.movement.IMaterialMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingMetalRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 
@@ -30,6 +33,7 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     private final MetalStockByInventoryRepository stockRepository;
     private final UserServiceHelper helperService;
     private final IMaterialPermissionsService<Metal> metalPermissionsService;
+    private final IMaterialMovementService<MetalMovement,Metal,Float> movementService;
     private final PendingMetalRestockService pendingRestockService;
     private final InventoryRepository inventoryRepository;
 
@@ -68,6 +72,8 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
             .orElseThrow(()-> new MaterialNotFoundException(materialId,"Metal"));
 
         handleAddPendingToRestock(metal, quantity, inventory);
+
+        movementService.marked_replacement(metal, quantity, inventory);
     }
 
     @Transactional
@@ -75,7 +81,8 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
         
         Objects.requireNonNull(metal, "Metal cannot be null");
         Objects.requireNonNull(inventory, "Inventory cannot be null");
-        if (quantity == null || quantity <= 0) return;
+        if (quantity == null || quantity <= 0) 
+            throw new InvalidQuantityException("La cantidad de "+metal.getName()+" a reponer es invalida!");
 
         pendingRestockService.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
             .ifPresentOrElse(

@@ -16,6 +16,7 @@ import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundExcep
 import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.jewel.JewelPermissionDeniedException;
 import com.gerop.stockcontrol.jewelry.mapper.JewelMapper;
+import com.gerop.stockcontrol.jewelry.model.dto.InventoryStockDto;
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
@@ -68,21 +69,6 @@ public class JewelService implements IJewelService{
         save(jewel);
         
         Long subId=jewelDto.subcategoryId();
-
-        if(subId!=null){
-            Subcategory sub = subcategoryService.findOne(subId).orElseThrow(()-> new CategoryNotFoundException(subId,"Subcategoría"));
-            jewel.setSubcategory(sub);
-            jewel.setCategory(sub.getPrincipalCategory());
-        }else{
-            Long catId=jewelDto.categoryId();
-            if(catId!=null){
-                Category cat = categoryService.findOne(catId).orElseThrow(()-> new CategoryNotFoundException(catId,"Categoría"));
-                jewel.setCategory(cat);
-            }else{
-                throw new RequiredFieldException("Es necesaria una categoria o subcategoria para crear la joya "+jewelDto.sku()+".");
-            }
-        }
-
         List<Inventory> inventories = new ArrayList<>();
 
         jewelDto.stockByInventory().forEach(
@@ -92,7 +78,7 @@ public class JewelService implements IJewelService{
                 Inventory inventory = invService.findOne(inventoryId)
                     .orElseThrow(()-> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
                 jewelPermissionsService.canCreate(inventoryId, currentUser.getId(), jewelDto.metalIds(), jewelDto.stoneIds());
-                
+
                 if(inv.stock()!=null && inv.stock()>0 )
                     jewel.getStockByInventory().add(stockService.create(inventory, jewel, inv.stock()));
                 else
@@ -103,6 +89,22 @@ public class JewelService implements IJewelService{
                 inventories.add(inventory);
             }
         );
+
+        if(subId!=null){
+            Subcategory sub = subcategoryService.findOneWithOwner(subId).orElseThrow(()-> new CategoryNotFoundException(subId,"Subcategoría"));
+            subcategoryService.addToInventories(sub, inventories);
+            jewel.setSubcategory(sub);
+            jewel.setCategory(sub.getPrincipalCategory());
+        }else{
+            Long catId=jewelDto.categoryId();
+            if(catId!=null){
+                Category cat = categoryService.findOneWithOwner(catId).orElseThrow(()-> new CategoryNotFoundException(catId,"Categoría"));
+                categoryService.addToInventories(cat, inventories);
+                jewel.setCategory(cat);
+            }else{
+                throw new RequiredFieldException("Es necesaria una categoria o subcategoria para crear la joya "+jewelDto.sku()+".");
+            }
+        }
 
         jewel.getMetal().addAll(metalService.findAllByIds(jewelDto.metalIds()));
         jewel.getStone().addAll(stoneService.findAllByIds(jewelDto.stoneIds()));
@@ -116,8 +118,6 @@ public class JewelService implements IJewelService{
         save(jewel);
         return mapper.toDto(jewel);
     }
-
-    
 
     @Override
     public Boolean delete(Long id) {
@@ -204,7 +204,13 @@ public class JewelService implements IJewelService{
 
     @Override
     public JewelDto addStock(Long id, Long inventoryId, Long quantity, String description) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Inventory inventory = invService.findOne(inventoryId)
+            .orElseThrow(() -> new InventoryNotFoundException(inventoryId));
+        Jewel jewel = jewelRepository.findById(id)
+            .orElseThrow(() -> new JewelNotFoundException(id));
+        if(!jewelPermissionsService.canModifyStock(id, inventoryId, userServiceHelper.getCurrentUser().getId()))
+            throw new JewelPermissionDeniedException("No tienes permiso para agregar stock a la joya "+jewel.getSku()+", en el inventario "+inventory.getName()+".");
+        
     }
 
     @Override
@@ -266,12 +272,10 @@ public class JewelService implements IJewelService{
     @Transactional
     public void handleAddPendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
         if(quantity!= null && quantity>0){
-            if(pendingRestockService.existsByInventory(jewel.getId(),inventory.getId())){
-                pendingRestockService.addToRestock(jewel, inventory, quantity);
-            }else{
-                jewel.getPendingRestock().add(pendingRestockService.createSave(jewel, inventory, quantity));
-            }
-        }
+            pendingRestockService.addToRestock(jewel, inventory, quantity);
+            movementService.marked_replacement(jewel, quantity, inventory);
+        } else
+            throw new InvalidQuantityException("La cantidad a reponer de la joya "+jewel.getSku()+" es invalida!");
     }
 
     @Override

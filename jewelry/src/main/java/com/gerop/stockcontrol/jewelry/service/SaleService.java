@@ -88,7 +88,7 @@ public class SaleService implements ISaleService {
                         if(jewelService.existsByIdAndHasOneMetal(saleJewel.getJewel(), metalWeightDto.metalId())){
                             try {
                                 metalService.addPendingToRestock(metalWeightDto.metalId(), metalWeightDto.weight(), inventory);
-                            } catch (MaterialNotFoundException | InventoryAccessDeniedException e) {
+                            } catch (MaterialNotFoundException | InventoryAccessDeniedException | InvalidQuantityException e) {
                                 fails.add(e.getMessage());
                             }
                         }else{
@@ -102,7 +102,7 @@ public class SaleService implements ISaleService {
                         if(jewelService.existsByIdAndHasOneStone(saleJewel.getJewel(), stoneQuantityDto.stoneId())){
                             try {
                                 stoneService.addPendingToRestock(stoneQuantityDto.stoneId(), stoneQuantityDto.quantity(), inventory);
-                            } catch (MaterialNotFoundException | InventoryAccessDeniedException e) {
+                            } catch (MaterialNotFoundException | InventoryAccessDeniedException | InvalidQuantityException e) {
                                 fails.add(e.getMessage());
                             }
                         }else{

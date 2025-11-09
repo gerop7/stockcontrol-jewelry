@@ -1,0 +1,38 @@
+package com.gerop.stockcontrol.jewelry.service.permissions;
+
+import org.springframework.stereotype.Service;
+
+import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SubcategoryPermissionsService implements ICategoryPermissionsService<Subcategory>{
+
+
+
+    @Override
+    public boolean isOwner(Long ownerId, Long catId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isOwner'");
+    }
+
+    @Override
+    public boolean isOwner(Long ownerId, Subcategory cat) {
+        return cat.getOwner().getId().equals(ownerId);
+    }
+
+    @Override
+    public boolean canAddToInventory(Long categoryId, Long inventoryId, Long userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
+    }
+
+    @Override
+    public boolean canUseToCreateWithoutInventoryCheck(Long inventoryId, Long userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'canUseToCreateWithoutInventoryCheck'");
+    }
+
+}

@@ -8,20 +8,26 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.dto.StoneDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
+import com.gerop.stockcontrol.jewelry.model.entity.movement.StoneMovement;
 import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.StoneRepository;
 import com.gerop.stockcontrol.jewelry.repository.StoneStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
+import com.gerop.stockcontrol.jewelry.service.movement.IMaterialMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingStoneRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
 
     private final StoneRepository repository;
@@ -30,16 +36,7 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     private final IMaterialPermissionsService<Stone> stonePermissionsService;
     private final PendingStoneRestockService pendingRestockService;
     private final InventoryRepository inventoryRepository;
-
-    public StoneService(UserServiceHelper helperService, InventoryRepository inventoryRepository, PendingStoneRestockService pendingRestockService, StoneRepository repository, StoneStockByInventoryRepository stockRepository, IMaterialPermissionsService<Stone> stonePermissionsService) {
-        this.helperService = helperService;
-        this.inventoryRepository = inventoryRepository;
-        this.pendingRestockService = pendingRestockService;
-        this.repository = repository;
-        this.stockRepository = stockRepository;
-        this.stonePermissionsService = stonePermissionsService;
-    }
-
+    private final IMaterialMovementService<StoneMovement,Stone,Long> movementService;
     
     @Override
     public Stone create(StoneDto material) {
@@ -71,18 +68,21 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public void addPendingToRestock(Long materialId, Long quantity, Inventory inventory) {
         if(!stonePermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
             throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
-        
+                
         Stone stone = repository.findById(materialId)
             .orElseThrow(()-> new MaterialNotFoundException(materialId,"Stone"));
 
         handleAddPendingToRestock(stone, quantity, inventory);
+
+        movementService.marked_replacement(stone, quantity, inventory);
     }
 
     @Transactional
     public void handleAddPendingToRestock(Stone stone, Long quantity, Inventory inventory) {
         Objects.requireNonNull(stone, "Stone cannot be null");
         Objects.requireNonNull(inventory, "Inventory cannot be null");
-        if (quantity == null || quantity <= 0) return;
+        if (quantity == null || quantity <= 0) 
+            throw new InvalidQuantityException("La cantidad de "+stone.getName()+" a reponer es invalida!");
         
         pendingRestockService.findByStoneIdAndInventoryId(stone.getId(), inventory.getId())
             .ifPresentOrElse(
