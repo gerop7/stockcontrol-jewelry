@@ -225,11 +225,20 @@ public class JewelService implements IJewelService{
 
         stockService.removeStock(jewel, inventory, quantity);
 
-        handleAddPendingToRestock(jewel, inventory, quantityToRestock);
-
+        pendingRestockService.addToRestock(jewel, inventory, quantityToRestock);
         movementService.sale(jewel, quantity, total, inventory);
 
         return new SaleJewel(jewel, quantity, total);
+    }
+    
+    @Override
+    public void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity) {
+        throw new UnsupportedOperationException("Unimplemented method 'addPendingToRestock'");
+    }
+
+    @Override
+    public void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -258,24 +267,6 @@ public class JewelService implements IJewelService{
         return jewelRepository.existsByIdAndHasStones(jewelId);
     }
     
-    @Override
-    public void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity) {
-        throw new UnsupportedOperationException("Unimplemented method 'addPendingToRestock'");
-    }
-    
-    @Transactional
-    public void handleAddPendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
-        if(quantity!= null && quantity>0){
-            pendingRestockService.addToRestock(jewel, inventory, quantity);
-            movementService.marked_replacement(jewel, quantity, inventory);
-        } else
-            throw new InvalidQuantityException("La cantidad a reponer de la joya "+jewel.getSku()+" es invalida!");
-    }
-
-    @Override
-    public void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     @Override
     public boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId){
@@ -295,5 +286,4 @@ public class JewelService implements IJewelService{
 
         return hasStone;
     }
-
 }

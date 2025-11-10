@@ -5,20 +5,23 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.repository.PendingJewelRestockRepository;
+import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class PendingJewelRestockService implements IPendingRestockService<PendingJewelRestock, Long, Jewel>{
 
     private final PendingJewelRestockRepository repository;
-    
-    public PendingJewelRestockService(PendingJewelRestockRepository repository) {
-        this.repository = repository;
-    }
+    private final IJewelMovementService movementService;
+
 
     @Override
     @Transactional
@@ -81,40 +84,54 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     @Transactional
     @Override
     public void addToRestock(Jewel jewel, Inventory inventory, Long quantity) {
-        if(inventory!=null && jewel!=null && quantity!=null){
-            repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
-                .ifPresentOrElse(
-                    p->{
-                        p.setQuantity(p.getQuantity()+quantity);
-                        save(p);
-                    },
-                    () -> createSave(jewel, inventory, quantity)
-                );
+        if(inventory!=null && jewel!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("La cantidad a reponer de la joya "+jewel.getSku()+" es invalida!");
+            if(quantity>0){
+                repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+                    .ifPresentOrElse(
+                        p->{
+                            p.setQuantity(p.getQuantity()+quantity);
+                            save(p);
+                            movementService.marked_replacement(jewel, quantity, inventory);
+                        },
+                        () -> createSave(jewel, inventory, quantity)
+                    );
+            }
         }
     }
 
     @Transactional
     @Override
     public void removeFromRestock(Jewel jewel, Inventory inventory, Long quantity) {
-        if(inventory!=null && jewel!=null && quantity!=null){
-            repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
-                .ifPresentOrElse(
-                    p->{
-                        Long q = p.getQuantity() - quantity;
-                        p.setQuantity(q < 0 ? 0 : q);
-                        save(p);
-                    },
-                    () -> createSave(jewel, inventory, 0L)
-                );
+        if(inventory!=null && jewel!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("La cantidad a reponer de la joya "+jewel.getSku()+" es invalida!");
+            if(quantity>0){
+                repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+                    .ifPresent(
+                        p->{
+                            Long q = p.getQuantity() - quantity;
+                            if (q <= 0) {
+                                repository.delete(p);
+                                movementService.replacement(jewel, p.getQuantity(), inventory);
+                            } else {
+                                p.setQuantity(q);
+                                save(p);
+                                movementService.replacement(jewel, quantity, inventory);
+                            }
+                        }
+                    );
+            }
         }else
             throw new RequiredFieldException("Es necesario que se completen todos los campos!");
     }
 
     public void validateRestockOperation(PendingJewelRestock entity, Long quantity) {
         if (entity == null)
-            throw new IllegalArgumentException("PendingJewelRestock cannot be null");
+            throw new RequiredFieldException("PendingJewelRestock cannot be null");
         if (quantity == null || quantity <= 0)
-            throw new IllegalArgumentException("Quantity must be greater than zero");
+            throw new InvalidQuantityException("Quantity must be greater than zero");
     }
 
     @Override
