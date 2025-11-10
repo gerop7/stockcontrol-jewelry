@@ -12,6 +12,6 @@ public interface IPendingRestockService<T extends PendingRestock, N extends Numb
     void addToRestock(T entity, N quantity);
     void removeFromRestock(T entity, N quantity);
     void addToRestock(O object, Inventory inventory, N quantity);
-    void removeFromRestock(Long entityId, Long inventoryId, N quantity);
+    void removeFromRestock(O object, Inventory inventory, N quantity);
     boolean existsByInventory(Long entityId, Long inventoryId);
 }

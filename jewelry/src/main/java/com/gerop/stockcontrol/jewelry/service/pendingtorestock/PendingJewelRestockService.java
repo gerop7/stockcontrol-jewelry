@@ -5,12 +5,11 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.repository.PendingJewelRestockRepository;
-
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class PendingJewelRestockService implements IPendingRestockService<PendingJewelRestock, Long, Jewel>{
@@ -96,10 +95,19 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
 
     @Transactional
     @Override
-    public void removeFromRestock(Long jewelId, Long inventoryId, Long quantity) {
-        PendingJewelRestock pending = repository.findByJewelIdAndInventoryId(jewelId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        removeFromRestock(pending, quantity);
+    public void removeFromRestock(Jewel jewel, Inventory inventory, Long quantity) {
+        if(inventory!=null && jewel!=null && quantity!=null){
+            repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+                .ifPresentOrElse(
+                    p->{
+                        Long q = p.getQuantity() - quantity;
+                        p.setQuantity(q < 0 ? 0 : q);
+                        save(p);
+                    },
+                    () -> createSave(jewel, inventory, 0L)
+                );
+        }else
+            throw new RequiredFieldException("Es necesario que se completen todos los campos!");
     }
 
     public void validateRestockOperation(PendingJewelRestock entity, Long quantity) {
