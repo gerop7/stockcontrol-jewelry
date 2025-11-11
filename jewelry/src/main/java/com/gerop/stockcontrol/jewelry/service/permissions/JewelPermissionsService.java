@@ -27,7 +27,8 @@ public class JewelPermissionsService implements IJewelPermissionsService {
 
     @Override
     public boolean canView(Long jewelId, Long inventoryId, Long userId) {
-        if(isOwner(jewelId, userId)) return true;
+        if(isOwner(jewelId, userId)) 
+            return true;
         return stockRepository.existsByJewelIdAndInventoryId(jewelId, inventoryId) && invPermissions.canRead(inventoryId, userId);
     }
 
@@ -35,6 +36,12 @@ public class JewelPermissionsService implements IJewelPermissionsService {
     public boolean canAddToInventory(Long jewelId, Long ownerId, Long inventoryId) {
         Long currentUserId = userServiceHelper.getCurrentUser().getId();
         return currentUserId.equals(ownerId) && invPermissions.canWrite(inventoryId, currentUserId) && !stockRepository.existsByJewelIdAndInventoryId(jewelId, inventoryId);
+    }
+
+    @Override
+    public boolean canRemoveFromInventory(Long jewelId, Long ownerId, Long inventoryId) {
+        Long currentUserId = userServiceHelper.getCurrentUser().getId();
+        return currentUserId.equals(ownerId) && invPermissions.canWrite(inventoryId, currentUserId) && stockRepository.existsByJewelIdAndInventoryId(jewelId, inventoryId);
     }
 
     @Override

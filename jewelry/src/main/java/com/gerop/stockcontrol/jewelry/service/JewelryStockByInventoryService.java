@@ -74,10 +74,19 @@ public class JewelryStockByInventoryService implements IStockByInventoryService<
         return repository.save(stock);
     }
 
+    
+    @Override
+    public void remove(JewelryStockByInventory stock) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+    }
+
     @Override
     public JewelryStockByInventory findOne(Jewel jewel, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+
 
 
 }

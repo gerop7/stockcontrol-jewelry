@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
+import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
@@ -268,18 +269,26 @@ public class JewelService implements IJewelService{
             throw new InventoryAccessDeniedException("No estas autorizado para agregar la joya "+jewel.getSku()+" en el inventario "+inventory.getName()+".");
         
         jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
+        jewel.getInventories().add(inventory);
 
         return mapper.toDto(save(jewel));
     }
 
     @Override
     public JewelDto removeFromInventory(Long id, Long inventoryId) {
-        Jewel jewel = jewelRepository.findById(id)
+        Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
             .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
         Inventory inventory = invService.findOne(inventoryId)
             .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
-
+        if(!jewelPermissionsService.canRemoveFromInventory(id, userServiceHelper.getCurrentUser().getId(), inventoryId))
+            throw new InventoryAccessDeniedException("No estas autorizado para eliminar la joya "+jewel.getSku()+" en el inventario "+inventory.getName()+".");
         
+        JewelryStockByInventory stock = jewel.getStockByInventory().stream().filter(s -> s.getInventory().equals(inventory)).findFirst()
+            .orElseThrow(() -> new StockNotFoundException("No existe registro de stock para la joya "+ jewel.getSku() + " en el inventario " + inventory.getName() + "."));
+        
+        jewel.getStockByInventory().remove(stock);    
+        jewel.getInventories().remove(inventory);
+        stockService.remove(stock);
 
         return mapper.toDto(jewel);
     }
