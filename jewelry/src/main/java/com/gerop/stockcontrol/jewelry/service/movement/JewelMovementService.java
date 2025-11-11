@@ -52,10 +52,10 @@ public class JewelMovementService implements IJewelMovementService {
     }
 
     @Override
-    public JewelMovement addStock(Jewel jewel, Long quantity, Inventory inventory) {
-        String description = ("Se añadio "+quantity+" unidades de "+ jewel.getSku()+" al inventario "+inventory.getName()+".");
+    public JewelMovement addStock(Jewel jewel, Long quantity, Inventory inventory, String description) {
+        String d = ("Se añadio "+quantity+" unidades de "+ jewel.getSku()+" al inventario "+inventory.getName()+".\n"+description+".");
         
-        return saveMovement(jewel, quantity, description, JewelMovementType.STOCK_ADD, inventory);
+        return saveMovement(jewel, quantity, d, JewelMovementType.STOCK_ADD, inventory);
     }
 
     @Override

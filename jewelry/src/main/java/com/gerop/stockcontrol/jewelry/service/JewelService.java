@@ -211,7 +211,7 @@ public class JewelService implements IJewelService{
         stockService.addStock(jewel, inventory, quantity);
         
         pendingRestockService.removeFromRestock(jewel, inventory, quantity);
-        movementService.addStock(jewel, quantity, inventory);
+        movementService.addStock(jewel, quantity, inventory, description);
         return mapper.toDto(save(jewel));
     }
 
@@ -233,12 +233,55 @@ public class JewelService implements IJewelService{
     
     @Override
     public void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity) {
-        throw new UnsupportedOperationException("Unimplemented method 'addPendingToRestock'");
+        Jewel jewel = jewelRepository.findById(jewelId)
+            .orElseThrow(()-> new JewelNotFoundException("La joya con "+jewelId+" no existe!"));
+        Inventory inventory = invService.findOne(inventoryId)
+            .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
+        if(!jewelPermissionsService.canModifyStock(jewelId, inventory.getId(), userServiceHelper.getCurrentUser().getId())){
+            throw new InventoryAccessDeniedException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en el inventario "+inventory.getName());
+        }
+
+        pendingRestockService.addToRestock(jewel, inventory, quantity);
+    }
+    
+    @Override
+    public void removePendingToRestock(Long jewelId, Long inventoryId, Long quantity) {
+        Jewel jewel = jewelRepository.findById(jewelId)
+            .orElseThrow(()-> new JewelNotFoundException("La joya con "+jewelId+" no existe!"));
+        Inventory inventory = invService.findOne(inventoryId)
+            .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
+        if(!jewelPermissionsService.canModifyStock(jewelId, inventory.getId(), userServiceHelper.getCurrentUser().getId())){
+            throw new InventoryAccessDeniedException("No estas autorizado a modificar el stock de la joya "+jewel.getSku()+" en el inventario "+inventory.getName()+".");
+        }
+
+        pendingRestockService.removeFromRestock(jewel, inventory, quantity);
+    }
+    
+    @Override
+    @Transactional
+    public JewelDto addToInventory(Long id, Long inventoryId, Long quantity) {
+        Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
+            .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
+        Inventory inventory = invService.findOne(inventoryId)
+            .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
+        if(!jewelPermissionsService.canAddToInventory(id, userServiceHelper.getCurrentUser().getId(), inventoryId))
+            throw new InventoryAccessDeniedException("No estas autorizado para agregar la joya "+jewel.getSku()+" en el inventario "+inventory.getName()+".");
+        
+        jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
+
+        return mapper.toDto(save(jewel));
     }
 
     @Override
-    public void removePendingToRestock(Jewel jewel, Inventory inventory, Long quantity) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public JewelDto removeFromInventory(Long id, Long inventoryId) {
+        Jewel jewel = jewelRepository.findById(id)
+            .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
+        Inventory inventory = invService.findOne(inventoryId)
+            .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
+
+        
+
+        return mapper.toDto(jewel);
     }
 
     @Override
@@ -278,7 +321,6 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    @Transactional(readOnly=true)
     public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId){
         boolean hasStone = jewel
             .getStone().stream()
@@ -286,4 +328,5 @@ public class JewelService implements IJewelService{
 
         return hasStone;
     }
+
 }

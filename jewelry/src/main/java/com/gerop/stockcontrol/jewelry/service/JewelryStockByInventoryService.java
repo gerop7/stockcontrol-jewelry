@@ -63,8 +63,15 @@ public class JewelryStockByInventoryService implements IStockByInventoryService<
     @Override
     @Transactional
     public JewelryStockByInventory create(Jewel jewel, Inventory inventory, Long quantity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'create'");
+        JewelryStockByInventory stock;
+        if(jewel!=null && inventory!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("La cantidad que quieres asignar es invalida!");
+            stock = new JewelryStockByInventory(inventory, jewel, quantity);
+        }else
+            throw new RequiredFieldException("Debes completar todos los campos!");
+        
+        return repository.save(stock);
     }
 
     @Override

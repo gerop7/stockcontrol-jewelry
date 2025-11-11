@@ -67,7 +67,6 @@ public class JewelPermissionsService implements IJewelPermissionsService {
                     throw new MaterialPermissionDeniedException("No tienes permisos para usar el metal con ID: "+mId+", en el Inventario con ID: "+inventoryId+".");
             }
         );
-
         stoneIds.forEach(
             sId -> {
                 if(!stonePermissions.canUseToCreateWithoutInvPermission(sId, userId, inventoryId))
