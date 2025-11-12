@@ -1,7 +1,8 @@
 package com.gerop.stockcontrol.jewelry.service.interfaces;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateJewelDataDto;
@@ -23,13 +24,13 @@ public interface IJewelService {
 
     void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Long jewelId, Long inventoryId, Long quantity);
-
+    
     Optional<JewelDto> findByIdDto(Long id);
-    List<JewelDto> findAllDto();
-    List<JewelDto> findAllByInventoryDto(Long inventoryId);
+    Page<JewelDto> findAllByCurrentUserDto(int page, int size);
+    Page<JewelDto> findAllByInventoryDto(Long inventoryId, int page, int size);
     Optional<Jewel> findById(Long id);
-    List<Jewel> findAll();
-    List<Jewel> findAllByInventory(Long inventoryId);
+    Page<Jewel> findAllByCurrentUser(int page, int size);
+    Page<Jewel> findAllByInventory(Long inventoryId, int page, int size);
 
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);

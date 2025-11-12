@@ -3,6 +3,8 @@ package com.gerop.stockcontrol.jewelry.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -68,6 +70,34 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
     Optional<Jewel> findByIdFullData(@Param("id") Long id, @Param("userId") Long userId);
 
     @Query("""
+        SELECT j.id
+        FROM Jewel j
+        JOIN j.inventories i
+        WHERE j.active = true AND i.id = :inventoryId
+    """)
+    Page<Long> findAllIdsByInventoryId(@Param("inventoryId") Long inventoryId, Pageable pageable);
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category
+        LEFT JOIN FETCH j.subcategory
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        LEFT JOIN FETCH j.inventories inv
+        LEFT JOIN FETCH j.stockByInventory s ON s.inventory.id = :inventoryId
+        LEFT JOIN FETCH j.pendingRestock p ON p.inventory.id = :inventoryId
+        WHERE j.id IN :ids
+    """)
+    List<Jewel> findAllByIdsWithFullData(@Param("ids") List<Long> ids, @Param("inventoryId") Long inventoryId);
+    
+    @Query("""
+        SELECT j.id
+        FROM Jewel j
+        WHERE j.active = true AND j.user.id = :userId
+    """)
+    Page<Long> findAllIdsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("""
         SELECT DISTINCT j FROM Jewel j
         LEFT JOIN FETCH j.category
         LEFT JOIN FETCH j.subcategory
@@ -78,22 +108,7 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         LEFT JOIN FETCH j.pendingRestock p
         LEFT JOIN FETCH p.inventory
         LEFT JOIN FETCH j.inventories
-        WHERE j.user.id = :userId AND j.active = true
+        WHERE j.user.id = :userId AND j.active = true AND j.id IN :ids
     """)
-    List<Jewel> findAllFullData(@Param("userId") Long userId);
-
-    @Query("""
-        SELECT DISTINCT j FROM Jewel j
-        LEFT JOIN FETCH j.category
-        LEFT JOIN FETCH j.subcategory
-        LEFT JOIN FETCH j.metal
-        LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.stockByInventory s
-        LEFT JOIN FETCH s.inventory i
-        LEFT JOIN FETCH j.pendingRestock p
-        LEFT JOIN FETCH p.inventory
-        LEFT JOIN FETCH j.inventories
-        WHERE i.id = :inventoryId AND j.active = true
-    """)
-    List<Jewel> findAllByInventoryIdFullData(@Param("inventoryId") Long inventoryId);
+    List<Jewel> findAllByIdsWithFullDataByUser(@Param("ids") List<Long> ids, @Param("userId") Long userId);
 }

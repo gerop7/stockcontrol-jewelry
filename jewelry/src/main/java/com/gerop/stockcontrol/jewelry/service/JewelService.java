@@ -3,8 +3,10 @@ package com.gerop.stockcontrol.jewelry.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -301,15 +303,30 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public List<JewelDto> findAllDto() {
-        return jewelRepository.findAllFullData(userServiceHelper.getCurrentUser().getId()).stream().map(mapper::toDto).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<JewelDto> findAllByCurrentUserDto(int page, int size) {
+        Long userId = userServiceHelper.getCurrentUser().getId();
+
+        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByUserId(userId, PageRequest.of(page, size));
+        if (jewelIdsPage.isEmpty()) return Page.empty();
+
+        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent(), userId);
+        List<JewelDto> jewelDtos = jewels.stream().map(mapper::toDto).toList();
+        return new PageImpl<>(jewelDtos, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public List<JewelDto> findAllByInventoryDto(Long inventoryId) {
-        return jewelRepository.findAllByInventoryIdFullData(inventoryId).stream().map(mapper::toDto).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<JewelDto> findAllByInventoryDto(Long inventoryId, int page, int size) {
+        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
+
+        if (jewelIdsPage.isEmpty()) return Page.empty();
+
+        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent(), inventoryId);
+
+        List<JewelDto> jewelDtos = jewels.stream().map(mapper::toDto).toList();
+
+        return new PageImpl<>(jewelDtos, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
     }
 
     @Override
@@ -320,14 +337,26 @@ public class JewelService implements IJewelService{
 
     @Override
     @Transactional(readOnly=true)
-    public List<Jewel> findAll() {
-        return jewelRepository.findAllFullData(userServiceHelper.getCurrentUser().getId());
+    public Page<Jewel> findAllByCurrentUser(int page, int size) {
+        Long userId = userServiceHelper.getCurrentUser().getId();
+
+        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByUserId(userId, PageRequest.of(page, size));
+        if (jewelIdsPage.isEmpty()) return Page.empty();
+
+        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullDataByUser(jewelIdsPage.getContent(), userId);
+
+        return new PageImpl<>(jewels, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly=true)
-    public List<Jewel> findAllByInventory(Long inventoryId) {
-        return jewelRepository.findAllByInventoryIdFullData(inventoryId);
+    public Page<Jewel> findAllByInventory(Long inventoryId, int page, int size) {
+        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
+        if (jewelIdsPage.isEmpty()) return Page.empty();
+
+        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent(), inventoryId);
+
+        return new PageImpl<>(jewels, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
     }
     
     @Override
