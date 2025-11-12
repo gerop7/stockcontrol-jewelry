@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,7 +135,7 @@ public class JewelService implements IJewelService{
 
     @Override
     @Transactional
-    public JewelDto update(Long id, UpdateJewelDataDto updateData) {
+    public void update(Long id, UpdateJewelDataDto updateData) {
         if(!jewelPermissionsService.canEditInfo(id, userServiceHelper.getCurrentUser().getId()))
             throw new JewelPermissionDeniedException("No tienes permisos para editar la joya con ID: "+id);
 
@@ -192,7 +193,6 @@ public class JewelService implements IJewelService{
         );
         
         save(jewel);
-        return mapper.toDto(jewel);
     }
 
     public String updateDescription(String original, String update, String field){
@@ -201,7 +201,7 @@ public class JewelService implements IJewelService{
 
     @Override
     @Transactional
-    public JewelDto addStock(Long id, Long inventoryId, Long quantity, String description) {
+    public void addStock(Long id, Long inventoryId, Long quantity, String description) {
         Inventory inventory = invService.findOne(inventoryId)
             .orElseThrow(() -> new InventoryNotFoundException(inventoryId));
         Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
@@ -213,7 +213,8 @@ public class JewelService implements IJewelService{
         
         pendingRestockService.removeFromRestock(jewel, inventory, quantity);
         movementService.addStock(jewel, quantity, inventory, description);
-        return mapper.toDto(save(jewel));
+
+        save(jewel);
     }
 
     @Override
@@ -260,7 +261,7 @@ public class JewelService implements IJewelService{
     
     @Override
     @Transactional
-    public JewelDto addToInventory(Long id, Long inventoryId, Long quantity) {
+    public void addToInventory(Long id, Long inventoryId, Long quantity) {
         Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
             .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
         Inventory inventory = invService.findOne(inventoryId)
@@ -271,11 +272,12 @@ public class JewelService implements IJewelService{
         jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
         jewel.getInventories().add(inventory);
 
-        return mapper.toDto(save(jewel));
+        save(jewel);
     }
 
     @Override
-    public JewelDto removeFromInventory(Long id, Long inventoryId) {
+    @Transactional
+    public void removeFromInventory(Long id, Long inventoryId) {
         Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
             .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
         Inventory inventory = invService.findOne(inventoryId)
@@ -285,32 +287,47 @@ public class JewelService implements IJewelService{
         
         JewelryStockByInventory stock = jewel.getStockByInventory().stream().filter(s -> s.getInventory().equals(inventory)).findFirst()
             .orElseThrow(() -> new StockNotFoundException("No existe registro de stock para la joya "+ jewel.getSku() + " en el inventario " + inventory.getName() + "."));
-        
-        jewel.getStockByInventory().remove(stock);    
+         
         jewel.getInventories().remove(inventory);
         stockService.remove(stock);
 
-        return mapper.toDto(jewel);
+        save(jewel);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Optional<JewelDto> findByIdDto(Long id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jewelRepository.findByIdFullData(id, userServiceHelper.getCurrentUser().getId()).map(mapper::toDto);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<JewelDto> findAllDto() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jewelRepository.findAllFullData(userServiceHelper.getCurrentUser().getId()).stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly=true)
+    public List<JewelDto> findAllByInventoryDto(Long inventoryId) {
+        return jewelRepository.findAllByInventoryIdFullData(inventoryId).stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly=true)
     public Optional<Jewel> findById(Long jewelId) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jewelRepository.findByIdFullData(jewelId, userServiceHelper.getCurrentUser().getId());
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Jewel> findAll() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return jewelRepository.findAllFullData(userServiceHelper.getCurrentUser().getId());
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    public List<Jewel> findAllByInventory(Long inventoryId) {
+        return jewelRepository.findAllByInventoryIdFullData(inventoryId);
     }
     
     @Override

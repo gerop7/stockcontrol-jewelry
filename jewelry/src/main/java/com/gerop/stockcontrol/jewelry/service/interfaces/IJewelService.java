@@ -14,20 +14,23 @@ public interface IJewelService {
     Boolean delete(Long id);
     Jewel save(Jewel jewel);
     
-    JewelDto update(Long id, UpdateJewelDataDto updateData);
+    void update(Long id, UpdateJewelDataDto updateData);
 
-    JewelDto addStock(Long id, Long inventoryId, Long quantity, String description);
+    void addStock(Long id, Long inventoryId, Long quantity, String description);
     SaleJewel sale(Long id,Long quantity, Long quantityToRestock, Float total, Inventory inventory);
-    JewelDto addToInventory(Long id, Long inventoryId, Long quantity);
-    JewelDto removeFromInventory(Long id, Long inventoryId);
+    void addToInventory(Long id, Long inventoryId, Long quantity);
+    void removeFromInventory(Long id, Long inventoryId);
 
     void addPendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     void removePendingToRestock(Long jewelId, Long inventoryId, Long quantity);
 
     Optional<JewelDto> findByIdDto(Long id);
     List<JewelDto> findAllDto();
+    List<JewelDto> findAllByInventoryDto(Long inventoryId);
     Optional<Jewel> findById(Long id);
     List<Jewel> findAll();
+    List<Jewel> findAllByInventory(Long inventoryId);
+
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);
     public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);

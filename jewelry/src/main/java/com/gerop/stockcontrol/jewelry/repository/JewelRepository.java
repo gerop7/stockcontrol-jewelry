@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -50,4 +51,49 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         WHERE j.id = :id
     """)
     public Optional<Jewel> findByIdWithStockByInventory(Long id);
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category
+        LEFT JOIN FETCH j.subcategory
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory
+        LEFT JOIN FETCH j.pendingRestock p
+        LEFT JOIN FETCH p.inventory
+        LEFT JOIN FETCH j.inventories
+        WHERE j.id = :id AND j.user.id = :userId
+    """)
+    Optional<Jewel> findByIdFullData(@Param("id") Long id, @Param("userId") Long userId);
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category
+        LEFT JOIN FETCH j.subcategory
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory
+        LEFT JOIN FETCH j.pendingRestock p
+        LEFT JOIN FETCH p.inventory
+        LEFT JOIN FETCH j.inventories
+        WHERE j.user.id = :userId AND j.active = true
+    """)
+    List<Jewel> findAllFullData(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category
+        LEFT JOIN FETCH j.subcategory
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory i
+        LEFT JOIN FETCH j.pendingRestock p
+        LEFT JOIN FETCH p.inventory
+        LEFT JOIN FETCH j.inventories
+        WHERE i.id = :inventoryId AND j.active = true
+    """)
+    List<Jewel> findAllByInventoryIdFullData(@Param("inventoryId") Long inventoryId);
 }
