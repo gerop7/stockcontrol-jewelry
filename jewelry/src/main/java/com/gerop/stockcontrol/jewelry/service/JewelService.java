@@ -85,7 +85,7 @@ public class JewelService implements IJewelService{
                     throw new InvalidQuantityException(inv.stock());
                 jewel.getPendingRestock().add(pendingRestockService.create(jewel, inventory));
                 jewel.getInventories().add(inventory);  
-
+                
                 inventories.add(inventory);
             }
         );

@@ -4,9 +4,6 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import com.gerop.stockcontrol.jewelry.model.dto.MetalWeightDto;
-import com.gerop.stockcontrol.jewelry.model.dto.StoneQuantityDto;
-
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -16,8 +13,8 @@ public record JewelSaleWithPendingRestockDto(
     @Positive Long quantity, 
     @PositiveOrZero Long quantityToRestock,
     @PositiveOrZero Float total,
-    Set<MetalWeightDto> metalToRestock,
-    Set<StoneQuantityDto> stoneToRestock
+    Set<MetalWeightSaleDto> metalToRestock,
+    Set<StoneQuantitySaleDto> stoneToRestock
 ) {
     public JewelSaleWithPendingRestockDto {
         if (metalToRestock==null) metalToRestock = new LinkedHashSet<>();

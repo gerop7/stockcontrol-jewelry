@@ -38,22 +38,22 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     private final InventoryRepository inventoryRepository;
 
     @Override
-    public Metal create(MetalDto material) {
+    public MetalDto create(MetalDto material) {
+        
+    }
+
+    @Override
+    public MetalDto save(Metal material) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Metal save(Metal material) {
+    public void update(Long materialId, UpdateMaterialDataDto data) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public MetalDto update(Long materialId, UpdateMaterialDataDto data) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public MetalDto addStock(Long materialid, Long inventoryId, Float quantity, String description) {
+    public void addStock(Long materialid, Long inventoryId, Float quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -63,17 +63,41 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     }
 
     @Override
+    public void outflowByWork(Long materialid, Long inventoryId, Float quantity) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void outflowByWork(Metal material, Inventory inventory, Float quantity) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+    @Override
     @Transactional
-    public void addPendingToRestock(Long materialId, Float quantity, Inventory inventory) {
-        if(!metalPermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
+    public void addPendingToRestock(Metal metal, Float quantity, Inventory inventory) {
+        if(!metalPermissionsService.canUpdateStock(metal.getId(), helperService.getCurrentUser().getId(), inventory.getId()))
             throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
-        
-        Metal metal = repository.findById(materialId)
-            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Metal"));
 
         handleAddPendingToRestock(metal, quantity, inventory);
 
         movementService.marked_replacement(metal, quantity, inventory);
+    }
+
+    @Override
+    @Transactional
+    public void removePendingToRestock(Metal material, Float quantity, Long inventoryId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+    @Override
+    @Transactional
+    public void addPendingToRestock(Long materialId, Float quantity, Inventory inventory) {
+        Metal metal = repository.findById(materialId)
+            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Metal"));
+
+        addPendingToRestock(metal, quantity, inventory);
     }
 
     @Transactional
@@ -98,13 +122,8 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     }
 
     @Override
-    public Optional<Metal> findOne(Long materialId) {
+    public void addToInventory(Long materialid, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<Metal> findAllByIds(Set<Long> materialIds) {
-        throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
     }
 
     @Override
@@ -117,6 +136,24 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
         throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
     }
 
+    @Override
+    public void removeFromInventory(Long materialid, Inventory inventory) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Optional<Metal> findOne(Long materialId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<Metal> findAllByIds(Set<Long> materialIds) {
+        throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
+    }
+
+    
+
+    
 
 
 

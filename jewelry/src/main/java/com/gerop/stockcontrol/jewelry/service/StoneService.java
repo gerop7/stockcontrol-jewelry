@@ -37,24 +37,35 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     private final PendingStoneRestockService pendingRestockService;
     private final InventoryRepository inventoryRepository;
     private final IMaterialMovementService<StoneMovement,Stone,Long> movementService;
+
+    @Override
+    public StoneDto create(StoneDto material) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public StoneDto save(Stone material) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     
     @Override
-    public Stone create(StoneDto material) {
+    public void update(Long materialId, UpdateMaterialDataDto data) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Stone save(Stone material) {
+    public void addStock(Long materialid, Long inventoryId, Long quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public StoneDto update(Long materialId, UpdateMaterialDataDto data) {
+    public void outflowByWork(Long materialid, Long inventoryId, Long quantity) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public StoneDto addStock(Long materialid, Long inventoryId, Long quantity, String description) {
+    public void outflowByWork(Stone material, Inventory inventory, Long quantity) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -66,15 +77,33 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     @Transactional
     @Override
     public void addPendingToRestock(Long materialId, Long quantity, Inventory inventory) {
-        if(!stonePermissionsService.canUpdateStock(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
-                
         Stone stone = repository.findById(materialId)
             .orElseThrow(()-> new MaterialNotFoundException(materialId,"Stone"));
+        
+        addPendingToRestock(stone, quantity, inventory);
+    }
 
+    @Override
+    @Transactional
+    public void removePendingToRestock(Long materialId, Long quantity, Long inventoryId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    @Transactional
+    public void addPendingToRestock(Stone stone, Long quantity, Inventory inventory) {
+        if(!stonePermissionsService.canUpdateStock(stone.getId(), helperService.getCurrentUser().getId(), inventory.getId()))
+            throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
+                
         handleAddPendingToRestock(stone, quantity, inventory);
 
         movementService.marked_replacement(stone, quantity, inventory);
+    }
+
+    @Override
+    @Transactional
+    public void removePendingToRestock(Stone material, Long quantity, Long inventoryId) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Transactional
@@ -93,7 +122,12 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     }
 
     @Override
-    public void removePendingToRestock(Long materialId, Long quantity, Long inventoryId) {
+    public void addToInventory(Long materialid, Inventory inventory) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removeFromInventory(Long materialid, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -116,6 +150,4 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
         throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
     }
-
-
 }
