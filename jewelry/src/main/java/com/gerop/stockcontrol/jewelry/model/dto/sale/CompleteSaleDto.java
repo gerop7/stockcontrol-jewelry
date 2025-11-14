@@ -9,9 +9,12 @@ import jakarta.validation.constraints.NotNull;
 public record CompleteSaleDto(
     @NotNull String description,
     @NotEmpty Set<JewelSaleWithPendingRestockDto> jewels,
-    @NotNull Long inventoryId
+    @NotNull Long inventoryId,
+    Set<MetalWeightSaleDto> metals,
+    Set<StoneQuantitySaleDto> stones
 ){
     public CompleteSaleDto{
         if(jewels==null) jewels = new LinkedHashSet<>();
+        
     }
 }

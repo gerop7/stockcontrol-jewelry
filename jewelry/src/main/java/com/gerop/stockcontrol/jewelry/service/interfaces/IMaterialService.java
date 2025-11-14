@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.gerop.stockcontrol.jewelry.model.dto.MaterialDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
+import com.gerop.stockcontrol.jewelry.model.dto.materials.MaterialDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Material;
 
@@ -17,6 +17,7 @@ public interface IMaterialService<M extends Material, Q extends Number, MDto ext
     void update(Long materialId, UpdateMaterialDataDto data);
 
     void addStock(Long materialid, Long inventoryId, Q quantity, String description);
+    void addStock(M material, Inventory inventory, Q quantity, String description);
     void outflowByWork(Long materialid, Long inventoryId, Q quantity);
     void outflowByWork(M material, Inventory inventory, Q quantity);
     MDto sale(Long materialid, Long inventoryId, Q quantity);

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.enums.InventoryUserPermissionType;
 import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
 import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
@@ -63,6 +64,8 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
         return invPermissions.canWrite(inventoryId, userId) && metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
     }
 
+    
+
     @Override
     public boolean canDeleteFromInventory(Long materialId, Long inventoryId) {
         Long currentUserId = userServiceHelper.getCurrentUser().getId();
@@ -73,5 +76,11 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
         
         return (isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId)) && 
             metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
+    }
+
+    @Override
+    public boolean canCreate(Long materialId, Long inventoryId) {
+        invPermissions.validatePermission(inventoryId, userServiceHelper.getCurrentUser().getId(), InventoryUserPermissionType.WRITE, "Crear una joya");
+        return true;
     }
 }

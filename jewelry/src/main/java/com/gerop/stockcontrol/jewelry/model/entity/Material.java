@@ -38,6 +38,14 @@ public abstract class Material{
         global=false;
     }
 
+    public Material(String name, User user, boolean global) {
+        this.name = name;
+        this.user = user;
+        this.global = global;
+    }
+
+
+
     public Long getId() {
         return id;
     }

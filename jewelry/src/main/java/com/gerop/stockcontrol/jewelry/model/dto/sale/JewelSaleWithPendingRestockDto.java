@@ -1,8 +1,6 @@
 package com.gerop.stockcontrol.jewelry.model.dto.sale;
 
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,15 +10,8 @@ public record JewelSaleWithPendingRestockDto(
     @NotNull Long jewelId, 
     @Positive Long quantity, 
     @PositiveOrZero Long quantityToRestock,
-    @PositiveOrZero Float total,
-    Set<MetalWeightSaleDto> metalToRestock,
-    Set<StoneQuantitySaleDto> stoneToRestock
+    @PositiveOrZero Float total
 ) {
-    public JewelSaleWithPendingRestockDto {
-        if (metalToRestock==null) metalToRestock = new LinkedHashSet<>();
-        if (stoneToRestock==null) stoneToRestock = new LinkedHashSet<>();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

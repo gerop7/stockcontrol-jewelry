@@ -1,4 +1,4 @@
-package com.gerop.stockcontrol.jewelry.service;
+package com.gerop.stockcontrol.jewelry.service.stockperinventory;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +10,6 @@ import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
 import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryRepository;
-import com.gerop.stockcontrol.jewelry.service.interfaces.IStockByInventoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,47 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JewelryStockByInventoryService implements IStockByInventoryService<JewelryStockByInventory, Jewel, Long>{
     private final JewelryStockByInventoryRepository repository;
-
-    @Override
-    @Transactional
-    public JewelryStockByInventory addStock(Jewel jewel, Inventory inventory, Long quantity) {
-        if(jewel!=null && inventory!=null){
-            if(quantity==null || quantity<0)
-                throw new InvalidQuantityException("No se puede agregar esa cantidad de unidades de "+jewel.getSku()+".");
-                
-            JewelryStockByInventory stock = getStockOrThrow(jewel, inventory);
-
-            stock.setStock(stock.getStock()+quantity);
-
-            return repository.save(stock);
-        }else
-            throw new RequiredFieldException("Debes completar todos los campos!");
-    }
-
-    @Override
-    @Transactional
-    public JewelryStockByInventory removeStock(Jewel jewel, Inventory inventory, Long quantity) {
-        if(jewel!=null && inventory!=null){
-            if(quantity==null || quantity<0)
-                throw new InvalidQuantityException("No se puede agregar esa cantidad de unidades de "+jewel.getSku()+".");
-
-            JewelryStockByInventory stock = getStockOrThrow(jewel, inventory);
-            
-            stock.setStock((stock.getStock()-quantity<0)?0L:stock.getStock()-quantity);
-
-            return repository.save(stock);
-        }else
-            throw new RequiredFieldException("Debes completar todos los campos!");
-    }
-
-    private JewelryStockByInventory getStockOrThrow(Jewel jewel, Inventory inventory) {
-        return jewel.getStockByInventory().stream()
-            .filter(s -> s.getInventory().getId().equals(inventory.getId()))
-            .findFirst()
-            .orElseThrow(() -> new StockNotFoundException(
-                "No existe la joya " + jewel.getSku() + " en el inventario " + inventory.getName()));
-    }
-
 
     @Override
     @Transactional
@@ -74,6 +32,46 @@ public class JewelryStockByInventoryService implements IStockByInventoryService<
         return repository.save(stock);
     }
 
+    @Override
+    @Transactional
+    public void addStock(Jewel jewel, Inventory inventory, Long quantity) {
+        if(jewel!=null && inventory!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("No se puede agregar esa cantidad de unidades de "+jewel.getSku()+".");
+                
+            JewelryStockByInventory stock = getStockOrThrow(jewel, inventory);
+
+            stock.setStock(stock.getStock()+quantity);
+
+            repository.save(stock);
+        }else
+            throw new RequiredFieldException("Debes completar todos los campos!");
+    }
+
+    @Override
+    @Transactional
+    public void removeStock(Jewel jewel, Inventory inventory, Long quantity) {
+        if(jewel!=null && inventory!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("No se puede agregar esa cantidad de unidades de "+jewel.getSku()+".");
+
+            JewelryStockByInventory stock = getStockOrThrow(jewel, inventory);
+            
+            stock.setStock((stock.getStock()-quantity<0)?0L:stock.getStock()-quantity);
+
+            repository.save(stock);
+        }else
+            throw new RequiredFieldException("Debes completar todos los campos!");
+    }
+
+    private JewelryStockByInventory getStockOrThrow(Jewel jewel, Inventory inventory) {
+        return jewel.getStockByInventory().stream()
+            .filter(s -> s.getInventory().getId().equals(inventory.getId()))
+            .findFirst()
+            .orElseThrow(() -> new StockNotFoundException(
+                "No existe la joya " + jewel.getSku() + " en el inventario " + inventory.getName()));
+    }
+
     
     @Override
     public void remove(JewelryStockByInventory stock) {
@@ -85,8 +83,4 @@ public class JewelryStockByInventoryService implements IStockByInventoryService<
     public JewelryStockByInventory findOne(Jewel jewel, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-
-
-
 }

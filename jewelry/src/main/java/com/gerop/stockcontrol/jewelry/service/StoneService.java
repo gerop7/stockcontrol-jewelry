@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
-import com.gerop.stockcontrol.jewelry.model.dto.StoneDto;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
+import com.gerop.stockcontrol.jewelry.model.dto.materials.StoneDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.movement.StoneMovement;
@@ -58,7 +58,12 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public void addStock(Long materialid, Long inventoryId, Long quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
+    
+    @Override
+    public void addStock(Stone material, Inventory inventory, Long quantity, String description) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public void outflowByWork(Long materialid, Long inventoryId, Long quantity) {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -150,4 +155,15 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
         throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
     }
+
+    @Override
+    public boolean delete(Long materialId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean delete(Stone material) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

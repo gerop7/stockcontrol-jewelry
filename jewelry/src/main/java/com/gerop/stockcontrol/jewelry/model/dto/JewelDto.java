@@ -20,5 +20,6 @@ public record JewelDto(
     @PositiveOrZero Float size,
     Set<Long> metalIds,
     Set<Long> stoneIds,
-    Set<InventoryStockDto> stockByInventory
+    Set<InventoryStockDto> stockByInventory,
+    Set<InventoryStockDto> pendingStockByInventory
 ) {}

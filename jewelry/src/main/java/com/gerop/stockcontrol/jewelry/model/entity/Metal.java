@@ -27,6 +27,15 @@ public class Metal extends Material {
     }
 
     
+    
+    public Metal(String name, User user, boolean global) {
+        super(name, user, global);
+        this.stockByInventory=new ArrayList<>();
+        this.pendingMetalRestock = new ArrayList<>();
+    }
+
+
+
     public List<MetalStockByInventory> getStockByInventory() {
         return stockByInventory;
     }

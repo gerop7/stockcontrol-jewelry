@@ -1,9 +1,9 @@
 package com.gerop.stockcontrol.jewelry.model.dto.sale;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 
-public record MetalWeightSaleDto(@NotNull Long metalId, @PositiveOrZero Float weightToRestock, @PositiveOrZero Float weightUsed)  {
+public record MetalWeightSaleDto(@NotNull Long metalId, @Positive Float weightToRestock, @Positive Float weightUsed, @Positive Float weightReceived)  {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

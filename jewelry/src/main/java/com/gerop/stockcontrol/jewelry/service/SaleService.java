@@ -3,24 +3,21 @@ package com.gerop.stockcontrol.jewelry.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.SaleProcessingException;
 import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
-import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.jewel.JewelNotFoundException;
-import com.gerop.stockcontrol.jewelry.exception.material.MaterialMismatchException;
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
 import com.gerop.stockcontrol.jewelry.mapper.SaleMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.sale.CompleteSaleDto;
 import com.gerop.stockcontrol.jewelry.model.dto.sale.JewelSaleWithPendingRestockDto;
-import com.gerop.stockcontrol.jewelry.model.dto.sale.MetalWeightSaleDto;
 import com.gerop.stockcontrol.jewelry.model.dto.sale.SaleListDto;
 import com.gerop.stockcontrol.jewelry.model.dto.sale.SaleResultDto;
-import com.gerop.stockcontrol.jewelry.model.dto.sale.StoneQuantitySaleDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.Sale;
@@ -48,7 +45,13 @@ public class SaleService implements ISaleService {
     private final IInventoryPermissionsService invPermissions;
     private final InventoryRepository inventoryRepository;
 
-    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Transactional(noRollbackFor = {
+        InvalidQuantityException.class,
+        MaterialNotFoundException.class,
+        StockNotFoundException.class,
+        JewelNotFoundException.class
+    })
     @Override
     public SaleResultDto processSale(CompleteSaleDto saleDto) {
         User currentUser = helper.getCurrentUser();
@@ -65,55 +68,47 @@ public class SaleService implements ISaleService {
 
         for(JewelSaleWithPendingRestockDto saleJewelDto:saleDto.jewels()){
             try {
-                SaleJewel saleJewel = jewelService.sale(
-                    saleJewelDto.jewelId(),
-                    saleJewelDto.quantity(), 
-                    saleJewelDto.quantityToRestock(), 
-                    saleJewelDto.total(), 
-                    inventory
-                ); 
-
-                if(!saleJewel.getJewel().getMetal().isEmpty()){
-                    for(MetalWeightSaleDto metalWeightDto:saleJewelDto.metalToRestock()){
-                        if(jewelService.existsByIdAndHasOneMetal(saleJewel.getJewel(), metalWeightDto.metalId())){
-                            try {
-                                Metal metal = metalService.findOne(metalWeightDto.metalId()).orElseThrow(() -> new MaterialNotFoundException(metalWeightDto.metalId(),"metal"));
-                                if(metalWeightDto.weightUsed()>0)
-                                    metalService.outflowByWork(metal, inventory, metalWeightDto.weightUsed());
-                                if(metalWeightDto.weightToRestock()>0)
-                                    metalService.addPendingToRestock(metal, metalWeightDto.weightToRestock(), inventory);
-                            } catch (MaterialNotFoundException | InventoryAccessDeniedException | InvalidQuantityException e) {
-                                fails.add(e.getMessage());
-                            }
-                        }else{
-                            fails.add(new MaterialMismatchException(saleJewelDto.jewelId(),metalWeightDto.metalId(),"Metal").getMessage());
-                        }
-                    }
-                }
-
-                if(!saleJewel.getJewel().getStone().isEmpty()){
-                    for(StoneQuantitySaleDto stoneQuantityDto:saleJewelDto.stoneToRestock()){
-                        if(jewelService.existsByIdAndHasOneStone(saleJewel.getJewel(), stoneQuantityDto.stoneId())){
-                            try {
-                                Stone stone = stoneService.findOne(stoneQuantityDto.stoneId()).orElseThrow(() -> new MaterialNotFoundException(stoneQuantityDto.stoneId(), "stone"));
-                                if(stoneQuantityDto.quantityUsed()>0)
-                                    stoneService.outflowByWork(stone, inventory, stoneQuantityDto.quantityUsed());
-                                if(stoneQuantityDto.quantityToRestock()>0)
-                                    stoneService.addPendingToRestock(stone, stoneQuantityDto.quantityToRestock(), inventory);
-                            } catch (MaterialNotFoundException | InventoryAccessDeniedException | InvalidQuantityException e) {
-                                fails.add(e.getMessage());
-                            }
-                        }else{
-                            fails.add(new MaterialMismatchException(saleJewelDto.jewelId(),stoneQuantityDto.stoneId(),"Stone").getMessage());
-                        }
-                    }
-                }
+                SaleJewel saleJewel = jewelService.sale(saleJewelDto.jewelId(),saleJewelDto.quantity(), saleJewelDto.quantityToRestock(), saleJewelDto.total(), inventory); 
                 
                 sale.getJewels().add(saleJewel);
-            } catch (JewelNotFoundException | InventoryAccessDeniedException | InvalidQuantityException | StockNotFoundException e) {
+            } catch (JewelNotFoundException | InvalidQuantityException | StockNotFoundException e) {
                 fails.add(e.getMessage());
             }
         }
+
+        saleDto.metals().forEach(
+            m -> {
+                try {    
+                    Metal metal = metalService.findOne(m.metalId())
+                        .orElseThrow(() -> new MaterialNotFoundException(m.metalId(),"metal"));
+                    if(m.weightUsed()!=null && m.weightUsed()>0)
+                        metalService.outflowByWork(metal, inventory, m.weightUsed());
+                    if(m.weightToRestock()!=null && m.weightToRestock()>0)
+                        metalService.addPendingToRestock(metal, m.weightToRestock(), inventory);
+                    if(m.weightReceived()!=null && m.weightReceived()>0)
+                        metalService.addStock(metal, inventory, m.weightReceived(), "");
+                } catch (MaterialNotFoundException | InvalidQuantityException e) {
+                    fails.add(e.getMessage());
+                }
+            }
+        );
+
+        saleDto.stones().forEach(
+            s -> {
+                try {
+                    Stone stone = stoneService.findOne(s.stoneId())
+                        .orElseThrow(() -> new MaterialNotFoundException(s.stoneId(),"stone"));
+                    if(s.quantityUsed()!=null && s.quantityUsed()>0)
+                        stoneService.outflowByWork(stone, inventory, s.quantityUsed());
+                    if(s.quantityToRestock()!=null && s.quantityToRestock()>0)
+                        stoneService.addPendingToRestock(stone, s.quantityToRestock(), inventory);
+                    if(s.quantityReceived()!=null && s.quantityReceived()>0)
+                        stoneService.addStock(stone, inventory, s.quantityReceived(), "");
+                } catch (MaterialNotFoundException | InvalidQuantityException e) {
+                    fails.add(e.getMessage());
+                }
+            }
+        );
 
         SaleResultDto result = new SaleResultDto(fails, sale);
 
@@ -122,6 +117,7 @@ public class SaleService implements ISaleService {
 
         return result;
     }
+
 
     @Override
     @Transactional(readOnly= true)

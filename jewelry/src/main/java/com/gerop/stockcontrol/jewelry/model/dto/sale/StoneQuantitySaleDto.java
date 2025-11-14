@@ -1,9 +1,9 @@
 package com.gerop.stockcontrol.jewelry.model.dto.sale;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 
-public record StoneQuantitySaleDto(@NotNull Long stoneId, @PositiveOrZero Long quantityToRestock, @PositiveOrZero Long quantityUsed) {
+public record StoneQuantitySaleDto(@NotNull Long stoneId, @Positive Long quantityToRestock, @Positive Long quantityUsed, @Positive Long quantityReceived) {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

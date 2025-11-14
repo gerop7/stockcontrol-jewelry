@@ -10,19 +10,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
+import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
-import com.gerop.stockcontrol.jewelry.model.dto.MetalDto;
+import com.gerop.stockcontrol.jewelry.mapper.MaterialMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
+import com.gerop.stockcontrol.jewelry.model.dto.materials.MetalDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Metal;
+import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.model.entity.movement.MetalMovement;
-import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.MetalStockByInventory;
 import com.gerop.stockcontrol.jewelry.repository.MetalRepository;
-import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
 import com.gerop.stockcontrol.jewelry.service.movement.IMaterialMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingMetalRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
+import com.gerop.stockcontrol.jewelry.service.stockperinventory.AbstractStockByInventoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,45 +34,78 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     private final MetalRepository repository;
-    private final MetalStockByInventoryRepository stockRepository;
     private final UserServiceHelper helperService;
     private final IMaterialPermissionsService<Metal> metalPermissionsService;
     private final IMaterialMovementService<MetalMovement,Metal,Float> movementService;
     private final PendingMetalRestockService pendingRestockService;
-    private final InventoryRepository inventoryRepository;
+    private final IInventoryService inventoryService;
+    private final MaterialMapper mapper;
+    private final AbstractStockByInventoryService<MetalStockByInventory, Metal, Float> stockService;
 
     @Override
-    public MetalDto create(MetalDto material) {
-        
+    @Transactional
+    public MetalDto create(MetalDto metalDto) {
+        User currentUser = helperService.getCurrentUser();
+        Metal metal = new Metal(metalDto.name(),currentUser,false);
+        save(metal);
+
+        metalDto.stockByInventory().forEach(
+            stock -> {
+                Inventory inventory = inventoryService.findOne(stock.inventoryId())
+                    .orElseThrow(()-> new InventoryNotFoundException(stock.inventoryId()));
+
+                metalPermissionsService.canCreate(metal.getId(), inventory.getId());
+
+                
+            }
+        );
+
+
+        return (MetalDto)mapper.toDto(metal);
     }
 
     @Override
-    public MetalDto save(Metal material) {
+    public MetalDto save(Metal metal) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    public boolean delete(Long metalId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void update(Long materialId, UpdateMaterialDataDto data) {
+    public boolean delete(Metal metal) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void addStock(Long materialid, Long inventoryId, Float quantity, String description) {
+    public void update(Long metalId, UpdateMaterialDataDto data) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public MetalDto sale(Long materialid, Long inventoryId, Float quantity) {
+    public void addStock(Long metalid, Long inventoryId, Float quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void outflowByWork(Long materialid, Long inventoryId, Float quantity) {
+    public void addStock(Metal metal, Inventory inventory, Float quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void outflowByWork(Metal material, Inventory inventory, Float quantity) {
+    public MetalDto sale(Long metalid, Long inventoryId, Float quantity) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void outflowByWork(Long metalid, Long inventoryId, Float quantity) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void outflowByWork(Metal metal, Inventory inventory, Float quantity) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -86,16 +123,16 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
 
     @Override
     @Transactional
-    public void removePendingToRestock(Metal material, Float quantity, Long inventoryId) {
+    public void removePendingToRestock(Metal metal, Float quantity, Long inventoryId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
     @Override
     @Transactional
-    public void addPendingToRestock(Long materialId, Float quantity, Inventory inventory) {
-        Metal metal = repository.findById(materialId)
-            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Metal"));
+    public void addPendingToRestock(Long metalId, Float quantity, Inventory inventory) {
+        Metal metal = repository.findById(metalId)
+            .orElseThrow(()-> new MaterialNotFoundException(metalId,"Metal"));
 
         addPendingToRestock(metal, quantity, inventory);
     }
@@ -117,44 +154,38 @@ public class MetalService implements IMaterialService<Metal, Float, MetalDto> {
     }
 
     @Override
-    public void removePendingToRestock(Long materialId, Float quantity, Long inventoryId) {
+    public void removePendingToRestock(Long metalId, Float quantity, Long inventoryId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void addToInventory(Long materialid, Inventory inventory) {
+    public void addToInventory(Long metalid, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean canUseToCreate(Long materialId, Long userId, Long inventoryId) {
+    public boolean canUseToCreate(Long metalId, Long userId, Long inventoryId) {
         throw new UnsupportedOperationException("Unimplemented method 'canUseToCreate'");
     }
 
     @Override
-    public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
+    public boolean canAddToInventory(Long metalId, Long userId, Long inventoryId) {
         throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
     }
 
     @Override
-    public void removeFromInventory(Long materialid, Inventory inventory) {
+    public void removeFromInventory(Long metalid, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Optional<Metal> findOne(Long materialId) {
+    public Optional<Metal> findOne(Long metalId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<Metal> findAllByIds(Set<Long> materialIds) {
+    public List<Metal> findAllByIds(Set<Long> metalIds) {
         throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
     }
-
-    
-
-    
-
-
 
 }

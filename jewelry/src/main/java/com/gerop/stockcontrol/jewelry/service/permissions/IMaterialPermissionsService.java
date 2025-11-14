@@ -8,4 +8,5 @@ public interface IMaterialPermissionsService<Material> {
     boolean canUseToCreateWithoutInvPermission(Long materialId, Long userId, Long inventoryId);
     boolean canUpdateStock(Long materialId, Long userId, Long inventoryId);
     boolean canDeleteFromInventory(Long materialId, Long inventoryId);
+    boolean canCreate(Long materialId, Long inventoryId);
 }
