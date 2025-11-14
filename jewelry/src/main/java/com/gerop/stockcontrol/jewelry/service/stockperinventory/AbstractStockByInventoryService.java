@@ -16,29 +16,30 @@ public abstract class AbstractStockByInventoryService<T, O, N extends Number > i
     
     @Override
     @Transactional
-    public T addStock(O object, Inventory inventory, N quantity) {
-        validateParams(object, inventory, quantity);
-        T stock = getStockOrThrow(object, inventory);
-        applyAddition(stock, quantity);
-        return save(stock);
-    }
-
-    @Override
-    @Transactional
-    public T removeStock(O object, Inventory inventory, N quantity) {
-        validateParams(object, inventory, quantity);
-        T stock = getStockOrThrow(object, inventory);
-        applySubtraction(stock, quantity);
-        return save(stock);
-    }
-
-    @Override
-    @Transactional
     public T create(O object, Inventory inventory, N quantity) {
         validateParams(object, inventory, quantity);
         T stock = newStock(object, inventory, quantity);
         return save(stock);
     }
+    
+    @Override
+    @Transactional
+    public void addStock(O object, Inventory inventory, N quantity) {
+        validateParams(object, inventory, quantity);
+        T stock = getStockOrThrow(object, inventory);
+        applyAddition(stock, quantity);
+        save(stock);
+    }
+
+    @Override
+    @Transactional
+    public void removeStock(O object, Inventory inventory, N quantity) {
+        validateParams(object, inventory, quantity);
+        T stock = getStockOrThrow(object, inventory);
+        applySubtraction(stock, quantity);
+        save(stock);
+    }
+
 
     @Override
     public T findOne(O object, Inventory inventory) {

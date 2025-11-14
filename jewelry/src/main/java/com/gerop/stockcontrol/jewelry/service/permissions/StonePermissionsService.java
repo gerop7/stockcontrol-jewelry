@@ -73,4 +73,9 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
         return (isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId)) &&
             stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId);
     }
+
+    @Override
+    public boolean canCreate(Long materialId, Long inventoryId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

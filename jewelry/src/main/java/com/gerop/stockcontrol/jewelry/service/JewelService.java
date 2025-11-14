@@ -33,11 +33,11 @@ import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.ICategoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
-import com.gerop.stockcontrol.jewelry.service.interfaces.IStockByInventoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.ISubcategoryService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockService;
 import com.gerop.stockcontrol.jewelry.service.permissions.JewelPermissionsService;
+import com.gerop.stockcontrol.jewelry.service.stockperinventory.JewelryStockByInventoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,7 +55,7 @@ public class JewelService implements IJewelService{
     private final ICategoryService categoryService;
     private final ISubcategoryService subcategoryService;
     private final JewelMapper mapper;
-    private final IStockByInventoryService<JewelryStockByInventory ,Jewel, Long> stockService;
+    private final JewelryStockByInventoryService stockService;
     private final IInventoryService invService;
 
     @Override
