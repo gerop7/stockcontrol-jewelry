@@ -8,6 +8,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 
 public abstract class AbstractStockByInventoryService<T, O, N extends Number > implements IStockByInventoryService<T, O, N> {
     protected abstract T getStockOrThrow(O object, Inventory inventory);
+    protected abstract T getStockOrCreate(O object, Inventory inventory, N quantity);
     protected abstract T save(T stock);
     protected abstract T newStock(O object, Inventory inventory, N quantity);
     protected abstract String getObjectName(O object);
@@ -26,7 +27,7 @@ public abstract class AbstractStockByInventoryService<T, O, N extends Number > i
     @Transactional
     public void addStock(O object, Inventory inventory, N quantity) {
         validateParams(object, inventory, quantity);
-        T stock = getStockOrThrow(object, inventory);
+        T stock = getStockOrCreate(object, inventory, quantity);
         applyAddition(stock, quantity);
         save(stock);
     }

@@ -36,6 +36,15 @@ public class StoneStockByInventoryService extends AbstractStockByInventoryServic
     }
 
     @Override
+    protected StoneStockByInventory getStockOrCreate(Stone object, Inventory inventory) {
+        try {
+            return getStockOrThrow(object, inventory);
+        }catch (StockNotFoundException e){
+            return newStock(object,inventory,0L);
+        }
+    }
+
+    @Override
     protected StoneStockByInventory save(StoneStockByInventory stock) {
         return repository.save(stock);
     }

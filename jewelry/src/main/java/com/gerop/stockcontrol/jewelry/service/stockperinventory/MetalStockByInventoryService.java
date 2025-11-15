@@ -36,6 +36,15 @@ public class MetalStockByInventoryService extends AbstractStockByInventoryServic
     }
 
     @Override
+    protected MetalStockByInventory getStockOrCreate(Metal object, Inventory inventory, Float quantity) {
+        try {
+            return getStockOrThrow(object, inventory);
+        }catch (StockNotFoundException e){
+            return newStock(object,inventory,quantity);
+        }
+    }
+
+    @Override
     protected MetalStockByInventory save(MetalStockByInventory stock) {
         return repository.save(stock);
     }

@@ -45,7 +45,7 @@ public class JewelPermissionsService implements IJewelPermissionsService {
 
     @Override
     public boolean canModifyStock(Long jewelId, Long inventoryId, Long userId) {
-        return stockRepository.existsByJewelIdAndInventoryId(jewelId, inventoryId) && invPermissions.canWrite(inventoryId, userId);
+        return invPermissions.canWrite(inventoryId, userId);
     }
 
     @Override
