@@ -1,161 +1,61 @@
 package com.gerop.stockcontrol.jewelry.service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
+import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
+import com.gerop.stockcontrol.jewelry.mapper.MaterialMapper;
+import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingStoneRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.StoneStockByInventory;
+import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
+import com.gerop.stockcontrol.jewelry.service.movement.StoneMovementService;
+import com.gerop.stockcontrol.jewelry.service.permissions.StonePermissionsService;
+import com.gerop.stockcontrol.jewelry.service.stockperinventory.StoneStockByInventoryService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
-import com.gerop.stockcontrol.jewelry.exception.inventory.InventoryAccessDeniedException;
-import com.gerop.stockcontrol.jewelry.exception.material.MaterialNotFoundException;
-import com.gerop.stockcontrol.jewelry.model.dto.UpdateMaterialDataDto;
 import com.gerop.stockcontrol.jewelry.model.dto.materials.StoneDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.movement.StoneMovement;
-import com.gerop.stockcontrol.jewelry.repository.InventoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.StoneRepository;
-import com.gerop.stockcontrol.jewelry.repository.StoneStockByInventoryRepository;
-import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
-import com.gerop.stockcontrol.jewelry.service.movement.IMaterialMovementService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingStoneRestockService;
-import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
-public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
-
-    private final StoneRepository repository;
-    private final StoneStockByInventoryRepository stockRepository;
-    private final UserServiceHelper helperService;
-    private final IMaterialPermissionsService<Stone> stonePermissionsService;
-    private final PendingStoneRestockService pendingRestockService;
-    private final InventoryRepository inventoryRepository;
-    private final IMaterialMovementService<StoneMovement,Stone,Long> movementService;
-
-    @Override
-    public StoneDto create(StoneDto material) {
-        throw new UnsupportedOperationException("Not supported yet.");
+public class StoneService extends AbstractMaterialService<Stone, Long, StoneDto, StoneRepository, StoneMovement, PendingStoneRestock, StoneStockByInventory> {
+    public StoneService(StoneRepository repository, UserServiceHelper helperService, StonePermissionsService permissionsService,
+                        StoneMovementService movementService, PendingStoneRestockService pendingRestockService, IInventoryService inventoryService,
+                        MaterialMapper mapper, StoneStockByInventoryService stockService) {
+        super(repository, helperService, permissionsService, movementService, pendingRestockService, inventoryService, mapper, stockService, dto -> new Stone(dto.name(), null, false, dto.url()));
     }
 
     @Override
-    public StoneDto save(Stone material) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    protected void createInitialInventoryAndRestock(Stone material, StoneDto stoneDto) {
+        stoneDto.stockByInventory().forEach(
+                stock -> {
+                    validateCanCreate(stock.inventoryId());
 
-    
-    @Override
-    public void update(StoneDto data) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+                    Inventory inventory = getInventoryOrThrow(stock.inventoryId());
 
-    @Override
-    public void addStock(Long materialid, Long inventoryId, Long quantity, String description) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    @Override
-    public void addStock(Stone material, Inventory inventory, Long quantity, String description) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+                    if(stock.stock()!=null && stock.stock()>=0)
+                        addToInventoryInternal(material, inventory, stock.stock());
 
-
-    @Override
-    public void outflowByWork(Long materialid, Long inventoryId, Long quantity, Long quantityToRestock) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void outflowByWork(Stone material, Inventory inventory, Long quantity, Long quantityToRestock) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public StoneDto sale(Long materialid, Long inventoryId, Long quantity, Float total, Long quantityToRestock) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Transactional
-    @Override
-    public void addPendingToRestock(Long materialId, Long quantity, Long inventoryId) {
-        Stone stone = repository.findById(materialId)
-            .orElseThrow(()-> new MaterialNotFoundException(materialId,"Stone"));
-
-        
-        addPendingToRestock(stone, quantity, inventory);
-    }
-
-    @Override
-    @Transactional
-    public void removePendingToRestock(Long materialId, Long quantity, Long inventoryId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    @Transactional
-    public void addPendingToRestock(Stone stone, Long quantity, Inventory inventory) {
-        if(!stonePermissionsService.canUpdateStock(stone.getId(), helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new InventoryAccessDeniedException("No tienes permiso para modificar stock pendiente de reposición!");
-                
-        handleAddPendingToRestock(stone, quantity, inventory);
-
-        movementService.marked_replacement(stone, quantity, inventory);
-    }
-
-    @Override
-    @Transactional
-    public void removePendingToRestock(Stone material, Long quantity, Inventory inventory) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Transactional
-    public void handleAddPendingToRestock(Stone stone, Long quantity, Inventory inventory) {
-        Objects.requireNonNull(stone, "Stone cannot be null");
-        Objects.requireNonNull(inventory, "Inventory cannot be null");
-        if (quantity == null || quantity <= 0) 
-            throw new InvalidQuantityException("La cantidad de "+stone.getName()+" a reponer es invalida!");
-        
-        pendingRestockService.findByStoneIdAndInventoryId(stone.getId(), inventory.getId())
-            .ifPresentOrElse(
-                r -> pendingRestockService.addToRestock(r, quantity),
-                () -> stone.getPendingStoneRestock().add(
-                    pendingRestockService.createSave(stone, inventory, quantity))
+                    material.getPendingStoneRestock().add(pendingRestockService.create(material, inventory));
+                }
         );
     }
 
     @Override
-    public void addToInventory(Long materialid, Inventory inventory) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    protected String className() {
+        return "Piedra";
     }
 
     @Override
-    public void removeFromInventory(Long materialid, Inventory inventory) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    protected void addToInventoryInternal(Stone material, Inventory inventory, Long quantity) {
+        material.getStockByInventory().add(stockService.create(material, inventory, quantity));
     }
 
     @Override
-    public Optional<Stone> findOne(Long materialId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    protected void removeFromInventoryInternal(Stone material, Inventory inventory) {
+        StoneStockByInventory stock = material.getStockByInventory().stream().filter(p -> p.getInventory().getId().equals(inventory.getId())).findFirst()
+                .orElseThrow(() -> new StockNotFoundException("No existe stock de "+material.getName()+" en el inventario "+inventory.getName()+"."));
 
-    @Override
-    public List<Stone> findAllByIds(Set<Long> materialIds) {
-        throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
+        material.getStockByInventory().remove(stock);
     }
-    
-    @Override
-    public boolean delete(Long materialId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean delete(Stone material) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }
