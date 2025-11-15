@@ -28,8 +28,8 @@ public class Metal extends Material {
 
     
     
-    public Metal(String name, User user, boolean global) {
-        super(name, user, global);
+    public Metal(String name, User user, boolean global, String urlImage) {
+        super(name, user, global, urlImage);
         this.stockByInventory=new ArrayList<>();
         this.pendingMetalRestock = new ArrayList<>();
     }

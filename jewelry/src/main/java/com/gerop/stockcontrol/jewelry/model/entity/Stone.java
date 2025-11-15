@@ -27,8 +27,8 @@ public class Stone extends Material{
         this.pendingStoneRestock = new ArrayList<>();
     }
 
-    public Stone(String name, User user, boolean global) {
-        super(name, user, global);
+    public Stone(String name, User user, boolean global, String urlImage) {
+        super(name, user, global, urlImage);
         this.stockByInventory=new ArrayList<>();
         this.pendingStoneRestock = new ArrayList<>();
     }

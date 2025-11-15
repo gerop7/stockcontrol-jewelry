@@ -82,9 +82,7 @@ public class SaleService implements ISaleService {
                     Metal metal = metalService.findOne(m.metalId())
                         .orElseThrow(() -> new MaterialNotFoundException(m.metalId(),"metal"));
                     if(m.weightUsed()!=null && m.weightUsed()>0)
-                        metalService.outflowByWork(metal, inventory, m.weightUsed());
-                    if(m.weightToRestock()!=null && m.weightToRestock()>0)
-                        metalService.addPendingToRestock(metal, m.weightToRestock(), inventory);
+                        metalService.outflowByWork(metal, inventory, m.weightUsed(), m.weightToRestock());
                     if(m.weightReceived()!=null && m.weightReceived()>0)
                         metalService.addStock(metal, inventory, m.weightReceived(), "");
                 } catch (MaterialNotFoundException | InvalidQuantityException e) {
@@ -99,9 +97,7 @@ public class SaleService implements ISaleService {
                     Stone stone = stoneService.findOne(s.stoneId())
                         .orElseThrow(() -> new MaterialNotFoundException(s.stoneId(),"stone"));
                     if(s.quantityUsed()!=null && s.quantityUsed()>0)
-                        stoneService.outflowByWork(stone, inventory, s.quantityUsed());
-                    if(s.quantityToRestock()!=null && s.quantityToRestock()>0)
-                        stoneService.addPendingToRestock(stone, s.quantityToRestock(), inventory);
+                        stoneService.outflowByWork(stone, inventory, s.quantityUsed(),s.quantityToRestock());
                     if(s.quantityReceived()!=null && s.quantityReceived()>0)
                         stoneService.addStock(stone, inventory, s.quantityReceived(), "");
                 } catch (MaterialNotFoundException | InvalidQuantityException e) {

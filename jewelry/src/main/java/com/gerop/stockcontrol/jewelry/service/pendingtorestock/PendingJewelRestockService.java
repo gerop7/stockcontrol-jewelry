@@ -70,6 +70,7 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
         validateRestockOperation(entity, quantity);
         entity.setQuantity(entity.getQuantity() + quantity);
         save(entity);
+        movementService.marked_replacement(entity.getJewel(),quantity, entity.getInventory());
     }
 
     @Transactional
@@ -79,6 +80,7 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
         Long q = entity.getQuantity() - quantity;
         entity.setQuantity(q < 0 ? 0 : q);
         save(entity);
+        movementService.replacement(entity.getJewel(),quantity, entity.getInventory());
     }
 
     @Transactional
@@ -111,15 +113,14 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
                 repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
                     .ifPresent(
                         p->{
-                            Long q = p.getQuantity() - quantity;
+                            long q = p.getQuantity() - quantity;
                             if (q <= 0) {
                                 repository.delete(p);
-                                movementService.replacement(jewel, p.getQuantity(), inventory);
                             } else {
                                 p.setQuantity(q);
                                 save(p);
-                                movementService.replacement(jewel, quantity, inventory);
                             }
+                            movementService.replacement(jewel, quantity, inventory);
                         }
                     );
             }

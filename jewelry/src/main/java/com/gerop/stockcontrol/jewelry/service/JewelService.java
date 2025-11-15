@@ -79,7 +79,7 @@ public class JewelService implements IJewelService{
                     .orElseThrow(()-> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
                 jewelPermissionsService.canCreate(inventoryId, currentUser.getId(), jewelDto.metalIds(), jewelDto.stoneIds());
 
-                if(inv.stock()!=null && inv.stock()>0 )
+                if(inv.stock()!=null && inv.stock()>=0 )
                     jewel.getStockByInventory().add(stockService.create(jewel, inventory, inv.stock()));
                 else
                     throw new InvalidQuantityException(inv.stock());
@@ -299,7 +299,7 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional(readOnly=true)
     public Optional<JewelDto> findByIdDto(Long id) {
-        return jewelRepository.findByIdFullData(id, userServiceHelper.getCurrentUser().getId()).map(mapper::toDto);
+        return jewelRepository.findByIdFullData(id).map(mapper::toDto);
     }
 
     @Override
@@ -332,7 +332,7 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional(readOnly=true)
     public Optional<Jewel> findById(Long jewelId) {
-        return jewelRepository.findByIdFullData(jewelId, userServiceHelper.getCurrentUser().getId());
+        return jewelRepository.findByIdFullData(jewelId);
     }
 
     @Override

@@ -42,6 +42,11 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
     }
 
     @Override
+    public StoneMovement sale(Stone mat, Inventory inventory, Long quantity, Float total) {
+        return null;
+    }
+
+    @Override
     public StoneMovement jewelRegister(Stone mat, Jewel jewel, Inventory inventory) {
         String description =("Se creo "+jewel.getSku()+" compuesta de "+mat.getName()+"en el inventario"+mat.getName()+".");
         return saveMovement(mat, 0L, jewel, description, CompositionMovementType.JEWEL_REGISTER, inventory);

@@ -50,7 +50,7 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
 
     
     @Override
-    public void update(Long materialId, UpdateMaterialDataDto data) {
+    public void update(StoneDto data) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -63,27 +63,29 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public void addStock(Stone material, Inventory inventory, Long quantity, String description) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
+
     @Override
-    public void outflowByWork(Long materialid, Long inventoryId, Long quantity) {
+    public void outflowByWork(Long materialid, Long inventoryId, Long quantity, Long quantityToRestock) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void outflowByWork(Stone material, Inventory inventory, Long quantity) {
+    public void outflowByWork(Stone material, Inventory inventory, Long quantity, Long quantityToRestock) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public StoneDto sale(Long materialid, Long inventoryId, Long quantity) {
+    public StoneDto sale(Long materialid, Long inventoryId, Long quantity, Float total, Long quantityToRestock) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Transactional
     @Override
-    public void addPendingToRestock(Long materialId, Long quantity, Inventory inventory) {
+    public void addPendingToRestock(Long materialId, Long quantity, Long inventoryId) {
         Stone stone = repository.findById(materialId)
             .orElseThrow(()-> new MaterialNotFoundException(materialId,"Stone"));
+
         
         addPendingToRestock(stone, quantity, inventory);
     }
@@ -107,7 +109,7 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
 
     @Override
     @Transactional
-    public void removePendingToRestock(Stone material, Long quantity, Long inventoryId) {
+    public void removePendingToRestock(Stone material, Long quantity, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -145,17 +147,7 @@ public class StoneService implements IMaterialService<Stone, Long, StoneDto> {
     public List<Stone> findAllByIds(Set<Long> materialIds) {
         throw new UnsupportedOperationException("Unimplemented method 'findAllByIds'");
     }
-
-    @Override
-    public boolean canUseToCreate(Long materialId, Long userId, Long inventoryId) {
-        throw new UnsupportedOperationException("Unimplemented method 'canUseToCreate'");
-    }
-
-    @Override
-    public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
-        throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
-    }
-
+    
     @Override
     public boolean delete(Long materialId) {
         throw new UnsupportedOperationException("Not supported yet.");

@@ -10,5 +10,6 @@ public record MetalDto(
     Long userId,
     boolean global,
     Set<InventoryWeightDto> stockByInventory,
-    Set<InventoryWeightDto> pendingMetalRestock
+    Set<InventoryWeightDto> pendingMetalRestock,
+    String url
 ) implements MaterialDto { }

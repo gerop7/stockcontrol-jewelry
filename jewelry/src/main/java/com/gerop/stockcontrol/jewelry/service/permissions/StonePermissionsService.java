@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.service.permissions;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Stone;
+import com.gerop.stockcontrol.jewelry.model.entity.enums.InventoryUserPermissionType;
 import com.gerop.stockcontrol.jewelry.repository.StoneRepository;
 import com.gerop.stockcontrol.jewelry.repository.StoneStockByInventoryRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
@@ -40,8 +41,7 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
         Stone stone = stoneRepository.findById(materialId)
             .orElseThrow(() -> new EntityNotFoundException("Piedra no encontrada"));
         
-        return (stone.isGlobal() || isOwner(materialId, userId)) && 
-            !stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId) && invPermissions.canWrite(inventoryId, userId);
+        return (stone.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
 
     @Override
     public boolean canUpdateStock(Long materialId, Long userId, Long inventoryId) {
-        return invPermissions.canWrite(inventoryId, userId) && stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId);
+        return invPermissions.canWrite(inventoryId, userId);
     }
 
     @Override
@@ -70,12 +70,12 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
 
         if(stone.isGlobal()) return false;
 
-        return (isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId)) &&
-            stoneStockRepository.existsByStoneIdAndInventoryId(materialId, inventoryId);
+        return (isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId));
     }
 
     @Override
-    public boolean canCreate(Long materialId, Long inventoryId) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean canCreate(Long inventoryId) {
+        invPermissions.validatePermission(inventoryId, userServiceHelper.getCurrentUser().getId(), InventoryUserPermissionType.WRITE, "Crear una piedra");
+        return true;
     }
 }

@@ -3,6 +3,10 @@ package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
+import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
+import com.gerop.stockcontrol.jewelry.service.movement.StoneMovementService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +18,11 @@ import com.gerop.stockcontrol.jewelry.repository.PendingStoneRestockRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
+@RequiredArgsConstructor
 public class PendingStoneRestockService implements IPendingRestockService<PendingStoneRestock,Long, Stone>{
 
     private final PendingStoneRestockRepository repository;
-
-    public PendingStoneRestockService(PendingStoneRestockRepository repository) {
-        this.repository = repository;
-    }
+    private final StoneMovementService movementService;
 
     @Override
     @Transactional
@@ -67,15 +69,17 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
         validateRestockOperation(entity, quantity);
         entity.setQuantity(entity.getQuantity()+quantity);
         save(entity);
+        movementService.marked_replacement(entity.getStone(),quantity, entity.getInventory());
     }
 
     @Override
     @Transactional
     public void removeFromRestock(PendingStoneRestock entity, Long quantity) {
         validateRestockOperation(entity, quantity);
-        Long q = entity.getQuantity() - quantity;
+        long q = entity.getQuantity() - quantity;
         entity.setQuantity(q<0?0:q);
         save(entity);
+        movementService.replacement(entity.getStone(),quantity, entity.getInventory());
     }
 
     @Override
@@ -87,6 +91,7 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
                     p->{
                         p.setQuantity(p.getQuantity()+quantity);
                         save(p);
+                        movementService.marked_replacement(stone, quantity, inventory);
                     },
                     () -> createSave(stone, inventory, quantity)
                 );
@@ -95,10 +100,27 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
 
     @Override
     @Transactional
-    public void removeFromRestock(Long entityId, Long inventoryId, Long quantity) {
-        PendingStoneRestock pending = repository.findByStoneIdAndInventoryId(entityId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        removeFromRestock(pending, quantity);
+    public void removeFromRestock(Stone stone, Inventory inventory, Long quantity) {
+        if(inventory!=null &&stone!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("La cantidad a reponer de la joya "+stone.getName()+" es invalida!");
+            if(quantity>0){
+                repository.findByStoneIdAndInventoryId(stone.getId(), inventory.getId())
+                        .ifPresent(
+                                p->{
+                                    long q = p.getQuantity() - quantity;
+                                    if (q <= 0) {
+                                        repository.delete(p);
+                                    } else {
+                                        p.setQuantity(q);
+                                        save(p);
+                                    }
+                                    movementService.replacement(stone, quantity, inventory);
+                                }
+                        );
+            }
+        }else
+            throw new RequiredFieldException("Es necesario que se completen todos los campos!");
     }
 
     private void validateRestockOperation(PendingStoneRestock entity, Long quantity) {

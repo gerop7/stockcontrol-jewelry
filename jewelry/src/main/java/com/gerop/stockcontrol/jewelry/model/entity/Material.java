@@ -32,16 +32,19 @@ public abstract class Material{
     @JoinColumn(name="user_id")
     private User user;
 
+    private String urlImage;
+
     private boolean global;
 
     public Material() {
         global=false;
     }
 
-    public Material(String name, User user, boolean global) {
+    public Material(String name, User user, boolean global, String urlImage) {
         this.name = name;
         this.user = user;
         this.global = global;
+        this.urlImage=urlImage;
     }
 
 
@@ -78,5 +81,11 @@ public abstract class Material{
         this.global = global;
     }
 
-    
+    public String getUrlImage() {
+        return urlImage;
+    }
+
+    public void setUrlImage(String urlImage) {
+        this.urlImage = urlImage;
+    }
 }

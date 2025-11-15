@@ -57,7 +57,7 @@ public class MetalStockByInventoryService extends AbstractStockByInventoryServic
 
     @Override
     protected void applySubtraction(MetalStockByInventory stock, Float quantity) {
-        stock.setStock((stock.getStock()-quantity<0)?0L:stock.getStock()-quantity);
+        stock.setStock((stock.getStock()-quantity<0)?0f:stock.getStock()-quantity);
     }
 
 }

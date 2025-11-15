@@ -3,6 +3,10 @@ package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
+import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
+import com.gerop.stockcontrol.jewelry.service.movement.MetalMovementService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,15 +15,12 @@ import com.gerop.stockcontrol.jewelry.model.entity.Metal;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingMetalRestock;
 import com.gerop.stockcontrol.jewelry.repository.PendingMetalRestockRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
+@RequiredArgsConstructor
 public class PendingMetalRestockService implements IPendingRestockService<PendingMetalRestock,Float, Metal>{
     private final PendingMetalRestockRepository repository;
-
-    public PendingMetalRestockService(PendingMetalRestockRepository repository) {
-        this.repository = repository;
-    }
+    private final MetalMovementService movementService;
 
     @Override
     @Transactional
@@ -69,15 +70,17 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
         validateRestockOperation(entity, quantity);
         entity.setWeight(entity.getWeight()+quantity);
         save(entity);
+        movementService.marked_replacement(entity.getMetal(),quantity,entity.getInventory());
     }
 
     @Override
     @Transactional
     public void removeFromRestock(PendingMetalRestock entity,Float quantity) {
         validateRestockOperation(entity, quantity);
-        Float q = entity.getWeight() - quantity;
+        float q = entity.getWeight() - quantity;
         entity.setWeight(q<0?0:q);
         save(entity);
+        movementService.replacement(entity.getMetal(),quantity,entity.getInventory());
     }   
 
 
@@ -90,6 +93,7 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
                     p->{
                         p.setWeight(p.getWeight()+quantity);
                         save(p);
+                        movementService.marked_replacement(metal,quantity,inventory);
                     },
                     () -> createSave(metal, inventory, quantity)
                 );
@@ -98,10 +102,27 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
 
     @Override
     @Transactional
-    public void removeFromRestock(Long entityId, Long inventoryId, Float quantity) {
-        PendingMetalRestock pending = repository.findByMetalIdAndInventoryId(entityId, inventoryId)
-            .orElseThrow(() -> new EntityNotFoundException("No existe la reposicion"));
-        removeFromRestock(pending, quantity);
+    public void removeFromRestock(Metal metal, Inventory inventory, Float quantity) {
+        if(inventory!=null && metal!=null){
+            if(quantity==null || quantity<0)
+                throw new InvalidQuantityException("La cantidad a reponer del metal "+metal.getName()+" es invalida!");
+            if(quantity>0){
+                repository.findByMetalIdAndInventoryId(metal.getId(), inventory.getId())
+                        .ifPresent(
+                                p->{
+                                    float q = p.getWeight() - quantity;
+                                    if (q <= 0) {
+                                        repository.delete(p);
+                                    } else {
+                                        p.setWeight(q);
+                                        save(p);
+                                    }
+                                    movementService.replacement(metal, p.getWeight(), inventory);
+                                }
+                        );
+            }
+        }else
+            throw new RequiredFieldException("Es necesario que se completen todos los campos!");
     }
 
     private void validateRestockOperation(PendingMetalRestock entity, Float quantity) {

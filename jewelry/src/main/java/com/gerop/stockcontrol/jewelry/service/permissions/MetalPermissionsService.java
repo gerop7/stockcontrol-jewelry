@@ -79,8 +79,8 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     }
 
     @Override
-    public boolean canCreate(Long materialId, Long inventoryId) {
-        invPermissions.validatePermission(inventoryId, userServiceHelper.getCurrentUser().getId(), InventoryUserPermissionType.WRITE, "Crear una joya");
+    public boolean canCreate(Long inventoryId) {
+        invPermissions.validatePermission(inventoryId, userServiceHelper.getCurrentUser().getId(), InventoryUserPermissionType.WRITE, "Crear un metal");
         return true;
     }
 }

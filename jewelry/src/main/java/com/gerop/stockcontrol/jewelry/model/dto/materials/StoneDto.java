@@ -10,5 +10,6 @@ public record StoneDto(
     Long userId,
     boolean global,
     Set<InventoryStockDto> stockByInventory,
-    Set<InventoryStockDto> pendingStoneRestock
+    Set<InventoryStockDto> pendingStoneRestock,
+    String url
 ) implements MaterialDto { }

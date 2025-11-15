@@ -11,6 +11,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.movement.Movement;
 public interface IMaterialMovementService<T extends Movement, M extends Material, Q extends Number>{
     T inflow(Q quantity, M mat, Inventory inventory);
     T outflow(Q quantity, M mat, Inventory inventory);
+    T sale(M mat, Inventory inventory, Q quantity, Float total);
     T jewelRegister(M mat, Jewel jewel, Inventory inventory);
     T replacement(M mat, Q quantity, Inventory inventory);
     T marked_replacement(M mat, Q quantity, Inventory inventory);

@@ -38,6 +38,11 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     }
 
     @Override
+    public MetalMovement sale(Metal mat, Inventory inventory, Float quantity, Float total) {
+        return null;
+    }
+
+    @Override
     public MetalMovement jewelRegister(Metal metal, Jewel jewel, Inventory inventory) {
         String description =("Se creo "+jewel.getSku()+" compuesta de "+metal.getName()+"en el inventario"+metal.getName()+".");
         return saveMovement(metal, 0f, jewel, description, CompositionMovementType.JEWEL_REGISTER,inventory);

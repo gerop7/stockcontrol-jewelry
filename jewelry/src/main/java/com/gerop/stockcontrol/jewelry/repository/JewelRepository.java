@@ -55,19 +55,20 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
     public Optional<Jewel> findByIdWithStockByInventory(Long id);
 
     @Query("""
-        SELECT DISTINCT j FROM Jewel j
-        LEFT JOIN FETCH j.category
-        LEFT JOIN FETCH j.subcategory
-        LEFT JOIN FETCH j.metal
-        LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.stockByInventory s
-        LEFT JOIN FETCH s.inventory
-        LEFT JOIN FETCH j.pendingRestock p
-        LEFT JOIN FETCH p.inventory
-        LEFT JOIN FETCH j.inventories
-        WHERE j.id = :id AND j.user.id = :userId
-    """)
-    Optional<Jewel> findByIdFullData(@Param("id") Long id, @Param("userId") Long userId);
+    SELECT DISTINCT j FROM Jewel j
+    LEFT JOIN FETCH j.category
+    LEFT JOIN FETCH j.subcategory
+    LEFT JOIN FETCH j.metal
+    LEFT JOIN FETCH j.stone
+    LEFT JOIN FETCH j.stockByInventory s
+    LEFT JOIN FETCH s.inventory
+    LEFT JOIN FETCH j.pendingRestock p
+    LEFT JOIN FETCH p.inventory
+    LEFT JOIN FETCH j.inventories
+    LEFT JOIN FETCH j.user
+    WHERE j.id = :id
+""")
+    Optional<Jewel> findByIdFullData(@Param("id") Long id);
 
     @Query("""
         SELECT j.id
