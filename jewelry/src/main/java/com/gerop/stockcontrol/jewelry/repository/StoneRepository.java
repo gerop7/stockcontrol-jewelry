@@ -50,10 +50,9 @@ public interface StoneRepository extends MaterialBaseRepository<Stone> {
         LEFT JOIN FETCH st.inventory
         LEFT JOIN FETCH s.pendingStoneRestock p
         LEFT JOIN FETCH p.inventory
-        WHERE s.id IN :ids AND st.inventory.id = :inventoryId
+        WHERE s.id IN :ids
     """)
-    List<Stone> findAllByIdsAndInventoryFullData(@Param("ids") List<Long> ids,
-                                                 @Param("inventoryId") Long inventoryId);
+    List<Stone> findAllByIdsFullData(@Param("ids") List<Long> ids);
 
     @Query("""
         SELECT s.id
@@ -72,6 +71,5 @@ public interface StoneRepository extends MaterialBaseRepository<Stone> {
         LEFT JOIN FETCH p.inventory
         WHERE s.id IN :ids AND s.user.id = :userId
     """)
-    List<Stone> findAllByIdsAndUserFullData(@Param("ids") List<Long> ids,
-                                            @Param("userId") Long userId);
+    List<Stone> findAllByIdsAndUserFullData(@Param("ids") List<Long> ids, @Param("userId") Long userId);
 }

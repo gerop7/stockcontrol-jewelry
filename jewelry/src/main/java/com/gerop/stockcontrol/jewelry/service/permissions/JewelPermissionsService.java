@@ -35,7 +35,7 @@ public class JewelPermissionsService implements IJewelPermissionsService {
     @Override
     public boolean canAddToInventory(Long jewelId, Long ownerId, Long inventoryId) {
         Long currentUserId = userServiceHelper.getCurrentUser().getId();
-        return currentUserId.equals(ownerId) && invPermissions.canWrite(inventoryId, currentUserId);
+        return currentUserId.equals(ownerId) && invPermissions.canWrite(inventoryId, currentUserId) && !stockRepository.existsByJewelIdAndInventoryId(jewelId, inventoryId);
     }
 
     @Override

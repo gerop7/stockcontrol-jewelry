@@ -15,8 +15,6 @@ import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingStoneRestock;
 import com.gerop.stockcontrol.jewelry.repository.PendingStoneRestockRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @Service
 @RequiredArgsConstructor
 public class PendingStoneRestockService implements IPendingRestockService<PendingStoneRestock,Long, Stone>{
@@ -135,8 +133,13 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
         return repository.existsByStoneIdAndInventoryId(stoneId, inventoryId);
     }
 
-    public Optional<PendingStoneRestock> findByStoneIdAndInventoryId(Long stoneId, Long inventoryId) {
-        return repository.findByStoneIdAndInventoryId(stoneId, inventoryId);
+    @Override
+    public void remove(Stone object, Inventory inventory) {
+        repository.findByStoneIdAndInventoryId(object.getId(), inventory.getId()).ifPresent(repository::delete);
     }
 
+    @Override
+    public Optional<PendingStoneRestock> findOne(Stone object, Inventory inventory) {
+        return repository.findByStoneIdAndInventoryId(object.getId(), inventory.getId());
+    }
 }

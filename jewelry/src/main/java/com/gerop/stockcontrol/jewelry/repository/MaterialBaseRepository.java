@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface MaterialBaseRepository<M extends Material> extends CrudRepository<M, Long> {
     Page<Long> findAllIdsByInventoryId(@Param("inventoryId") Long inventoryId, Pageable pageable);
-    List<M> findAllByIdsAndInventoryFullData(@Param("ids") List<Long> ids, @Param("inventoryId") Long inventoryId);
+    List<M> findAllByIdsFullData(@Param("ids") List<Long> ids);
     Page<Long> findAllIdsByUserId(@Param("userId") Long userId, Pageable pageable);
     List<M> findAllByIdsAndUserFullData(@Param("ids") List<Long> ids, @Param("userId") Long userId);
     Optional<M> findByIdFullData(@Param("id") Long id);

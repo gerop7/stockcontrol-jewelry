@@ -2,6 +2,7 @@ package com.gerop.stockcontrol.jewelry.service.interfaces;
 
 import java.util.Optional;
 
+import com.gerop.stockcontrol.jewelry.model.dto.JewelFilterDto;
 import org.springframework.data.domain.Page;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
@@ -31,8 +32,12 @@ public interface IJewelService {
     Optional<Jewel> findById(Long id);
     Page<Jewel> findAllByCurrentUser(int page, int size);
     Page<Jewel> findAllByInventory(Long inventoryId, int page, int size);
+    Optional<JewelDto> findByIdAndInventoryIdDto(Long id, Long inventoryId);
+    Optional<Jewel> findByIdAndInventoryId(Long id, Long inventoryId);
+    Page<JewelDto> filterMyJewels(JewelFilterDto f, int page, int size);
+    Page<JewelDto> filterJewels(JewelFilterDto f, int page, int size);
 
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);
-    public boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);
+    boolean existsByIdAndHasOneStone(Jewel jewel, Long stoneId);
 }

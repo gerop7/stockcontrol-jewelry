@@ -53,9 +53,25 @@ public class StoneService extends AbstractMaterialService<Stone, Long, StoneDto,
 
     @Override
     protected void removeFromInventoryInternal(Stone material, Inventory inventory) {
-        StoneStockByInventory stock = material.getStockByInventory().stream().filter(p -> p.getInventory().getId().equals(inventory.getId())).findFirst()
+        StoneStockByInventory stock = stockService.findOne(material, inventory)
                 .orElseThrow(() -> new StockNotFoundException("No existe stock de "+material.getName()+" en el inventario "+inventory.getName()+"."));
 
+        stockService.remove(stock);
         material.getStockByInventory().remove(stock);
+    }
+
+    @Override
+    protected void filterRelationsByInventory(Stone stone, Long inventoryId) {
+        stone.setStockByInventory(
+                stone.getStockByInventory().stream()
+                        .filter(s -> s.getInventory().getId().equals(inventoryId))
+                        .toList()
+        );
+
+        stone.setPendingStoneRestock(
+                stone.getPendingStoneRestock().stream()
+                        .filter(p -> p.getInventory().getId().equals(inventoryId))
+                        .toList()
+        );
     }
 }

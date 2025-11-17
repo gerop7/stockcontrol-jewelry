@@ -27,28 +27,27 @@ public class StoneMovementService implements IMaterialMovementService<StoneMovem
 
     @Override
     public StoneMovement inflow(Long quantity, Stone mat, Inventory inventory) {
-        StringBuilder description = new StringBuilder("Se agregaron ");
-        description.append(quantity).append(" unidades de ").append(mat.getName()).append(" al inventario ")
-        .append(inventory.getName()).append(".");
-        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_INFLOW,inventory);
+        String description = "Se agregaron " + quantity + " unidades de " + mat.getName() + " al inventario " +
+                inventory.getName() + ".";
+        return saveMovement(mat, quantity, null, description, CompositionMovementType.RAW_MATERIAL_INFLOW,inventory);
     }
 
     @Override
     public StoneMovement outflow(Long quantity, Stone mat, Inventory inventory) {
-        StringBuilder description = new StringBuilder("Se quitaron ");
-        description.append(quantity).append(" unidades de ").append(mat.getName()).append(" al inventario ")
-        .append(inventory.getName()).append(".");
-        return saveMovement(mat, quantity, null, description.toString(), CompositionMovementType.RAW_MATERIAL_OUTFLOW, inventory);
+        String description = "Se quitaron " + quantity + " unidades de " + mat.getName() + " al inventario " + inventory.getName() + ".";
+        return saveMovement(mat, quantity, null, description, CompositionMovementType.RAW_MATERIAL_OUTFLOW, inventory);
     }
 
     @Override
     public StoneMovement sale(Stone mat, Inventory inventory, Long quantity, Float total) {
-        return null;
+        String description = "Se vendieron " + quantity + " unidades de " + mat.getName() + " del inventario " + inventory.getName() + ", Por $"+total+".";
+
+        return saveMovement(mat,quantity,null,description,CompositionMovementType.SALE,inventory);
     }
 
     @Override
     public StoneMovement jewelRegister(Stone mat, Jewel jewel, Inventory inventory) {
-        String description =("Se creo "+jewel.getSku()+" compuesta de "+mat.getName()+"en el inventario"+mat.getName()+".");
+        String description =("Se creo "+jewel.getSku()+" compuesta de "+mat.getName()+" en el inventario "+mat.getName()+".");
         return saveMovement(mat, 0L, jewel, description, CompositionMovementType.JEWEL_REGISTER, inventory);
     }
 

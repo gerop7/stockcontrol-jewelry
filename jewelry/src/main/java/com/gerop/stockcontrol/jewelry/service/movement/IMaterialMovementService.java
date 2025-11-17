@@ -18,4 +18,5 @@ public interface IMaterialMovementService<T extends Movement, M extends Material
     T saveMovement(M mat, Q quantity, Jewel jewel, String description, CompositionMovementType type, Inventory inventory);
     List<T> findAll();
     List<T> findAllByType(CompositionMovementType type);
+
 }

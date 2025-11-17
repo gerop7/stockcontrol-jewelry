@@ -41,8 +41,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
         Metal metal = metalRepository.findById(materialId)
                 .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
-        return (metal.isGlobal() || isOwner(materialId, userId)) 
-            && invPermissions.canWrite(inventoryId, userId) && !metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
+        return (metal.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId) && !metalStockRepository.existsByInventoryIdAndMetalId(materialId, inventoryId);
     }
 
     @Override
@@ -61,7 +60,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     
     @Override
     public boolean canUpdateStock(Long materialId, Long userId, Long inventoryId) {
-        return invPermissions.canWrite(inventoryId, userId) && metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
+        return invPermissions.canWrite(inventoryId, userId);
     }
 
     
@@ -74,8 +73,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
 
         if(metal.isGlobal()) return false;
         
-        return (isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId)) && 
-            metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId);
+        return isOwner(materialId, currentUserId) || invPermissions.isOwner(inventoryId, currentUserId);
     }
 
     @Override

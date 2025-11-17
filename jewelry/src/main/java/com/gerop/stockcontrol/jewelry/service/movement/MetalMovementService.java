@@ -38,8 +38,10 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     }
 
     @Override
-    public MetalMovement sale(Metal mat, Inventory inventory, Float quantity, Float total) {
-        return null;
+    public MetalMovement sale(Metal metal, Inventory inventory, Float quantity, Float total) {
+        String description = ("Se vendio "+quantity+" gr. De "+metal.getName()+" en el inventario "+inventory.getName() + " por $"+total+".");
+
+        return saveMovement(metal,quantity,null,description,CompositionMovementType.SALE,inventory);
     }
 
     @Override
@@ -85,6 +87,4 @@ public class MetalMovementService implements IMaterialMovementService<MetalMovem
     public List<MetalMovement> findAllByType(CompositionMovementType type) {
         return metalMovementRepository.findAllByUserIdAndTypeOrderByTimestampDesc(userServiceHelper.getCurrentUser().getId(),type);
     }
-
-
 }

@@ -48,9 +48,9 @@ public interface MetalRepository extends MaterialBaseRepository<Metal>{
         LEFT JOIN FETCH s.inventory
         LEFT JOIN FETCH m.pendingMetalRestock p
         LEFT JOIN FETCH p.inventory
-        WHERE m.id IN :ids AND s.inventory.id = :inventoryId
+        WHERE m.id IN :ids
     """)
-    List<Metal> findAllByIdsAndInventoryFullData(@Param("ids") List<Long> ids, @Param("inventoryId") Long inventoryId);
+    List<Metal> findAllByIdsFullData(@Param("ids") List<Long> ids);
 
     @Query("""
         SELECT m.id

@@ -1,6 +1,7 @@
 package com.gerop.stockcontrol.jewelry.service.pendingtorestock;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,7 +78,7 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     @Override
     public void removeFromRestock(PendingJewelRestock entity,Long quantity) {
         validateRestockOperation(entity, quantity);
-        Long q = entity.getQuantity() - quantity;
+        long q = entity.getQuantity() - quantity;
         entity.setQuantity(q < 0 ? 0 : q);
         save(entity);
         movementService.replacement(entity.getJewel(),quantity, entity.getInventory());
@@ -138,5 +139,15 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     @Override
     public boolean existsByInventory(Long jewelId, Long inventoryId){
         return repository.existsByJewelIdAndInventoryId(jewelId, inventoryId);
+    }
+
+    @Override
+    public void remove(Jewel object, Inventory inventory) {
+        repository.findByJewelIdAndInventoryId(object.getId(), inventory.getId()).ifPresent(repository::delete);
+    }
+
+    @Override
+    public Optional<PendingJewelRestock> findOne(Jewel object, Inventory inventory) {
+        return repository.findByJewelIdAndInventoryId(object.getId(), inventory.getId());
     }
 }

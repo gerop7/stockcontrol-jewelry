@@ -10,6 +10,8 @@ import com.gerop.stockcontrol.jewelry.repository.JewelryStockByInventoryReposito
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class JewelryStockByInventoryService extends AbstractStockByInventoryService<JewelryStockByInventory, Jewel, Long>{
@@ -22,17 +24,23 @@ public class JewelryStockByInventoryService extends AbstractStockByInventoryServ
     }
 
     @Override
-    public JewelryStockByInventory findOne(Jewel jewel, Inventory inventory) {
+    public Optional<JewelryStockByInventory> findOne(Jewel jewel, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     protected JewelryStockByInventory getStockOrThrow(Jewel jewel, Inventory inventory) {
-        return jewel.getStockByInventory().stream()
-            .filter(s -> s.getInventory().getId().equals(inventory.getId()))
-            .findFirst()
-            .orElseThrow(() -> new StockNotFoundException(
-                "No existe la joya " + jewel.getSku() + " en el inventario " + inventory.getName()));
+        return repository.findByJewelIdAndInventoryId(jewel.getId(), inventory.getId())
+                .orElseThrow(()-> new StockNotFoundException("No existe stock de "+getObjectName(jewel)+" En el inventario "+inventory.getName()+"."));
+    }
+
+    @Override
+    protected JewelryStockByInventory getStockOrCreate(Jewel jewel, Inventory inventory) {
+        try{
+            return getStockOrThrow(jewel, inventory);
+        } catch (StockNotFoundException e) {
+            return newStock(jewel, inventory, 0L);
+        }
     }
 
     @Override

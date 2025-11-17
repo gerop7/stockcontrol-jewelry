@@ -137,9 +137,13 @@ public class PendingMetalRestockService implements IPendingRestockService<Pendin
         return repository.existsByMetalIdAndInventoryId(metalId, inventoryId);
     }
 
-    @Transactional(readOnly=true)
-    public Optional<PendingMetalRestock> findByMetalIdAndInventoryId(Long metalId, Long inventoryId){
-        return repository.findByMetalIdAndInventoryId(metalId, inventoryId);
+    @Override
+    public void remove(Metal object, Inventory inventory) {
+        repository.findByMetalIdAndInventoryId(object.getId(), inventory.getId()).ifPresent(repository::delete);
     }
 
+    @Override
+    public Optional<PendingMetalRestock> findOne(Metal object, Inventory inventory) {
+        return repository.findByMetalIdAndInventoryId(object.getId(), inventory.getId());
+    }
 }

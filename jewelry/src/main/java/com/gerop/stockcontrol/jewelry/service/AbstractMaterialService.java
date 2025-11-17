@@ -43,7 +43,6 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
     protected final IInventoryService inventoryService;
     protected final MaterialMapper mapper;
     protected final IStockByInventoryService<S, M, N> stockService;
-
     // Factory para crear la entidad específica (Metal, Stone…)
     protected final Function<MDto, M> materialFactory;
 
@@ -63,7 +62,7 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
     }
 
     protected void validateCanCreate(Long inventoryId){
-        if(permissionsService.canCreate(inventoryId)){
+        if(!permissionsService.canCreate(inventoryId)){
             throw new MaterialPermissionDeniedException("No tienes permisos para crear "+getClass()+" en este inventario.");
         }
     }
@@ -73,11 +72,11 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
                 .orElseThrow(()-> new InventoryNotFoundException(id));
     }
 
+
+    //METODOS ABSTRACTOS
     protected abstract void createInitialInventoryAndRestock(M material, MDto dto);
     protected abstract String className();
-    /** Lógica específica para agregar el material a un inventario */
     protected abstract void addToInventoryInternal(M material, Inventory inventory, N quantity);
-    /** Lógica específica para remover el material de un inventario */
     protected abstract void removeFromInventoryInternal(M material, Inventory inventory);
 
     @Override
@@ -202,7 +201,8 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
                 .orElseThrow(()-> new MaterialNotFoundException(materialId,className()));
 
         if(!permissionsService.canAddToInventory(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new MaterialPermissionDeniedException("No puedes añadir el "+getClass()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
+            throw new MaterialPermissionDeniedException("No puedes añadir el "+className()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
+
 
         addToInventoryInternal(material, inventory, quantity);
 
@@ -216,9 +216,11 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
                 .orElseThrow(()-> new MaterialNotFoundException(materialId,className()));
 
         if(!permissionsService.canDeleteFromInventory(materialId, inventory.getId()))
-            throw new MaterialPermissionDeniedException("No puedes eliminar el "+getClass()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
+            throw new MaterialPermissionDeniedException("No puedes eliminar el "+className()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
 
         removeFromInventoryInternal(material, inventory);
+
+        pendingRestockService.remove(material, inventory);
 
         save(material);
     }
@@ -273,6 +275,8 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
         return StreamSupport.stream(repository.findAllById(materialIds).spliterator(), false).toList();
     }
 
+    protected abstract void filterRelationsByInventory(M material, Long inventoryId);
+
     @Override
     @Transactional(readOnly = true)
     public Page<M> findAllByInventory(Long inventoryId, int page, int size) {
@@ -281,7 +285,9 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
         if (materialIds.isEmpty())
             return Page.empty();
 
-        List<M> list = repository.findAllByIdsAndInventoryFullData(materialIds.getContent(), inventoryId);
+        List<M> list = repository.findAllByIdsFullData(materialIds.getContent());
+
+        list.forEach(material -> filterRelationsByInventory(material, inventoryId));
 
         return new PageImpl<>(list, materialIds.getPageable(), materialIds.getTotalElements());
     }
@@ -315,7 +321,9 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
         if (materialIds.isEmpty())
             return Page.empty();
 
-        List<M> list = repository.findAllByIdsAndInventoryFullData(materialIds.getContent(), inventoryId);
+        List<M> list = repository.findAllByIdsFullData(materialIds.getContent());
+
+        list.forEach(material -> filterRelationsByInventory(material, inventoryId));
 
         List<MDto> dtoList = list.stream()
                 .map(m -> (MDto) mapper.toDto(m))

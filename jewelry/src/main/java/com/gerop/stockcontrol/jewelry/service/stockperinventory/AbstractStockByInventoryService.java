@@ -6,9 +6,11 @@ import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 
+import java.util.Optional;
+
 public abstract class AbstractStockByInventoryService<T, O, N extends Number > implements IStockByInventoryService<T, O, N> {
     protected abstract T getStockOrThrow(O object, Inventory inventory);
-    protected abstract T getStockOrCreate(O object, Inventory inventory, N quantity);
+    protected abstract T getStockOrCreate(O object, Inventory inventory);
     protected abstract T save(T stock);
     protected abstract T newStock(O object, Inventory inventory, N quantity);
     protected abstract String getObjectName(O object);
@@ -27,7 +29,7 @@ public abstract class AbstractStockByInventoryService<T, O, N extends Number > i
     @Transactional
     public void addStock(O object, Inventory inventory, N quantity) {
         validateParams(object, inventory, quantity);
-        T stock = getStockOrCreate(object, inventory, quantity);
+        T stock = getStockOrCreate(object, inventory);
         applyAddition(stock, quantity);
         save(stock);
     }
@@ -43,8 +45,8 @@ public abstract class AbstractStockByInventoryService<T, O, N extends Number > i
 
 
     @Override
-    public T findOne(O object, Inventory inventory) {
-        return getStockOrThrow(object, inventory);
+    public Optional<T> findOne(O object, Inventory inventory) {
+        return  Optional.of(getStockOrThrow(object, inventory));
     }
 
     @Override

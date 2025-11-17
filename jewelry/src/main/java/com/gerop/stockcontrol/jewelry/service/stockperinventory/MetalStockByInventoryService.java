@@ -10,6 +10,8 @@ import com.gerop.stockcontrol.jewelry.repository.MetalStockByInventoryRepository
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MetalStockByInventoryService extends AbstractStockByInventoryService<MetalStockByInventory, Metal, Float>{
@@ -20,27 +22,19 @@ public class MetalStockByInventoryService extends AbstractStockByInventoryServic
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-
-    @Override
-    public MetalStockByInventory findOne(Metal object, Inventory inventory) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     protected MetalStockByInventory getStockOrThrow(Metal object, Inventory inventory) {
-        return object.getStockByInventory().stream()
-            .filter(s -> s.getInventory().getId().equals(inventory.getId()))
-            .findFirst()
+        return repository.findByMetalAndInventory(object, inventory)
             .orElseThrow(() -> new StockNotFoundException(
-                "No existe el metal "+object.getName()+" en el inventario "+inventory.getName()+"."));
+                "No existe el metal "+object.getName()+" En el inventario "+inventory.getName()+"."));
     }
 
     @Override
-    protected MetalStockByInventory getStockOrCreate(Metal object, Inventory inventory, Float quantity) {
+    protected MetalStockByInventory getStockOrCreate(Metal object, Inventory inventory) {
         try {
             return getStockOrThrow(object, inventory);
         }catch (StockNotFoundException e){
-            return newStock(object,inventory,quantity);
+            return newStock(object,inventory,0f);
         }
     }
 

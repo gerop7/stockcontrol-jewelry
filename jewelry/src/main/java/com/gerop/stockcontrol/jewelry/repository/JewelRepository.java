@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,7 +16,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 
 
 @Repository
-public interface JewelRepository extends JpaRepository<Jewel, Long> {
+public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecificationExecutor<Jewel> {
 
     boolean existsBySkuAndUserId(String sku,Long id);
     Optional<Jewel> findBySkuAndUserId(String sku, Long id);
@@ -28,8 +30,6 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         WHERE j.id = :jewelId
     """)
     boolean existsByIdAndHasStones(@Param("jewelId") Long jewelId);
-    boolean existsByIdAndMetal_Id(Long jewelId, Long metalId);
-    boolean existsByIdAndStone_Id(Long jewelId, Long stoneId);
 
     @Query("""
         SELECT j FROM Jewel j
@@ -52,7 +52,7 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         LEFT JOIN FETCH s.inventory i
         WHERE j.id = :id
     """)
-    public Optional<Jewel> findByIdWithStockByInventory(Long id);
+    Optional<Jewel> findByIdWithStockByInventory(Long id);
 
     @Query("""
     SELECT DISTINCT j FROM Jewel j
@@ -84,12 +84,14 @@ public interface JewelRepository extends JpaRepository<Jewel, Long> {
         LEFT JOIN FETCH j.subcategory
         LEFT JOIN FETCH j.metal
         LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.inventories inv
-        LEFT JOIN FETCH j.stockByInventory s ON s.inventory.id = :inventoryId
-        LEFT JOIN FETCH j.pendingRestock p ON p.inventory.id = :inventoryId
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory
+        LEFT JOIN FETCH j.pendingRestock p
+        LEFT JOIN FETCH p.inventory
+        LEFT JOIN FETCH j.inventories
         WHERE j.id IN :ids
     """)
-    List<Jewel> findAllByIdsWithFullData(@Param("ids") List<Long> ids, @Param("inventoryId") Long inventoryId);
+    List<Jewel> findAllByIdsWithFullData(@Param("ids") List<Long> ids);
     
     @Query("""
         SELECT j.id

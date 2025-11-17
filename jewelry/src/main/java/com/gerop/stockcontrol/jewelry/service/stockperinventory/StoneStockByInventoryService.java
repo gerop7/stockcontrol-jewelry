@@ -10,6 +10,8 @@ import com.gerop.stockcontrol.jewelry.repository.StoneStockByInventoryRepository
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class StoneStockByInventoryService extends AbstractStockByInventoryService<StoneStockByInventory, Stone, Long>{
@@ -22,17 +24,15 @@ public class StoneStockByInventoryService extends AbstractStockByInventoryServic
     }
 
     @Override
-    public StoneStockByInventory findOne(Stone object, Inventory inventory) {
+    public Optional<StoneStockByInventory> findOne(Stone object, Inventory inventory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     protected StoneStockByInventory getStockOrThrow(Stone object, Inventory inventory) {
-        return object.getStockByInventory().stream()
-            .filter(s -> s.getInventory().getId().equals(inventory.getId()))
-            .findFirst()
+        return repository.findByStoneAndInventory(object,inventory)
             .orElseThrow(() -> new StockNotFoundException(
-                "No existe la priedra "+object.getName()+" en el inventario "+inventory.getName()+"."));
+                "No existe la priedra "+object.getName()+" En el inventario "+inventory.getName()+"."));
     }
 
     @Override
