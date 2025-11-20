@@ -55,16 +55,43 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
     Optional<Jewel> findByIdWithStockByInventory(Long id);
 
     @Query("""
-    SELECT DISTINCT j FROM Jewel j
-    LEFT JOIN FETCH j.category
-    LEFT JOIN FETCH j.subcategory
-    LEFT JOIN FETCH j.metal
-    LEFT JOIN FETCH j.stone
-    LEFT JOIN FETCH j.inventories
-    LEFT JOIN FETCH j.user
-    WHERE j.id = :id
-""")
-    Optional<Jewel> findByIdFullData(@Param("id") Long id);
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category c
+        LEFT JOIN FETCH j.subcategory s
+        LEFT JOIN FETCH j.metal m
+        LEFT JOIN FETCH j.stone st
+        LEFT JOIN FETCH j.user u
+    
+        LEFT JOIN FETCH j.inventories inv
+    
+        LEFT JOIN FETCH j.stockByInventory stock
+            ON stock.inventory.id = :inventoryId
+    
+        LEFT JOIN FETCH j.pendingRestock pend
+            ON pend.inventory.id = :inventoryId
+    
+        WHERE j.id = :id
+    """)
+    Optional<Jewel> findByIdFullDataWithInventory(
+            @Param("id") Long id,
+            @Param("inventoryId") Long inventoryId
+    );
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category
+        LEFT JOIN FETCH j.subcategory
+        LEFT JOIN FETCH j.metal
+        LEFT JOIN FETCH j.stone
+        LEFT JOIN FETCH j.inventories
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory inv1
+        LEFT JOIN FETCH j.pendingRestock p
+        LEFT JOIN FETCH p.inventory inv2
+        LEFT JOIN FETCH j.user
+        WHERE j.id = :id
+    """)
+    Optional<Jewel> findByIdFullDataWithStocks(@Param("id") Long id);
 
     @Query("""
         SELECT j.id
@@ -84,7 +111,28 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
         WHERE j.id IN :ids
     """)
     List<Jewel> findAllByIdsWithFullData(@Param("ids") List<Long> ids);
+
+    @Query("""
+        SELECT DISTINCT j FROM Jewel j
+        LEFT JOIN FETCH j.category c
+        LEFT JOIN FETCH j.subcategory s
+        LEFT JOIN FETCH j.metal m
+        LEFT JOIN FETCH j.stone st
+        LEFT JOIN FETCH j.user u
     
+        LEFT JOIN j.inventories inv ON inv.id = :inventoryId
+    
+        LEFT JOIN FETCH j.stockByInventory stock ON stock.inventory.id = :inventoryId
+    
+        LEFT JOIN FETCH j.pendingRestock pend ON pend.inventory.id = :inventoryId
+    
+        WHERE j.id IN :ids
+    """)
+    List<Jewel> findAllFullDataWithInventory(
+            @Param("ids") List<Long> ids,
+            @Param("inventoryId") Long inventoryId
+    );
+
     @Query("""
         SELECT j.id
         FROM Jewel j
