@@ -1,5 +1,7 @@
 package com.gerop.stockcontrol.jewelry.model.dto;
 
+import com.gerop.stockcontrol.jewelry.model.entity.enums.StockCondition;
+
 import java.util.Set;
 
 public record JewelFilterDto(
@@ -13,8 +15,7 @@ public record JewelFilterDto(
         Float maxWeight,
         Float minSize,
         Float maxSize,
-        Float minStock,
-        Float maxStock,
+        StockCondition stockCondition,
         Boolean hasPendingRestock,
         Boolean active
 ) {}

@@ -13,9 +13,4 @@ public class JewelMapper {
 
         throw new UnsupportedOperationException("Unimplemented method 'toDto'");
     }
-
-    public JewelDto toDto(Jewel jewel, List<JewelryStockByInventory> stock, List<PendingJewelRestock> pending) {
-
-        throw new UnsupportedOperationException("Unimplemented method 'toDto'");
-    }
 }

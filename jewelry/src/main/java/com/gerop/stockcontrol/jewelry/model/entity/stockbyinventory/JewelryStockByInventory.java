@@ -1,5 +1,7 @@
 package com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -18,6 +20,8 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@Setter
+@Getter
 @Entity
 @Table(
     name = "jewelry_stock_by_inventory",
@@ -50,38 +54,6 @@ public class JewelryStockByInventory {
     public JewelryStockByInventory(Inventory inventory, Jewel jewel, Long stock) {
         this.inventory = inventory;
         this.jewel = jewel;
-        this.stock = stock;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    public Jewel getJewel() {
-        return jewel;
-    }
-
-    public void setJewel(Jewel jewel) {
-        this.jewel = jewel;
-    }
-
-    public Long getStock() {
-        return stock;
-    }
-
-    public void setStock(Long stock) {
         this.stock = stock;
     }
 

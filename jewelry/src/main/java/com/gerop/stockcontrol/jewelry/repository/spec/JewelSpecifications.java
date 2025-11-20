@@ -1,6 +1,7 @@
 package com.gerop.stockcontrol.jewelry.repository.spec;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
+import com.gerop.stockcontrol.jewelry.model.entity.enums.StockCondition;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -97,18 +98,53 @@ public class JewelSpecifications {
         return (root, query, cb) ->
                 active == null ? null : cb.equal(root.get("active"), active);
     }
-
-    public static Specification<Jewel> hasPendingRestock(Boolean hasPending) {
+    
+    public static Specification<Jewel> joinStock(Long inventoryId) {
         return (root, query, cb) -> {
-            if (hasPending == null) return null;
+            if (inventoryId == null) return null;
+
+            root.join("stockByInventory", JoinType.LEFT)
+                    .on(cb.equal(root.get("stockByInventory").get("inventory").get("id"), inventoryId));
+
+            return cb.conjunction();
+        };
+    }
+
+    public static Specification<Jewel> hasPendingRestock(Long inventoryId, Boolean hasPending) {
+        return (root, query, cb) -> {
+            if (hasPending == null || inventoryId == null) return null;
 
             query.distinct(true);
 
-            Join<Jewel, ?> join = root.join("pendingRestock", JoinType.LEFT);
+            Join<Object, Object> join = root.join("pendingRestock", JoinType.LEFT);
 
-            return hasPending
-                    ? cb.isNotEmpty(root.get("pendingRestock"))
-                    : cb.isEmpty(root.get("pendingRestock"));
+            Predicate sameInventory =
+                    cb.equal(join.get("inventory").get("id"), inventoryId);
+
+            if (hasPending) {
+                return sameInventory; // existe pending en ese inventario
+            } else {
+                // joyas SIN pending en ese inventario
+                return cb.or(cb.isNull(join.get("id")), cb.not(sameInventory));
+            }
+        };
+    }
+
+    public static Specification<Jewel> stockCondition(Long inventoryId, StockCondition condition) {
+        return (root, query, cb) -> {
+            if (condition == null || inventoryId == null) return null;
+
+            query.distinct(true);
+
+            Join<Object, Object> stock = root.join("stockByInventory", JoinType.LEFT);
+
+            Predicate sameInventory =
+                    cb.equal(stock.get("inventory").get("id"), inventoryId);
+
+            return switch (condition) {
+                case POSITIVE -> cb.and(sameInventory, cb.greaterThan(stock.get("stock"), 0));
+                case ZERO     -> cb.and(sameInventory, cb.equal(stock.get("stock"), 0));
+            };
         };
     }
 }

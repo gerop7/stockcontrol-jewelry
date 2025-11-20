@@ -2,9 +2,9 @@ package com.gerop.stockcontrol.jewelry.sort;
 
 import java.util.Set;
 
-public class JewelSortValidator implements SortValidator{
+public class MetalSortValidator implements SortValidator{
     @Override
     public Set<String> allowedFields() {
-        return Set.of("name","sku","weight","size","jewelstock");
+        return Set.of("name","metalstock");
     }
 }

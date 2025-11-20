@@ -62,7 +62,7 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
         LEFT JOIN FETCH j.stone st
         LEFT JOIN FETCH j.user u
     
-        LEFT JOIN FETCH j.inventories inv
+        LEFT JOIN FETCH j.inventories inv ON inv.id = :inventoryId
     
         LEFT JOIN FETCH j.stockByInventory stock
             ON stock.inventory.id = :inventoryId
