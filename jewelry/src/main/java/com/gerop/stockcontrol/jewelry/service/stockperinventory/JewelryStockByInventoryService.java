@@ -24,8 +24,8 @@ public class JewelryStockByInventoryService extends AbstractStockByInventoryServ
     }
 
     @Override
-    public Optional<JewelryStockByInventory> findOne(Jewel jewel, Inventory inventory) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean existByIdAndInventoryId(Long jewelId, Long inventoryId) {
+        return repository.existsByJewelIdAndInventoryId(jewelId,inventoryId);
     }
 
     @Override

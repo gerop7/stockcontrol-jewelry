@@ -13,7 +13,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name="metal_movements")
 public class MetalMovement extends Movement {
@@ -41,38 +45,4 @@ public class MetalMovement extends Movement {
         this();
         this.weight=weight;
     }
-
-    public CompositionMovementType getType() {
-        return type;
-    }
-
-    public void setType(CompositionMovementType type) {
-        this.type = type;
-    }
-
-    public Float getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Float weight) {
-        this.weight = weight;
-    }
-
-    public Metal getMetal() {
-        return metal;
-    }
-
-    public void setMetal(Metal metal) {
-        this.metal = metal;
-    }
-
-    public Jewel getJewel() {
-        return jewel;
-    }
-
-    public void setJewel(Jewel jewel) {
-        this.jewel = jewel;
-    }
-
-    
 }

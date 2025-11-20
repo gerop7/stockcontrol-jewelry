@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.service.interfaces;
 import java.util.Optional;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelFilterDto;
+import com.gerop.stockcontrol.jewelry.sort.SortDto;
 import org.springframework.data.domain.Page;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelDto;
@@ -27,15 +28,11 @@ public interface IJewelService {
     void removePendingToRestock(Long jewelId, Long inventoryId, Long quantity);
     
     Optional<JewelDto> findByIdDto(Long id);
-    Page<JewelDto> findAllByCurrentUserDto(int page, int size);
-    Page<JewelDto> findAllByInventoryDto(Long inventoryId, int page, int size);
     Optional<Jewel> findById(Long id);
-    Page<Jewel> findAllByCurrentUser(int page, int size);
-    Page<Jewel> findAllByInventory(Long inventoryId, int page, int size);
     Optional<JewelDto> findByIdAndInventoryIdDto(Long id, Long inventoryId);
     Optional<Jewel> findByIdAndInventoryId(Long id, Long inventoryId);
-    Page<JewelDto> filterMyJewels(JewelFilterDto f, int page, int size);
-    Page<JewelDto> filterJewels(JewelFilterDto f, int page, int size);
+    Page<JewelDto> filterMyJewels(JewelFilterDto f, SortDto sort, int page, int size);
+    Page<JewelDto> filterJewels(JewelFilterDto f, SortDto sort, Long inventoryId, int page, int size);
 
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);

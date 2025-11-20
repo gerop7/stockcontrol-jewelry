@@ -3,6 +3,7 @@ package com.gerop.stockcontrol.jewelry.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
@@ -14,4 +15,12 @@ public interface JewelryStockByInventoryRepository extends JpaRepository<Jewelry
 
     Optional<JewelryStockByInventory> findByJewelIdAndInventoryId(Long jewelId, Long inventoryId);
 
+    @Query("""
+        SELECT s
+        FROM JewelryStockByInventory s
+        JOIN FETCH s.jewel j
+        JOIN FETCH s.inventory i
+        WHERE j.id = :objId AND i.id = :inventoryId
+    """)
+    Optional<JewelryStockByInventory> findByJewelAndInventoryIdFullData(Long objId, Long inventoryId);
 }

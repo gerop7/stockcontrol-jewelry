@@ -29,6 +29,11 @@ public class StoneStockByInventoryService extends AbstractStockByInventoryServic
     }
 
     @Override
+    public boolean existByIdAndInventoryId(Long materialId, Long id) {
+        return repository.existsByStoneIdAndInventoryId(materialId,id);
+    }
+
+    @Override
     protected StoneStockByInventory getStockOrThrow(Stone object, Inventory inventory) {
         return repository.findByStoneAndInventory(object,inventory)
             .orElseThrow(() -> new StockNotFoundException(

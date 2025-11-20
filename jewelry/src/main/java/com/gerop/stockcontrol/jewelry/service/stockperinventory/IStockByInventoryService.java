@@ -11,4 +11,6 @@ public interface IStockByInventoryService<T, O, N extends Number> {
     void removeStock(O object, Inventory inventory, N quantity);
 
     Optional<T> findOne(O object, Inventory inventory);
+
+    boolean existByIdAndInventoryId(Long materialId, Long id);
 }

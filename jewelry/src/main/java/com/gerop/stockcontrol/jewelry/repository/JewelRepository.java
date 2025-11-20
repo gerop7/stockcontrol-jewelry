@@ -60,10 +60,6 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
     LEFT JOIN FETCH j.subcategory
     LEFT JOIN FETCH j.metal
     LEFT JOIN FETCH j.stone
-    LEFT JOIN FETCH j.stockByInventory s
-    LEFT JOIN FETCH s.inventory
-    LEFT JOIN FETCH j.pendingRestock p
-    LEFT JOIN FETCH p.inventory
     LEFT JOIN FETCH j.inventories
     LEFT JOIN FETCH j.user
     WHERE j.id = :id
@@ -84,10 +80,6 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
         LEFT JOIN FETCH j.subcategory
         LEFT JOIN FETCH j.metal
         LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.stockByInventory s
-        LEFT JOIN FETCH s.inventory
-        LEFT JOIN FETCH j.pendingRestock p
-        LEFT JOIN FETCH p.inventory
         LEFT JOIN FETCH j.inventories
         WHERE j.id IN :ids
     """)
@@ -106,12 +98,18 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
         LEFT JOIN FETCH j.subcategory
         LEFT JOIN FETCH j.metal
         LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.stockByInventory s
-        LEFT JOIN FETCH s.inventory
-        LEFT JOIN FETCH j.pendingRestock p
-        LEFT JOIN FETCH p.inventory
         LEFT JOIN FETCH j.inventories
         WHERE j.user.id = :userId AND j.active = true AND j.id IN :ids
     """)
     List<Jewel> findAllByIdsWithFullDataByUser(@Param("ids") List<Long> ids, @Param("userId") Long userId);
+
+    @Query("""
+        SELECT j FROM Jewel j
+        LEFT JOIN FETCH j.stockByInventory s
+        LEFT JOIN FETCH s.inventory i
+        LEFT JOIN FETCH metal
+        LEFT JOIN FETCH stone
+        WHERE j.id = :id
+    """)
+    Optional<Jewel> findByIdWithStockByInventoryAndMaterials(Long id);
 }

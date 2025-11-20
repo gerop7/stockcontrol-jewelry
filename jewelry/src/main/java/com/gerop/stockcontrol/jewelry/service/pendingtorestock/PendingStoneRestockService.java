@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
+import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingJewelRestock;
 import com.gerop.stockcontrol.jewelry.service.movement.StoneMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -141,5 +142,10 @@ public class PendingStoneRestockService implements IPendingRestockService<Pendin
     @Override
     public Optional<PendingStoneRestock> findOne(Stone object, Inventory inventory) {
         return repository.findByStoneIdAndInventoryId(object.getId(), inventory.getId());
+    }
+
+    @Override
+    public Optional<PendingStoneRestock> findOne(Long objId, Long invId) {
+        return repository.findByStoneIdAndInventoryIdFullData(objId, invId);
     }
 }

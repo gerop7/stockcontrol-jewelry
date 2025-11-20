@@ -1,11 +1,9 @@
 package com.gerop.stockcontrol.jewelry.repository.spec;
 
-import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
-import com.gerop.stockcontrol.jewelry.model.entity.Metal;
-import com.gerop.stockcontrol.jewelry.model.entity.Stone;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Set;
@@ -39,20 +37,28 @@ public class JewelSpecifications {
                 subcategoryId == null ? null : cb.equal(root.get("subcategory").get("id"), subcategoryId);
     }
 
-    public static Specification<Jewel> hasMetal(Set<Long> metalIds) {
+    public static Specification<Jewel> hasMetals(Set<Long> metalIds) {
         return (root, query, cb) -> {
             if (metalIds == null || metalIds.isEmpty()) return null;
+
             query.distinct(true);
-            Join<Jewel, Metal> join = root.join("metal", JoinType.INNER);
-            return join.get("id").in(metalIds);
+
+            Join<Jewel, ?> join = root.join("metals", JoinType.INNER);
+
+            Predicate inClause = join.get("id").in(metalIds);
+
+            return inClause;
         };
     }
 
-    public static Specification<Jewel> hasStone(Set<Long> stoneIds) {
+    public static Specification<Jewel> hasStones(Set<Long> stoneIds) {
         return (root, query, cb) -> {
             if (stoneIds == null || stoneIds.isEmpty()) return null;
+
             query.distinct(true);
-            Join<Jewel, Stone> join = root.join("stone", JoinType.INNER);
+
+            Join<Jewel, ?> join = root.join("stones", JoinType.INNER);
+
             return join.get("id").in(stoneIds);
         };
     }
@@ -60,8 +66,11 @@ public class JewelSpecifications {
     public static Specification<Jewel> inInventory(Long inventoryId) {
         return (root, query, cb) -> {
             if (inventoryId == null) return null;
+
             query.distinct(true);
-            Join<Jewel, Inventory> join = root.join("inventories", JoinType.INNER);
+
+            Join<Jewel, ?> join = root.join("inventories", JoinType.INNER);
+
             return cb.equal(join.get("id"), inventoryId);
         };
     }
@@ -92,12 +101,14 @@ public class JewelSpecifications {
     public static Specification<Jewel> hasPendingRestock(Boolean hasPending) {
         return (root, query, cb) -> {
             if (hasPending == null) return null;
+
             query.distinct(true);
+
             Join<Jewel, ?> join = root.join("pendingRestock", JoinType.LEFT);
-            if (hasPending)
-                return cb.greaterThan(cb.size(root.get("pendingRestock")), 0);
-            else
-                return cb.equal(cb.size(root.get("pendingRestock")), 0);
+
+            return hasPending
+                    ? cb.isNotEmpty(root.get("pendingRestock"))
+                    : cb.isEmpty(root.get("pendingRestock"));
         };
     }
 }

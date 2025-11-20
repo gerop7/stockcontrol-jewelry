@@ -1,12 +1,12 @@
 package com.gerop.stockcontrol.jewelry.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelFilterDto;
 import com.gerop.stockcontrol.jewelry.repository.spec.JewelSpecifications;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingJewelRestockService;
+import com.gerop.stockcontrol.jewelry.sort.SortDto;
+import com.gerop.stockcontrol.jewelry.sort.SortMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -262,7 +262,7 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional
     public void addToInventory(Long id, Long inventoryId, Long quantity) {
-        Jewel jewel = jewelRepository.findByIdWithStockByInventory(id)
+        Jewel jewel = jewelRepository.findByIdWithStockByInventoryAndMaterials(id)
             .orElseThrow(()-> new JewelNotFoundException("La joya con "+id+" no existe!"));
         Inventory inventory = invService.findOne(inventoryId)
             .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
@@ -271,6 +271,14 @@ public class JewelService implements IJewelService{
         
         jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
         jewel.getInventories().add(inventory);
+
+        jewel.getMetal().forEach(m->{
+            metalService.addToInventory(m.getId(),inventory,0f);
+        });
+
+        jewel.getStone().forEach(s->{
+            stoneService.addToInventory(s.getId(),inventory,0L);
+        });
 
         save(jewel);
     }
@@ -299,84 +307,30 @@ public class JewelService implements IJewelService{
     @Override
     @Transactional(readOnly=true)
     public Optional<JewelDto> findByIdDto(Long id) {
-        return jewelRepository.findByIdFullData(id).map(mapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<JewelDto> findAllByCurrentUserDto(int page, int size) {
-        Long userId = userServiceHelper.getCurrentUser().getId();
-
-        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByUserId(userId, PageRequest.of(page, size));
-        if (jewelIdsPage.isEmpty()) return Page.empty();
-
-        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent());
-        List<JewelDto> jewelDtos = jewels.stream().map(mapper::toDto).toList();
-        return new PageImpl<>(jewelDtos, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<JewelDto> findAllByInventoryDto(Long inventoryId, int page, int size) {
-        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
-
-        if (jewelIdsPage.isEmpty()) return Page.empty();
-
-        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent());
-
-        jewels.forEach(jewel -> filterByInventory(jewel, inventoryId));
-
-        List<JewelDto> jewelDtos = jewels.stream().map(mapper::toDto).toList();
-
-        return new PageImpl<>(jewelDtos, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
+        return jewelRepository.findByIdFullDataWithStocks(id).map(mapper::toDto);
     }
 
     @Override
     @Transactional(readOnly=true)
     public Optional<Jewel> findById(Long jewelId) {
-        return jewelRepository.findByIdFullData(jewelId);
+        return jewelRepository.findByIdFullDataWithStocks(jewelId);
     }
+
 
     @Override
-    @Transactional(readOnly=true)
-    public Page<Jewel> findAllByCurrentUser(int page, int size) {
-        Long userId = userServiceHelper.getCurrentUser().getId();
-
-        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByUserId(userId, PageRequest.of(page, size));
-        if (jewelIdsPage.isEmpty()) return Page.empty();
-
-        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullDataByUser(jewelIdsPage.getContent(), userId);
-
-        return new PageImpl<>(jewels, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
-    }
-
-    @Override
-    @Transactional(readOnly=true)
-    public Page<Jewel> findAllByInventory(Long inventoryId, int page, int size) {
-        Page<Long> jewelIdsPage = jewelRepository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
-        if (jewelIdsPage.isEmpty()) return Page.empty();
-
-        List<Jewel> jewels = jewelRepository.findAllByIdsWithFullData(jewelIdsPage.getContent());
-
-        jewels.forEach(jewel -> filterByInventory(jewel, inventoryId));
-
-        return new PageImpl<>(jewels, jewelIdsPage.getPageable(), jewelIdsPage.getTotalElements());
-    }
-
-    private void filterByInventory(Jewel j, Long inventoryId) {
-        j.setPendingRestock(j.getPendingRestock().stream()
-                .filter(p -> p.getInventory().getId().equals(inventoryId))
-                .toList());
-
-        j.setStockByInventory(j.getStockByInventory().stream()
-                .filter(s -> s.getInventory().getId().equals(inventoryId))
-                .toList());
-    }
-
-    @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public Optional<JewelDto> findByIdAndInventoryIdDto(Long id, Long inventoryId) {
-        return findByIdAndInventoryId(id, inventoryId).map(mapper::toDto);
+
+        return jewelRepository.findByIdFullData(id)
+                .map(j -> mapper.toDto(
+                        j,
+                        List.of(
+                                stockService.findOne(id, inventoryId)
+                                        .orElseThrow(() -> new StockNotFoundException("Stock inexistente en el inventario " + inventoryId))
+                        ),
+                        pendingRestockService.findOne(id, inventoryId)
+                                .map(List::of).orElse(Collections.emptyList())
+                ));
     }
 
     @Override
@@ -389,7 +343,8 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public Page<JewelDto> filterMyJewels(JewelFilterDto f, int page, int size) {
+    @Transactional(readOnly = true)
+    public Page<JewelDto> filterMyJewels(JewelFilterDto f, SortDto sort, int page, int size) {
         Long userId = userServiceHelper.getCurrentUser().getId();
 
         Specification<Jewel> spec = Specification.allOf(
@@ -398,14 +353,14 @@ public class JewelService implements IJewelService{
                 JewelSpecifications.skuEquals(f.sku()),
                 JewelSpecifications.categoryIs(f.categoryId()),
                 JewelSpecifications.subcategoryIs(f.subcategoryId()),
-                JewelSpecifications.hasMetal(f.metalIds()),
-                JewelSpecifications.hasStone(f.stoneIds()),
+                JewelSpecifications.hasMetals(f.metalIds()),
+                JewelSpecifications.hasStones(f.stoneIds()),
                 JewelSpecifications.weightBetween(f.minWeight(), f.maxWeight()),
                 JewelSpecifications.sizeBetween(f.minSize(), f.maxSize()),
                 JewelSpecifications.activeIs(f.active())
         );
 
-        Page<Jewel> idsPage = jewelRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Jewel> idsPage = jewelRepository.findAll(spec, buildPageRequest(page,size,sort));
         if (idsPage.isEmpty()) return Page.empty();
 
         List<Long> ids = idsPage.getContent().stream().map(Jewel::getId).toList();
@@ -416,45 +371,60 @@ public class JewelService implements IJewelService{
     }
 
     @Override
-    public Page<JewelDto> filterJewels(JewelFilterDto f, Long inventoryId, int page, int size) {
+    @Transactional(readOnly = true)
+    public Page<JewelDto> filterJewels(JewelFilterDto f, SortDto sort, Long inventoryId, int page, int size) {
         if(inventoryId==null)
             throw new RequiredFieldException("Debes indicar un Inventario!");
 
-        Long userId = userServiceHelper.getCurrentUser().getId();
-
         Specification<Jewel> spec = Specification.allOf(
-                JewelSpecifications.belongsToUser(userId),
                 JewelSpecifications.inInventory(inventoryId),
                 JewelSpecifications.nameContains(f.name()),
                 JewelSpecifications.skuEquals(f.sku()),
                 JewelSpecifications.categoryIs(f.categoryId()),
                 JewelSpecifications.subcategoryIs(f.subcategoryId()),
-                JewelSpecifications.hasMetal(f.metalIds()),
-                JewelSpecifications.hasStone(f.stoneIds()),
+                JewelSpecifications.hasMetals(f.metalIds()),
+                JewelSpecifications.hasStones(f.stoneIds()),
                 JewelSpecifications.weightBetween(f.minWeight(), f.maxWeight()),
                 JewelSpecifications.sizeBetween(f.minSize(), f.maxSize()),
                 JewelSpecifications.activeIs(f.active())
         );
 
-        Page<Jewel> idsPage = jewelRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Jewel> idsPage = jewelRepository.findAll(spec, buildPageRequest(page,size,sort));
 
         if (idsPage.isEmpty()) return Page.empty();
 
-        List<Long> ids = idsPage.getContent().stream()
-                .map(Jewel::getId)
-                .toList();
+        List<Long> ids = idsPage.getContent().stream().map(Jewel::getId).toList();
 
-        List<JewelDto> dtos = jewelRepository.findAllByIdsWithFullData(ids).parallelStream().peek(j -> filterByInventory(j, inventoryId))
-                .filter(j -> filterByStock(j, f.minStock(), f.maxStock())).filter(j -> filterByPending(j, f.hasPendingRestock()))
-                .map(mapper::toDto).toList();
+        List<JewelDto> dtos = jewelRepository.findAllByIdsWithFullData(ids)
+                .stream()
+                .map(j ->
+                    mapper.toDto(
+                            j,
+                            List.of(stockService.findOne(j.getId(), inventoryId)
+                                    .orElseThrow(() -> new StockNotFoundException("No existe stock de la joya "+j.getSku()+" en el inventario "+inventoryId+"."))
+                            ),
+                            pendingRestockService.findOne(j.getId(), inventoryId)
+                                    .map(List::of).orElse(Collections.emptyList())
+                    )
+        ).toList();
 
         return new PageImpl<>(dtos, idsPage.getPageable(), idsPage.getTotalElements());
+    }
+
+    private void filterByInventory(Jewel j, Long inventoryId) {
+        j.setPendingRestock(j.getPendingRestock().stream()
+                .filter(p -> p.getInventory().getId().equals(inventoryId))
+                .toList());
+
+        j.setStockByInventory(j.getStockByInventory().stream()
+                .filter(s -> s.getInventory().getId().equals(inventoryId))
+                .toList());
     }
 
     private boolean filterByStock(Jewel j, Float min, Float max) {
         if (min == null && max == null) return true;
 
-        long stock = j.getStockByInventory().isEmpty()?0:j.getStockByInventory().get(0).getQuantity();
+        long stock = j.getStockByInventory().isEmpty()?0:j.getStockByInventory().getFirst().getStock();
 
         if (min != null && stock < min) return false;
         if (max != null && stock > max) return false;
@@ -470,6 +440,9 @@ public class JewelService implements IJewelService{
         return hasPending.equals(actual);
     }
 
+    private PageRequest buildPageRequest(int page, int size, SortDto sort) {
+        return PageRequest.of(page, size, SortMapper.toSpringSort(sort));
+    }
 
     @Override
     @Transactional(readOnly=true)
@@ -493,5 +466,4 @@ public class JewelService implements IJewelService{
 
 
     }
-
 }

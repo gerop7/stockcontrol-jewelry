@@ -28,7 +28,11 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name="jewelry",
     uniqueConstraints= @UniqueConstraint(columnNames={"sku", "user_id"}))
@@ -134,133 +138,4 @@ public class Jewel {
         this.name = name;
         this.description = description;
     }
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-     }
-        
-    public String getName() {
-        return name;
-    }
-        
-    public void setName(String name) {
-        this.name = name;
-    }
-        
-     public String getDescription() {
-        return description;
-    }
-        
-    public String getImageUrl() {
-        return imageUrl;
-    }
-    
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public Category getCategory() {
-        return category;
-    }
-    
-    public void setCategory(Category category2) {
-        this.category = category2;
-    }
-    
-    public List<Metal> getMetal() {
-        return metal;
-    }
-    
-    public void setMetal(List<Metal> metal) {
-        this.metal = metal;
-    }
-    
-    public Subcategory getSubcategory() {
-        return subcategory;
-    }
-
-    public void setSubcategory(Subcategory subcategory) {
-        this.subcategory = subcategory;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public List<Stone> getStone() {
-        return stone;
-    }
-
-    public void setStone(List<Stone> stone) {
-        this.stone = stone;
-    }
-
-    public Float getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Float weight) {
-        this.weight = weight;
-    }
-
-    public Float getSize() {
-        return size;
-    }
-
-    public void setSize(Float size) {
-        this.size = size;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
-
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-
-    public List<JewelryStockByInventory> getStockByInventory() {
-        return stockByInventory;
-    }
-
-    public void setStockByInventory(List<JewelryStockByInventory> stockByInventory) {
-        this.stockByInventory = stockByInventory;
-    }
-
-    public List<PendingJewelRestock> getPendingRestock() {
-        return pendingRestock;
-    }
-
-    public void setPendingRestock(List<PendingJewelRestock> pendingRestock) {
-        this.pendingRestock = pendingRestock;
-    }
-
-    public Set<Inventory> getInventories() {
-        return inventories;
-    }
-
-    public void setInventories(Set<Inventory> inventories) {
-        this.inventories = inventories;
-    }
-}    
+}

@@ -8,7 +8,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 
 import java.util.Optional;
 
-public abstract class AbstractStockByInventoryService<T, O, N extends Number > implements IStockByInventoryService<T, O, N> {
+public abstract class AbstractStockByInventoryService<T, O, N extends Number> implements IStockByInventoryService<T, O, N> {
     protected abstract T getStockOrThrow(O object, Inventory inventory);
     protected abstract T getStockOrCreate(O object, Inventory inventory);
     protected abstract T save(T stock);
