@@ -10,7 +10,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(
     name = "pending_metal_restock",
@@ -37,19 +41,4 @@ public class PendingMetalRestock extends PendingRestock {
         this.weight = weight;
     }
 
-    public Float getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Float weight) {
-        this.weight = weight;
-    }
-
-    public Metal getMetal() {
-        return metal;
-    }
-
-    public void setMetal(Metal metal) {
-        this.metal = metal;
-    }
 }

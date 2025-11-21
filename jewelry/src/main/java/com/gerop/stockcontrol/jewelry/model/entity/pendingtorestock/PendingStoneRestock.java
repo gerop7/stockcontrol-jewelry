@@ -10,7 +10,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(
     name = "pending_stone_restock",
@@ -45,21 +49,4 @@ public class PendingStoneRestock extends PendingRestock{
     }
 
 
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
-    }
-
-    public Stone getStone() {
-        return stone;
-    }
-
-    public void setStone(Stone stone) {
-        this.stone = stone;
-    }
-
-    
 }

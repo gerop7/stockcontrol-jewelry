@@ -1,6 +1,7 @@
 package com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -10,15 +11,10 @@ import com.gerop.stockcontrol.jewelry.model.entity.Jewel;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @Setter
 @Getter
@@ -28,34 +24,15 @@ import jakarta.validation.constraints.PositiveOrZero;
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"inventory_id", "jewel_id"})
     })
-public class JewelryStockByInventory {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Inventory inventory;
-
+@NoArgsConstructor
+public class JewelryStockByInventory extends StockByInventory{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jewel_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Jewel jewel;
 
-    @PositiveOrZero
-    @NotNull
-    private Long stock;
-
-    public JewelryStockByInventory() {
-        this.stock = 0L;
-    }
-
-    public JewelryStockByInventory(Inventory inventory, Jewel jewel, Long stock) {
-        this.inventory = inventory;
+    public JewelryStockByInventory(Inventory inventory,  Jewel jewel, Long stock) {
+        super(stock, inventory);
         this.jewel = jewel;
-        this.stock = stock;
     }
-
-
 }
