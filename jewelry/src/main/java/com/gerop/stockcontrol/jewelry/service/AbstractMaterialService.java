@@ -198,17 +198,19 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
     @Override
     @Transactional
     public void addToInventory(Long materialId, Inventory inventory, N quantity) {
-        M material = repository.findByIdWithStockByInventory(materialId)
-                .orElseThrow(()-> new MaterialNotFoundException(materialId,className()));
-
-        if(!permissionsService.canAddToInventory(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
-            throw new MaterialPermissionDeniedException("No puedes añadir el "+className()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
-
         if(!stockService.existByIdAndInventoryId(materialId,inventory.getId())){
-            addToInventoryInternal(material, inventory, quantity);
-        }
+            M material = repository.findByIdWithStockByInventory(materialId)
+                    .orElseThrow(()-> new MaterialNotFoundException(materialId,className()));
 
-        save(material);
+            if(!permissionsService.canAddToInventory(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
+                throw new MaterialPermissionDeniedException("No puedes añadir el "+className()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
+
+            if(!material.isGlobal()){
+                addToInventoryInternal(material, inventory, quantity);
+            }
+
+            save(material);
+        }
     }
 
     @Override

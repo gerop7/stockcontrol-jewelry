@@ -42,12 +42,12 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
     @Override
     public void addToInventories(Subcategory sub, List<Inventory> inventories) {
         if(!sub.isGlobal()){
-            Set<Long> existingIds = sub.getInventories().stream().map(Inventory::getId).collect(Collectors.toSet());
             Long currentUserId = helper.getCurrentUser().getId();
+            Set<Inventory> existingInv = sub.getInventories();
             inventories.forEach(
                 inv -> {
-                    if(!existingIds.contains(inv.getId())){
-                        if(!permissionsService.canAddToInventory(sub.getId(), inv.getId(), currentUserId))
+                    if(!existingInv.contains(inv)){
+                        if(!permissionsService.isOwner(currentUserId, sub.getId()))
                             throw new CategoryNotAvaibleException("No se puede asignar la subcategoria "+sub.getName()+", en el inventario "+inv.getName()+".");
                         
                         sub.getInventories().add(inv);

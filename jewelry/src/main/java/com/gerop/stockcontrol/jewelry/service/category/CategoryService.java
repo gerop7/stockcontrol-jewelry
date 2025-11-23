@@ -34,18 +34,16 @@ public class CategoryService extends AbstractCategoryService<Category, CategoryD
     @Transactional
     public void addToInventories(Category cat, List<Inventory> inventories) {
         if(!cat.isGlobal()){
-            Set<Long> existingIds = cat.getInventories().stream().map(Inventory::getId).collect(Collectors.toSet());
+            Set<Inventory> existingInv = cat.getInventories();
             Long currentUserId = helper.getCurrentUser().getId();
             inventories.forEach(
                 s -> {
-                    if (!existingIds.contains(s.getId())) {
-                    // Validar que el usuario actual sea dueño de la categoría
-                    if (!permissionsService.canAddToInventory(cat.getId(), s.getId(), currentUserId))
-                        throw new CategoryNotAvaibleException("No se puede asignar la categoría " + cat.getName() +" al inventario " + s.getName() + ".");
-
-                    cat.getInventories().add(s);
-                }
-            });
+                    if (!existingInv.contains(s)) {
+                        if (!permissionsService.isOwner(currentUserId, cat.getId()))
+                            throw new CategoryNotAvaibleException("No se puede asignar la categoría " + cat.getName() +" al inventario " + s.getName() + ".");
+                        cat.getInventories().add(s);
+                    }
+                });
             save(cat);
         }
     }

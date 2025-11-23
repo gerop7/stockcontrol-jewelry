@@ -11,4 +11,5 @@ public interface IInventoryService {
 
     public List<Inventory> findAll(List<Long> inventoryIds);
 
+    List<Long> validateWritePermissions(List<Long> inventoriesIds);
 }

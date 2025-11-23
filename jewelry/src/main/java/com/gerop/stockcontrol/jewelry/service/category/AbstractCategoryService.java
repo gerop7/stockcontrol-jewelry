@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service.category;
 
+import com.gerop.stockcontrol.jewelry.exception.CategoryNotAvaibleException;
 import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
 import com.gerop.stockcontrol.jewelry.mapper.CategoryMapper;
@@ -14,11 +15,11 @@ import com.gerop.stockcontrol.jewelry.service.permissions.ICategoryPermissionsSe
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public abstract class AbstractCategoryService<C extends AbstractCategory, CDto extends ICategoryDto> implements ICategoryService<C, CDto>{
@@ -30,9 +31,10 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
     protected final CategoryMapper mapper;
 
     protected abstract void createInternal(C cat, CDto dto);
-    protected abstract void addToInventoryInternal(C cat, List<Inventory> inventories);
     protected abstract String className();
-
+    protected abstract void addToInventoryInternal(C cat, Inventory inventory);
+    protected abstract void removeFromInventoryInternal(C cat, Inventory inventory);
+    protected abstract Set<Inventory> getInventories(C cat);
 
     @Override
     @Transactional
@@ -48,72 +50,126 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
     }
 
     @Override
+    @Transactional
     public C save(C cat) {
-        repository.save(cat);
+        return repository.save(cat);
+    }
+
+    protected void validateFields(C cat, List<Inventory> inventories){
+        if(inventories==null || inventories.isEmpty() || cat==null)
+            throw new RequiredFieldException("No se puede agregar la "+getClass()+" a ningún inventario.");
     }
 
     @Override
+    @Transactional
     public void addToInventories(C cat, List<Inventory> inventories) {
-        if(inventories==null || inventories.isEmpty() || cat==null)
-            throw new RequiredFieldException("No se puede agregar la "+getClass()+" a ningún inventario.");
+        validateFields(cat, inventories);
 
         if(!cat.isGlobal()){
-            addToInventoryInternal(cat, inventories);
-            save(cat);
+            Long currentUserId = helper.getCurrentUser().getId();
+            Set<Inventory> existingInv = getInventories(cat);
+            inventories.forEach(
+                    inventory -> {
+                        if(!existingInv.contains(inventory)){
+                            if(permissionsService.isOwner(currentUserId, cat.getId())){
+                                addToInventoryInternal(cat,inventory);
+                            }
+                        }
+                    }
+            );
         }
     }
 
     @Override
+    @Transactional
     public void addToInventories(Long catId, List<Long> inventoriesIds) {
         C cat = repository.findByIdWithOwner(catId).orElseThrow(() -> new CategoryNotFoundException(catId, className()));
+        inventoriesIds = inventoryService.validateWritePermissions(inventoriesIds);
         List<Inventory> inventories = inventoryService.findAll(inventoriesIds);
 
         addToInventories(cat, inventories);
     }
 
     @Override
+    @Transactional
     public void addToInventory(Long catId, Inventory inventory){
         C cat = repository.findByIdWithOwner(catId).orElseThrow(() -> new CategoryNotFoundException(catId, className()));
         addToInventories(cat, List.of(inventory));
     }
 
     @Override
+    @Transactional
     public void removeFromInventories(C cat, List<Inventory> inventories) {
-
+        validateFields(cat, inventories);
+        if(!cat.isGlobal()){
+            Set<Inventory> existingInv = getInventories(cat);
+            inventories.forEach(
+                    inventory -> {
+                        if(existingInv.contains(inventory)){
+                            removeFromInventoryInternal(cat, inventory);
+                        }
+                    }
+            );
+        }else
+            throw new CategoryNotAvaibleException("No puedes eliminar una "+getClass()+" de un inventario.");
     }
 
     @Override
+    @Transactional
     public void removeFromInventories(Long catId, List<Long> inventoriesIds) {
+        C cat = repository.findByIdWithOwner(catId).orElseThrow(() -> new CategoryNotFoundException(catId, className()));
+        inventoriesIds = inventoryService.validateWritePermissions(inventoriesIds);
+        List<Inventory> inventories = inventoryService.findAll(inventoriesIds);
 
+        removeFromInventories(cat, inventories);
+    }
+
+    @Override
+    @Transactional
+    public void removeFromInventory(Long catId, Inventory inventory){
+        C cat = repository.findByIdWithOwner(catId).orElseThrow(() -> new CategoryNotFoundException(catId, className()));
+        removeFromInventories(cat, List.of(inventory));
     }
 
     @Override
     public List<CDto> findAllByUser(Long userId) {
-        return null;
+        return (List<CDto>) repository.findAllByUser(userId).stream().map(mapper::toDto);
     }
 
     @Override
-    public Set<CDto> findAllByInventory(Long userId, Long inventoryId) {
-        return Set.of();
+    public List<CDto> findAllByInventory(Long inventoryId) {
+        return (List<CDto>) repository.findAllByInventory(inventoryId).stream().map(mapper::toDto);
     }
 
     @Override
-    public List<CDto> findAllByUserNotInInventory(Long userId, Long inventoryId) {
-        return List.of();
+    public List<CDto> findAllByUserNotInInventory(Long inventoryId) {
+        return (List<CDto>) repository.findAllByUserNotInInventory(helper.getCurrentUser().getId(),inventoryId).stream().map(mapper::toDto);
     }
 
     @Override
-    public CDto findById(Long id) {
-        return null;
+    public List<CDto> findAllToCreateInInventory(Long inventoryId){
+        List<C> catByUser = repository.findAllByUser(helper.getCurrentUser().getId());
+        List<C> catByInv = repository.findAllByInventory(inventoryId);
+
+        Set<C> result = new HashSet<>();
+        result.addAll(catByInv);
+        result.addAll(catByUser);
+
+        return (List<CDto>) result.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public List<CDto> findAllContainsName(List<CDto> categories, String string){
+        return categories.stream().filter(c -> c.name() != null && c.name().toLowerCase().contains(string.toLowerCase())).toList();
     }
 
     @Override
     public Optional<C> findOneWithOwner(Long catId) {
-        return Optional.empty();
+        return repository.findByIdWithOwner(catId);
     }
 
     @Override
     public Optional<C> findOne(Long catId) {
-        return Optional.empty();
+        return Optional.of(repository.findById(catId).orElseThrow(() -> new CategoryNotFoundException(catId, String.valueOf(className()))));
     }
 }
