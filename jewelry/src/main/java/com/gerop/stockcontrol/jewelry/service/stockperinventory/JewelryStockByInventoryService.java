@@ -67,4 +67,9 @@ public class JewelryStockByInventoryService extends AbstractStockByInventoryServ
     protected void applySubtraction(JewelryStockByInventory stock, Long quantity) {
         stock.setStock((stock.getStock()-quantity<0)?0L:stock.getStock()-quantity);
     }
+
+    @Override
+    public Optional<JewelryStockByInventory> findOne(Long objId, Long inventoryId) {
+        return repository.findByJewelAndInventoryIdFullData(objId,inventoryId);
+    }
 }

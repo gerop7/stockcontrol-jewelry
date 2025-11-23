@@ -33,10 +33,10 @@ public class MetalService extends AbstractMaterialService<Metal, Float, MetalDto
 
                     Inventory inventory = getInventoryOrThrow(stock.inventoryId());
 
-                    if(stock.weight()!=null && stock.weight()>=0)
+                    if(stock.weight()!=null && stock.weight()>=0){
                         addToInventoryInternal(material, inventory, stock.weight());
-
-                    material.getPendingMetalRestock().add(pendingRestockService.create(material, inventory));
+                        material.getPendingMetalRestock().add(pendingRestockService.createSave(material, inventory));
+                    }
                 }
         );
     }

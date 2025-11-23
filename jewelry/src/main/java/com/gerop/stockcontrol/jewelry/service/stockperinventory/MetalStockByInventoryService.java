@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service.stockperinventory;
 
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
@@ -20,6 +21,11 @@ public class MetalStockByInventoryService extends AbstractStockByInventoryServic
     @Override
     public void remove(MetalStockByInventory stock) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean existByIdAndInventoryId(Long materialId, Long id) {
+        return repository.existsByInventoryIdAndMetalId(materialId,id);
     }
 
     @Override
@@ -63,4 +69,8 @@ public class MetalStockByInventoryService extends AbstractStockByInventoryServic
         stock.setStock((stock.getStock()-quantity<0)?0f:stock.getStock()-quantity);
     }
 
+    @Override
+    public Optional<MetalStockByInventory> findOne(Long objId, Long inventoryId) {
+        return repository.findByMetalAndInventoryIdFullData(objId,inventoryId);
+    }
 }

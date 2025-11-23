@@ -17,9 +17,11 @@ public interface StoneStockByInventoryRepository extends JpaRepository<StoneStoc
     Optional<StoneStockByInventory> findByStoneAndInventory(Stone object, Inventory inventory);
 
     @Query("""
-        SELECT s FROM StoneStockByInventory s
+        SELECT s
+        FROM StoneStockByInventory s
+        JOIN FETCH s.stone st
         JOIN FETCH s.inventory i
-        WHERE j.id = :objId AND i.id = :inventoryId
-    """)
+        WHERE st.id = :objId AND i.id = :inventoryId
+        """)
     Optional<StoneStockByInventory> findByStoneAndInventoryIdFullData(Long objId, Long inventoryId);
 }

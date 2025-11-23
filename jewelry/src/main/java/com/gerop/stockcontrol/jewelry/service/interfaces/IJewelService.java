@@ -33,6 +33,7 @@ public interface IJewelService {
     Optional<Jewel> findByIdAndInventoryId(Long id, Long inventoryId);
     Page<JewelDto> filterMyJewels(JewelFilterDto f, SortDto sort, int page, int size);
     Page<JewelDto> filterJewels(JewelFilterDto f, SortDto sort, Long inventoryId, int page, int size);
+    Page<JewelDto> filterJewelsNotInInventory(JewelFilterDto f, SortDto sort, Long inventoryId, int page, int size);
 
     boolean haveStones(Long jewelId);
     boolean existsByIdAndHasOneMetal(Jewel jewel, Long metalId);

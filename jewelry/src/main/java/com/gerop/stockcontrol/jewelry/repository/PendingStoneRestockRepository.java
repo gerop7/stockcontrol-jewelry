@@ -17,9 +17,11 @@ public interface PendingStoneRestockRepository extends JpaRepository<PendingSton
 
 
     @Query("""
-        SELECT s FROM PendingStoneRestock s
+        SELECT s
+        FROM PendingStoneRestock s
+        JOIN FETCH s.stone st
         JOIN FETCH s.inventory i
-        WHERE j.id = :objId AND i.id = :inventoryId
+        WHERE st.id = :objId AND i.id = :invId
     """)
     Optional<PendingStoneRestock> findByStoneIdAndInventoryIdFullData(Long objId, Long invId);
 }

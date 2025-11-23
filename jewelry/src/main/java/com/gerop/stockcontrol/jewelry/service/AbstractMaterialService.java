@@ -18,6 +18,7 @@ import java.util.function.Function;
 import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.model.entity.movement.Movement;
 import com.gerop.stockcontrol.jewelry.model.entity.pendingtorestock.PendingRestock;
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.StockByInventory;
 import com.gerop.stockcontrol.jewelry.repository.MaterialBaseRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IMaterialService;
@@ -33,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 public abstract class AbstractMaterialService<M extends Material, N extends Number,
-        MDto extends MaterialDto, R extends MaterialBaseRepository<M>, Mov extends Movement, Pend extends PendingRestock, S> implements IMaterialService<M, N, MDto> {
+        MDto extends MaterialDto, R extends MaterialBaseRepository<M>, Mov extends Movement, Pend extends PendingRestock, S extends StockByInventory<N>> implements IMaterialService<M, N, MDto> {
 
     protected final R repository;
     protected final UserServiceHelper helperService;
@@ -203,8 +204,9 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
         if(!permissionsService.canAddToInventory(materialId, helperService.getCurrentUser().getId(), inventory.getId()))
             throw new MaterialPermissionDeniedException("No puedes añadir el "+className()+" "+material.getName()+" en el Inventario "+inventory.getName()+".");
 
-
-        addToInventoryInternal(material, inventory, quantity);
+        if(!stockService.existByIdAndInventoryId(materialId,inventory.getId())){
+            addToInventoryInternal(material, inventory, quantity);
+        }
 
         save(material);
     }

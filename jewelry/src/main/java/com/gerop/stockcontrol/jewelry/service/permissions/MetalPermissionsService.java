@@ -41,7 +41,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
     public boolean canAddToInventory(Long materialId, Long userId, Long inventoryId) {
         Metal metal = metalRepository.findById(materialId)
                 .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
-        return (metal.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId) && !metalStockRepository.existsByInventoryIdAndMetalId(materialId, inventoryId);
+        return (metal.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId);
     }
 
     @Override

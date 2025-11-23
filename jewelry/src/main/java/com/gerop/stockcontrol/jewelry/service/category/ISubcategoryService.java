@@ -1,4 +1,4 @@
-package com.gerop.stockcontrol.jewelry.service.interfaces;
+package com.gerop.stockcontrol.jewelry.service.category;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service.stockperinventory;
 
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.StockByInventory;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
@@ -8,7 +9,7 @@ import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 
 import java.util.Optional;
 
-public abstract class AbstractStockByInventoryService<T, O, N extends Number> implements IStockByInventoryService<T, O, N> {
+public abstract class AbstractStockByInventoryService<T extends StockByInventory<N>, O, N extends Number> implements IStockByInventoryService<T, O, N> {
     protected abstract T getStockOrThrow(O object, Inventory inventory);
     protected abstract T getStockOrCreate(O object, Inventory inventory);
     protected abstract T save(T stock);
@@ -16,7 +17,9 @@ public abstract class AbstractStockByInventoryService<T, O, N extends Number> im
     protected abstract String getObjectName(O object);
     protected abstract void applyAddition(T stock, N quantity);
     protected abstract void applySubtraction(T stock, N quantity);
-    
+    public abstract Optional<T> findOne(Long objId, Long inventoryId);
+
+
     @Override
     @Transactional
     public T create(O object, Inventory inventory, N quantity) {

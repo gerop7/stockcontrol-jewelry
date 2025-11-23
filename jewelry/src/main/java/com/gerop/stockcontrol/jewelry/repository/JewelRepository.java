@@ -55,20 +55,20 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
     Optional<Jewel> findByIdWithStockByInventory(Long id);
 
     @Query("""
-        SELECT DISTINCT j FROM Jewel j
+        SELECT DISTINCT j
+        FROM Jewel j
+    
+        JOIN j.inventories inv ON inv.id = :inventoryId
+    
         LEFT JOIN FETCH j.category c
         LEFT JOIN FETCH j.subcategory s
         LEFT JOIN FETCH j.metal m
         LEFT JOIN FETCH j.stone st
         LEFT JOIN FETCH j.user u
     
-        LEFT JOIN FETCH j.inventories inv ON inv.id = :inventoryId
+        LEFT JOIN FETCH j.stockByInventory stock ON stock.inventory.id = :inventoryId
     
-        LEFT JOIN FETCH j.stockByInventory stock
-            ON stock.inventory.id = :inventoryId
-    
-        LEFT JOIN FETCH j.pendingRestock pend
-            ON pend.inventory.id = :inventoryId
+        LEFT JOIN FETCH j.pendingRestock pend ON pend.inventory.id = :inventoryId
     
         WHERE j.id = :id
     """)
@@ -94,33 +94,15 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
     Optional<Jewel> findByIdFullDataWithStocks(@Param("id") Long id);
 
     @Query("""
-        SELECT j.id
+        SELECT DISTINCT j
         FROM Jewel j
-        JOIN j.inventories i
-        WHERE j.active = true AND i.id = :inventoryId
-    """)
-    Page<Long> findAllIdsByInventoryId(@Param("inventoryId") Long inventoryId, Pageable pageable);
+        JOIN j.inventories inv ON inv.id = :inventoryId
 
-    @Query("""
-        SELECT DISTINCT j FROM Jewel j
-        LEFT JOIN FETCH j.category
-        LEFT JOIN FETCH j.subcategory
-        LEFT JOIN FETCH j.metal
-        LEFT JOIN FETCH j.stone
-        LEFT JOIN FETCH j.inventories
-        WHERE j.id IN :ids
-    """)
-    List<Jewel> findAllByIdsWithFullData(@Param("ids") List<Long> ids);
-
-    @Query("""
-        SELECT DISTINCT j FROM Jewel j
         LEFT JOIN FETCH j.category c
         LEFT JOIN FETCH j.subcategory s
         LEFT JOIN FETCH j.metal m
         LEFT JOIN FETCH j.stone st
         LEFT JOIN FETCH j.user u
-    
-        LEFT JOIN j.inventories inv ON inv.id = :inventoryId
     
         LEFT JOIN FETCH j.stockByInventory stock ON stock.inventory.id = :inventoryId
     
@@ -132,13 +114,6 @@ public interface JewelRepository extends JpaRepository<Jewel, Long>, JpaSpecific
             @Param("ids") List<Long> ids,
             @Param("inventoryId") Long inventoryId
     );
-
-    @Query("""
-        SELECT j.id
-        FROM Jewel j
-        WHERE j.active = true AND j.user.id = :userId
-    """)
-    Page<Long> findAllIdsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
         SELECT DISTINCT j FROM Jewel j

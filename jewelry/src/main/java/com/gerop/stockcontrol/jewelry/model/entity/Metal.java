@@ -10,7 +10,11 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name="metal")
 public class Metal extends Material {
@@ -27,7 +31,6 @@ public class Metal extends Material {
     }
 
     
-    
     public Metal(String name, User user, boolean global, String urlImage) {
         super(name, user, global, urlImage);
         this.stockByInventory=new ArrayList<>();
@@ -35,20 +38,4 @@ public class Metal extends Material {
     }
 
 
-
-    public List<MetalStockByInventory> getStockByInventory() {
-        return stockByInventory;
-    }
-
-    public void setStockByInventory(List<MetalStockByInventory> stockByInventory) {
-        this.stockByInventory = stockByInventory;
-    }
-
-    public List<PendingMetalRestock> getPendingMetalRestock() {
-        return pendingMetalRestock;
-    }
-
-    public void setPendingMetalRestock(List<PendingMetalRestock> pendingMetalRestock) {
-        this.pendingMetalRestock = pendingMetalRestock;
-    }
 }

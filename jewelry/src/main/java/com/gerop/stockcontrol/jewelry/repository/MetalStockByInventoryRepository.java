@@ -18,9 +18,11 @@ public interface MetalStockByInventoryRepository extends JpaRepository<MetalStoc
     Optional<MetalStockByInventory> findByMetalAndInventory(Metal object, Inventory inventory);
 
     @Query("""
-        SELECT s FROM MetalStockByInventory s
+        SELECT s
+        FROM MetalStockByInventory s
+        JOIN FETCH s.metal m
         JOIN FETCH s.inventory i
-        WHERE j.id = :objId AND i.id = :inventoryId
-    """)
+        WHERE m.id = :objId AND i.id = :inventoryId
+        """)
     Optional<MetalStockByInventory> findByMetalAndInventoryIdFullData(Long objId, Long inventoryId);
 }

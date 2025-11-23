@@ -26,13 +26,13 @@ import jakarta.persistence.UniqueConstraint;
     }
 )
 @NoArgsConstructor
-public class StoneStockByInventory extends StockByInventory{
+public class StoneStockByInventory extends StockByInventory<Long>{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stone_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Stone stone;
 
-    public StoneStockByInventory(Number stock, Inventory inventory, Stone stone) {
+    public StoneStockByInventory(Inventory inventory, Stone stone, Long stock) {
         super(stock, inventory);
         this.stone = stone;
     }

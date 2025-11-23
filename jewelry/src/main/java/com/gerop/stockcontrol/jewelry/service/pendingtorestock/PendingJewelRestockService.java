@@ -150,4 +150,9 @@ public class PendingJewelRestockService implements IPendingRestockService<Pendin
     public Optional<PendingJewelRestock> findOne(Jewel object, Inventory inventory) {
         return repository.findByJewelIdAndInventoryId(object.getId(), inventory.getId());
     }
+
+    @Override
+    public Optional<PendingJewelRestock> findOne(Long objId, Long invId) {
+        return repository.findByJewelIdAndInventoryIdFullData(objId, invId);
+    }
 }

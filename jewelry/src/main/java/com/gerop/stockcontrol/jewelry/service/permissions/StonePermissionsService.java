@@ -41,7 +41,7 @@ public class StonePermissionsService implements IMaterialPermissionsService<Ston
         Stone stone = stoneRepository.findById(materialId)
             .orElseThrow(() -> new EntityNotFoundException("Piedra no encontrada"));
         
-        return (stone.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId) && stoneStockRepository.existsByStoneIdAndInventoryId(materialId,inventoryId);
+        return (stone.isGlobal() || isOwner(materialId, userId)) && invPermissions.canWrite(inventoryId, userId);
     }
 
     @Override

@@ -32,7 +32,7 @@ public class MetalStockByInventory extends StockByInventory<Float>{
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Metal metal;
 
-    public MetalStockByInventory(Float stock, Inventory inventory, Metal metal) {
+    public MetalStockByInventory(Inventory inventory, Metal metal, Float stock) {
         super(stock, inventory);
         this.metal = metal;
     }

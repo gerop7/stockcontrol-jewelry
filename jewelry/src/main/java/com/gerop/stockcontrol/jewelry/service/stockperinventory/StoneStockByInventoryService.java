@@ -1,5 +1,7 @@
 package com.gerop.stockcontrol.jewelry.service.stockperinventory;
 
+import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.exception.StockNotFoundException;
@@ -56,7 +58,7 @@ public class StoneStockByInventoryService extends AbstractStockByInventoryServic
 
     @Override
     protected StoneStockByInventory newStock(Stone object, Inventory inventory, Long quantity) {
-        return new StoneStockByInventory(inventory, quantity, object);
+        return new StoneStockByInventory(inventory, object, quantity);
     }
 
     @Override
@@ -74,5 +76,8 @@ public class StoneStockByInventoryService extends AbstractStockByInventoryServic
         stock.setStock((stock.getStock()-quantity<0)?0L:stock.getStock()-quantity);
     }
 
-    
+    @Override
+    public Optional<StoneStockByInventory> findOne(Long objId, Long inventoryId) {
+        return repository.findByStoneAndInventoryIdFullData(objId,inventoryId);
+    }
 }

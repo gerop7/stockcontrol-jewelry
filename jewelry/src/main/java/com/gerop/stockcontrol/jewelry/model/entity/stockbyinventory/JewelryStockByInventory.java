@@ -25,7 +25,7 @@ import jakarta.persistence.UniqueConstraint;
         @UniqueConstraint(columnNames = {"inventory_id", "jewel_id"})
     })
 @NoArgsConstructor
-public class JewelryStockByInventory extends StockByInventory{
+public class JewelryStockByInventory extends StockByInventory<Long>{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jewel_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

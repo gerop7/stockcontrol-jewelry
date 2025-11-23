@@ -4,6 +4,8 @@ import java.util.*;
 
 import com.gerop.stockcontrol.jewelry.model.dto.JewelFilterDto;
 import com.gerop.stockcontrol.jewelry.repository.spec.JewelSpecifications;
+import com.gerop.stockcontrol.jewelry.service.category.CategoryService;
+import com.gerop.stockcontrol.jewelry.service.category.SubcategoryService;
 import com.gerop.stockcontrol.jewelry.service.pendingtorestock.PendingJewelRestockService;
 import com.gerop.stockcontrol.jewelry.sort.SortDto;
 import com.gerop.stockcontrol.jewelry.sort.SortMapper;
@@ -33,10 +35,8 @@ import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.model.entity.stockbyinventory.JewelryStockByInventory;
 import com.gerop.stockcontrol.jewelry.repository.JewelRepository;
-import com.gerop.stockcontrol.jewelry.service.interfaces.ICategoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IJewelService;
-import com.gerop.stockcontrol.jewelry.service.interfaces.ISubcategoryService;
 import com.gerop.stockcontrol.jewelry.service.movement.IJewelMovementService;
 import com.gerop.stockcontrol.jewelry.service.permissions.JewelPermissionsService;
 import com.gerop.stockcontrol.jewelry.service.stockperinventory.JewelryStockByInventoryService;
@@ -54,8 +54,8 @@ public class JewelService implements IJewelService{
     private final IJewelMovementService movementService;
     private final UserServiceHelper userServiceHelper;
     private final PendingJewelRestockService pendingRestockService;
-    private final ICategoryService categoryService;
-    private final ISubcategoryService subcategoryService;
+    private final CategoryService categoryService;
+    private final SubcategoryService subcategoryService;
     private final JewelMapper mapper;
     private final JewelryStockByInventoryService stockService;
     private final IInventoryService invService;
@@ -268,19 +268,17 @@ public class JewelService implements IJewelService{
             .orElseThrow(() -> new InventoryNotFoundException("El inventario con ID: "+inventoryId+" no existe!"));
         if(!jewelPermissionsService.canAddToInventory(id, userServiceHelper.getCurrentUser().getId(), inventoryId))
             throw new InventoryAccessDeniedException("No estas autorizado para agregar la joya "+jewel.getSku()+" en el inventario "+inventory.getName()+".");
-        
-        jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
-        jewel.getInventories().add(inventory);
 
-        jewel.getMetal().forEach(m->{
-            metalService.addToInventory(m.getId(),inventory,0f);
-        });
+        if(!stockService.existByIdAndInventoryId(id,inventoryId)){
+            jewel.getStockByInventory().add(stockService.create(jewel, inventory, quantity));
+            jewel.getInventories().add(inventory);
 
-        jewel.getStone().forEach(s->{
-            stoneService.addToInventory(s.getId(),inventory,0L);
-        });
+            jewel.getMetal().forEach(m-> metalService.addToInventory(m.getId(),inventory,0f));
 
-        save(jewel);
+            jewel.getStone().forEach(s-> stoneService.addToInventory(s.getId(),inventory,0L));
+
+            save(jewel);
+        }
     }
 
     @Override
@@ -321,25 +319,14 @@ public class JewelService implements IJewelService{
     @Transactional(readOnly = true)
     public Optional<JewelDto> findByIdAndInventoryIdDto(Long id, Long inventoryId) {
 
-        return jewelRepository.findByIdFullData(id)
-                .map(j -> mapper.toDto(
-                        j,
-                        List.of(
-                                stockService.findOne(id, inventoryId)
-                                        .orElseThrow(() -> new StockNotFoundException("Stock inexistente en el inventario " + inventoryId))
-                        ),
-                        pendingRestockService.findOne(id, inventoryId)
-                                .map(List::of).orElse(Collections.emptyList())
-                ));
+        return jewelRepository.findByIdFullDataWithInventory(id, inventoryId)
+                .map(mapper::toDto);
     }
 
     @Override
     @Transactional(readOnly=true)
     public Optional<Jewel> findByIdAndInventoryId(Long id, Long inventoryId) {
-        return jewelRepository.findByIdFullData(id).map(jewel -> {
-            filterByInventory(jewel, inventoryId);
-            return jewel;
-        });
+        return jewelRepository.findByIdFullDataWithInventory(id, inventoryId);
     }
 
     @Override
@@ -378,6 +365,7 @@ public class JewelService implements IJewelService{
 
         Specification<Jewel> spec = Specification.allOf(
                 JewelSpecifications.inInventory(inventoryId),
+                JewelSpecifications.joinStock(inventoryId),
                 JewelSpecifications.nameContains(f.name()),
                 JewelSpecifications.skuEquals(f.sku()),
                 JewelSpecifications.categoryIs(f.categoryId()),
@@ -386,7 +374,9 @@ public class JewelService implements IJewelService{
                 JewelSpecifications.hasStones(f.stoneIds()),
                 JewelSpecifications.weightBetween(f.minWeight(), f.maxWeight()),
                 JewelSpecifications.sizeBetween(f.minSize(), f.maxSize()),
-                JewelSpecifications.activeIs(f.active())
+                JewelSpecifications.activeIs(f.active()),
+                JewelSpecifications.hasPendingRestock(inventoryId,f.hasPendingRestock()),
+                JewelSpecifications.stockCondition(inventoryId,f.stockCondition())
         );
 
         Page<Jewel> idsPage = jewelRepository.findAll(spec, buildPageRequest(page,size,sort));
@@ -395,49 +385,16 @@ public class JewelService implements IJewelService{
 
         List<Long> ids = idsPage.getContent().stream().map(Jewel::getId).toList();
 
-        List<JewelDto> dtos = jewelRepository.findAllByIdsWithFullData(ids)
+        List<JewelDto> dtos = jewelRepository.findAllFullDataWithInventory(ids, inventoryId)
                 .stream()
-                .map(j ->
-                    mapper.toDto(
-                            j,
-                            List.of(stockService.findOne(j.getId(), inventoryId)
-                                    .orElseThrow(() -> new StockNotFoundException("No existe stock de la joya "+j.getSku()+" en el inventario "+inventoryId+"."))
-                            ),
-                            pendingRestockService.findOne(j.getId(), inventoryId)
-                                    .map(List::of).orElse(Collections.emptyList())
-                    )
-        ).toList();
+                .map(mapper::toDto)
+                .toList();
 
         return new PageImpl<>(dtos, idsPage.getPageable(), idsPage.getTotalElements());
     }
 
-    private void filterByInventory(Jewel j, Long inventoryId) {
-        j.setPendingRestock(j.getPendingRestock().stream()
-                .filter(p -> p.getInventory().getId().equals(inventoryId))
-                .toList());
-
-        j.setStockByInventory(j.getStockByInventory().stream()
-                .filter(s -> s.getInventory().getId().equals(inventoryId))
-                .toList());
-    }
-
-    private boolean filterByStock(Jewel j, Float min, Float max) {
-        if (min == null && max == null) return true;
-
-        long stock = j.getStockByInventory().isEmpty()?0:j.getStockByInventory().getFirst().getStock();
-
-        if (min != null && stock < min) return false;
-        if (max != null && stock > max) return false;
-
-        return true;
-    }
-
-    private boolean filterByPending(Jewel j, Boolean hasPending) {
-        if (hasPending == null) return true;
-
-        boolean actual = !j.getPendingRestock().isEmpty();
-
-        return hasPending.equals(actual);
+    public Page<JewelDto> filterJewelsNotInInventory(JewelFilterDto f, SortDto sort, Long inventoryId, int page, int size) {
+        return null;
     }
 
     private PageRequest buildPageRequest(int page, int size, SortDto sort) {

@@ -9,5 +9,5 @@ public sealed interface MaterialDto permits MetalDto, StoneDto {
     boolean global();
     String url();
     Set<?> stockByInventory();
-    Set<?> pendingMetalRestock();
+    Set<?> pendingRestock();
 }

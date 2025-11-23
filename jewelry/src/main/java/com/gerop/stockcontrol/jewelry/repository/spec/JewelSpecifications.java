@@ -98,13 +98,16 @@ public class JewelSpecifications {
         return (root, query, cb) ->
                 active == null ? null : cb.equal(root.get("active"), active);
     }
-    
+
     public static Specification<Jewel> joinStock(Long inventoryId) {
         return (root, query, cb) -> {
             if (inventoryId == null) return null;
 
-            root.join("stockByInventory", JoinType.LEFT)
-                    .on(cb.equal(root.get("stockByInventory").get("inventory").get("id"), inventoryId));
+            query.distinct(true);
+
+            var stockJoin = root.join("stockByInventory", JoinType.LEFT);
+
+            stockJoin.on(cb.equal(stockJoin.get("inventory").get("id"), inventoryId));
 
             return cb.conjunction();
         };
@@ -112,21 +115,14 @@ public class JewelSpecifications {
 
     public static Specification<Jewel> hasPendingRestock(Long inventoryId, Boolean hasPending) {
         return (root, query, cb) -> {
-            if (hasPending == null || inventoryId == null) return null;
+            if (hasPending == null || !hasPending || inventoryId == null)
+                return null;
 
             query.distinct(true);
 
-            Join<Object, Object> join = root.join("pendingRestock", JoinType.LEFT);
+            var join = root.join("pendingRestock", JoinType.LEFT);
 
-            Predicate sameInventory =
-                    cb.equal(join.get("inventory").get("id"), inventoryId);
-
-            if (hasPending) {
-                return sameInventory; // existe pending en ese inventario
-            } else {
-                // joyas SIN pending en ese inventario
-                return cb.or(cb.isNull(join.get("id")), cb.not(sameInventory));
-            }
+            return cb.equal(join.get("inventory").get("id"), inventoryId);
         };
     }
 

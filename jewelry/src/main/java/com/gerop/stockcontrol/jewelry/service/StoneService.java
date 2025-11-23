@@ -33,10 +33,10 @@ public class StoneService extends AbstractMaterialService<Stone, Long, StoneDto,
 
                     Inventory inventory = getInventoryOrThrow(stock.inventoryId());
 
-                    if(stock.stock()!=null && stock.stock()>=0)
+                    if(stock.stock()!=null && stock.stock()>=0){
                         addToInventoryInternal(material, inventory, stock.stock());
-
-                    material.getPendingStoneRestock().add(pendingRestockService.create(material, inventory));
+                        material.getPendingStoneRestock().add(pendingRestockService.createSave(material, inventory));
+                    }
                 }
         );
     }

@@ -18,4 +18,5 @@ public interface IPendingRestockService<T extends PendingRestock, N extends Numb
     boolean existsByInventory(Long entityId, Long inventoryId);
     void remove(O object, Inventory inventory);
     Optional<T> findOne(O object, Inventory inventory);
+    Optional<T> findOne(Long objId, Long invId);
 }
