@@ -6,9 +6,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.mapper.CategoryMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.category.SubcategoryDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
+import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.repository.BaseCategoryRepository;
 import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
@@ -23,53 +25,73 @@ import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
 import com.gerop.stockcontrol.jewelry.service.permissions.ICategoryPermissionsService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SubcategoryService extends AbstractCategoryService<Subcategory, SubcategoryDto> {
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    public SubcategoryService(BaseCategoryRepository<Subcategory> repository, ICategoryPermissionsService<Subcategory> permissionsService, UserServiceHelper helper, IInventoryService inventoryService, Function<SubcategoryDto, Subcategory> CategoryFactory, CategoryMapper mapper, CategoryRepository categoryRepository) {
-        super(repository, permissionsService, helper, inventoryService, CategoryFactory, mapper);
-        this.categoryRepository = categoryRepository;
+    public SubcategoryService(SubcategoryRepository repository, SubcategoryPermissionsService permissionsService, UserServiceHelper helper, IInventoryService inventoryService, CategoryMapper mapper, CategoryService categoryService) {
+        super(repository, permissionsService, helper, inventoryService, mapper, dto -> new Subcategory(dto.name(), false, null));
+        this.categoryService = categoryService;
     }
 
     @Override
-    public Optional<Subcategory> findOne(Long subcategoryId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findOne'");
-    }
-
-    @Override
-    public void addToInventories(Subcategory sub, List<Inventory> inventories) {
-        if(!sub.isGlobal()){
-            Long currentUserId = helper.getCurrentUser().getId();
-            Set<Inventory> existingInv = sub.getInventories();
-            inventories.forEach(
-                inv -> {
-                    if(!existingInv.contains(inv)){
-                        if(!permissionsService.isOwner(currentUserId, sub.getId()))
-                            throw new CategoryNotAvaibleException("No se puede asignar la subcategoria "+sub.getName()+", en el inventario "+inv.getName()+".");
-                        
-                        sub.getInventories().add(inv);
-
-                        Category category = sub.getPrincipalCategory();
-                        category.getInventories().add(inv);
-                        categoryRepository.save(category);
+    protected void createInternal(Subcategory sub, SubcategoryDto dto, Long userId) {
+        Category category = categoryService.findOneWithOwner(dto.principalCategoryId())
+                .orElseThrow(() -> new CategoryNotFoundException("Debes adjuntar una categoria padre existente para crear la subcategoría "+dto.name()+"."));
+        if(category.getOwner().getId().equals(userId)){
+            sub.setPrincipalCategory(category);
+            dto.inventoryIds().forEach(
+                    inv -> {
+                        if(permissionsService.canCreate(userId, inv)){
+                            inventoryService.findOne(inv)
+                                    .ifPresent(i -> {
+                                        sub.getInventories().add(i);
+                                        category.getInventories().add(i);
+                                    });
+                        }
                     }
-                }
             );
-            save(sub);
         }
+        categoryService.save(category);
     }
 
     @Override
-    public Optional<Subcategory> findOneWithOwner(Long subId) {
-        return repository.findByIdWithOwner(subId);
+    protected String className() {
+        return "Subcategoría";
     }
 
     @Override
-    public Subcategory save(Subcategory sub) {
-        return repository.save(sub);
+    protected void addToInventoryInternal(Subcategory sub, Inventory inventory) {
+        sub.getInventories().add(inventory);
+        Category category = sub.getPrincipalCategory();
+        category.getInventories().add(inventory);
+        categoryService.save(category);
     }
 
+    @Override
+    protected void removeFromInventoryInternal(Subcategory sub, Inventory inventory) {
+        sub.getInventories().remove(inventory);
+    }
+
+    @Override
+    protected Set<Inventory> getInventories(Subcategory sub) {
+        return sub.getInventories();
+    }
+
+    @Transactional
+    public void removeFromInventoryAllByPrincipalCategory(Category cat, Inventory inventory) {
+        List<Subcategory> subcategories = findAllByPrincipalCategoryAndInventory(cat.getId(), inventory.getId());
+        subcategories.stream().map(
+                s -> {
+                    s.getInventories().remove(inventory);
+                    return repository.save(s);
+                });
+    }
+
+    @Transactional(readOnly = true)
+    public List<Subcategory> findAllByPrincipalCategoryAndInventory(Long principalCategoryId, Long inventoryId){
+        return repository.findAllByPrincipalCategoryAndInventory(principalCategoryId,inventoryId);
+    }
 }

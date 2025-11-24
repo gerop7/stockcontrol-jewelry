@@ -17,4 +17,7 @@ public class CategoryNotFoundException extends RuntimeException {
         super("La "+type+" con ID: "+categoryName+", no fue encontrada.");
     }
 
+    public CategoryNotFoundException(String message) {
+        super(message);
+    }
 }

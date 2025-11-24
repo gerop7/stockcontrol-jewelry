@@ -29,6 +29,10 @@ public class Subcategory extends AbstractCategory {
     )
     private Set<Inventory> inventories = new HashSet<>();
 
+    public Subcategory(String name, boolean isGlobal, User owner) {
+        super(name, isGlobal, owner);
+    }
+
     public Subcategory(String name, boolean isGlobal, User owner, Set<Inventory> inventories, Category principalCategory) {
         super(name, isGlobal, owner);
         this.inventories = inventories;

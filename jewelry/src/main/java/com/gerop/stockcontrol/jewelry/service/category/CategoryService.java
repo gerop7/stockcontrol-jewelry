@@ -1,50 +1,58 @@
 package com.gerop.stockcontrol.jewelry.service.category;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.gerop.stockcontrol.jewelry.mapper.CategoryMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.category.CategoryDto;
-import com.gerop.stockcontrol.jewelry.repository.BaseCategoryRepository;
-import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
-import com.gerop.stockcontrol.jewelry.service.permissions.CategoryPermissionsService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.gerop.stockcontrol.jewelry.exception.CategoryNotAvaibleException;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
+import com.gerop.stockcontrol.jewelry.model.entity.User;
 import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
+import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
-import com.gerop.stockcontrol.jewelry.service.permissions.ICategoryPermissionsService;
+import com.gerop.stockcontrol.jewelry.service.permissions.CategoryPermissionsService;
+import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
 
-@Service
 public class CategoryService extends AbstractCategoryService<Category, CategoryDto> {
+    private final SubcategoryService subcategoryService;
 
-    public CategoryService(BaseCategoryRepository<Category> repository, ICategoryPermissionsService<Category> permissionsService, UserServiceHelper helper, IInventoryService inventoryService, Function<CategoryDto, Category> CategoryFactory, CategoryMapper mapper) {
-        super(repository, permissionsService, helper, inventoryService, CategoryFactory, mapper);
+    public CategoryService(CategoryRepository repository, CategoryPermissionsService permissionsService, UserServiceHelper helper, IInventoryService inventoryService, CategoryMapper mapper, SubcategoryService subcategoryService) {
+        super(repository, permissionsService, helper, inventoryService, mapper, dto -> new Category(dto.name(), false, null));
+        this.subcategoryService = subcategoryService;
     }
-}
+
+    @Override
+    protected void createInternal(Category cat, CategoryDto dto, Long userId) {
+        dto.inventoryIds().forEach(
+                inv -> {
+                    if(permissionsService.canCreate(userId, inv)){
+                        inventoryService.findOne(inv)
+                                .ifPresent(i -> cat.getInventories().add(i));
+                    }
+                }
+        );
+    }
+
+    @Override
+    protected String className() {
+        return "Categoría";
+    }
+
+    @Override
+    protected void addToInventoryInternal(Category cat, Inventory inventory) {
+        cat.getInventories().add(inventory);
+    }
+
     @Override
     @Transactional
-    public void addToInventories(Category cat, List<Inventory> inventories) {
-        if(!cat.isGlobal()){
-            Set<Inventory> existingInv = cat.getInventories();
-            Long currentUserId = helper.getCurrentUser().getId();
-            inventories.forEach(
-                s -> {
-                    if (!existingInv.contains(s)) {
-                        if (!permissionsService.isOwner(currentUserId, cat.getId()))
-                            throw new CategoryNotAvaibleException("No se puede asignar la categoría " + cat.getName() +" al inventario " + s.getName() + ".");
-                        cat.getInventories().add(s);
-                    }
-                });
-            save(cat);
-        }
+    protected void removeFromInventoryInternal(Category cat, Inventory inventory) {
+        cat.getInventories().remove(inventory);
+        subcategoryService.removeFromInventoryAllByPrincipalCategory(cat, inventory);
     }
+
+    @Override
+    protected Set<Inventory> getInventories(Category cat) {
+        return cat.getInventories();
+    }
+
 }

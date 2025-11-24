@@ -27,10 +27,10 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
     protected final ICategoryPermissionsService<C> permissionsService;
     protected final UserServiceHelper helper;
     protected final IInventoryService inventoryService;
-    protected final Function<CDto, C> CategoryFactory;
     protected final CategoryMapper mapper;
+    protected final Function<CDto, C> CategoryFactory;
 
-    protected abstract void createInternal(C cat, CDto dto);
+    protected abstract void createInternal(C cat, CDto dto, Long userId);
     protected abstract String className();
     protected abstract void addToInventoryInternal(C cat, Inventory inventory);
     protected abstract void removeFromInventoryInternal(C cat, Inventory inventory);
@@ -42,11 +42,11 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
         User user = helper.getCurrentUser();
         C category = CategoryFactory.apply(dto);
         category.setOwner(user);
+
+        createInternal(category, dto, user.getId());
+
         save(category);
-
-        createInternal(category, dto);
-
-        return (CDto) mapper.toDto(save(category));
+        return (CDto) mapper.toDto(category);
     }
 
     @Override
@@ -77,6 +77,7 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
                         }
                     }
             );
+            save(cat);
         }
     }
 
@@ -101,17 +102,17 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
     @Transactional
     public void removeFromInventories(C cat, List<Inventory> inventories) {
         validateFields(cat, inventories);
+        User currentUser = helper.getCurrentUser();
+        Set<Inventory> existingInv = getInventories(cat);
         if(!cat.isGlobal()){
-            Set<Inventory> existingInv = getInventories(cat);
             inventories.forEach(
                     inventory -> {
-                        if(existingInv.contains(inventory)){
+                        if(existingInv.contains(inventory) && permissionsService.canDeleteFromInventory(cat.getId(), inventory.getId(), currentUser.getId())){
                             removeFromInventoryInternal(cat, inventory);
                         }
-                    }
-            );
-        }else
-            throw new CategoryNotAvaibleException("No puedes eliminar una "+getClass()+" de un inventario.");
+                    });
+            save(cat);
+        }
     }
 
     @Override
@@ -133,17 +134,17 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
 
     @Override
     public List<CDto> findAllByUser(Long userId) {
-        return (List<CDto>) repository.findAllByUser(userId).stream().map(mapper::toDto);
+        return (List<CDto>) repository.findAllByUser(userId).stream().map(mapper::toDto).toList();
     }
 
     @Override
     public List<CDto> findAllByInventory(Long inventoryId) {
-        return (List<CDto>) repository.findAllByInventory(inventoryId).stream().map(mapper::toDto);
+        return (List<CDto>) repository.findAllByInventory(inventoryId).stream().map(mapper::toDto).toList();
     }
 
     @Override
     public List<CDto> findAllByUserNotInInventory(Long inventoryId) {
-        return (List<CDto>) repository.findAllByUserNotInInventory(helper.getCurrentUser().getId(),inventoryId).stream().map(mapper::toDto);
+        return (List<CDto>) repository.findAllByUserNotInInventory(helper.getCurrentUser().getId(),inventoryId).stream().map(mapper::toDto).toList();
     }
 
     @Override
@@ -170,6 +171,9 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
 
     @Override
     public Optional<C> findOne(Long catId) {
-        return Optional.of(repository.findById(catId).orElseThrow(() -> new CategoryNotFoundException(catId, String.valueOf(className()))));
+        return Optional.of(
+                repository.findById(catId)
+                        .orElseThrow(() -> new CategoryNotFoundException(catId, className()))
+        );
     }
 }
