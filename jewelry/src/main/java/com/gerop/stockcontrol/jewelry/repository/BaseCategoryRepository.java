@@ -16,4 +16,8 @@ public interface BaseCategoryRepository<C extends AbstractCategory> extends Crud
     List<C> findAllByInventory(Long inventoryId);
 
     List<C> findAllByUserNotInInventory(Long id, Long inventoryId);
+
+    List<C> findAllByPrincipalCategoryAndInventory(Long principalCategoryId, Long inventoryId);
+
+    List<C> findAllByPrincipalCategory(Long principalCategoryId);
 }

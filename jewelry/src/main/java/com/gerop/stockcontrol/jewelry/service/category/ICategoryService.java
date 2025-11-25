@@ -22,8 +22,6 @@ public interface ICategoryService<C extends AbstractCategory, CDto extends ICate
     List<CDto> findAllByUserNotInInventory(Long inventoryId);
     List<CDto> findAllToCreateInInventory(Long inventoryId);
     List<CDto> findAllContainsName(List<CDto> categories, String string);
-    List<CDto> findAllContainsNameByUser(String name);
-    CDto findById(Long id);
     Optional<C> findOneWithOwner(Long catId);
     Optional<C> findOne(Long catId);
 }

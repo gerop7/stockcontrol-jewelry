@@ -1,30 +1,22 @@
 package com.gerop.stockcontrol.jewelry.service.category;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
 import com.gerop.stockcontrol.jewelry.mapper.CategoryMapper;
 import com.gerop.stockcontrol.jewelry.model.dto.category.SubcategoryDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
-import com.gerop.stockcontrol.jewelry.model.entity.User;
-import com.gerop.stockcontrol.jewelry.repository.BaseCategoryRepository;
-import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
+
 import com.gerop.stockcontrol.jewelry.service.UserServiceHelper;
 import com.gerop.stockcontrol.jewelry.service.permissions.SubcategoryPermissionsService;
 import org.springframework.stereotype.Service;
 
-import com.gerop.stockcontrol.jewelry.exception.CategoryNotAvaibleException;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
 import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
 import com.gerop.stockcontrol.jewelry.service.interfaces.IInventoryService;
-import com.gerop.stockcontrol.jewelry.service.permissions.ICategoryPermissionsService;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -37,6 +29,7 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
     }
 
     @Override
+    @Transactional
     protected void createInternal(Subcategory sub, SubcategoryDto dto, Long userId) {
         Category category = categoryService.findOneWithOwner(dto.principalCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Debes adjuntar una categoria padre existente para crear la subcategoría "+dto.name()+"."));
@@ -93,5 +86,13 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
     @Transactional(readOnly = true)
     public List<Subcategory> findAllByPrincipalCategoryAndInventory(Long principalCategoryId, Long inventoryId){
         return repository.findAllByPrincipalCategoryAndInventory(principalCategoryId,inventoryId);
+    }
+
+    public List<SubcategoryDto> findAllByPrincipalCategory(Long principalCategoryId){
+        return repository.findAllByPrincipalCategory(principalCategoryId).stream().map(s -> (SubcategoryDto) mapper.toDto(s)).toList();
+    }
+
+    public List<SubcategoryDto> findAllByPrincipalCategoryInInventory(Long principalCategoryId, Long inventoryId){
+        return findAllByPrincipalCategoryAndInventory(principalCategoryId,inventoryId).stream().map(s-> (SubcategoryDto) mapper.toDto(s)).toList();
     }
 }

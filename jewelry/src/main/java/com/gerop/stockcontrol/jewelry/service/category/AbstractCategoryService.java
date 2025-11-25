@@ -149,7 +149,7 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
 
     @Override
     public List<CDto> findAllToCreateInInventory(Long inventoryId){
-        List<C> catByUser = repository.findAllByUser(helper.getCurrentUser().getId());
+        List<C> catByUser = repository.findAllByUserNotInInventory(helper.getCurrentUser().getId(), inventoryId);
         List<C> catByInv = repository.findAllByInventory(inventoryId);
 
         Set<C> result = new HashSet<>();

@@ -20,6 +20,10 @@ public class Category extends AbstractCategory {
     )
     private Set<Inventory> inventories = new HashSet<>();
 
+    public Category(String name, boolean isGlobal, User owner) {
+        super(name, isGlobal, owner);
+    }
+
     public Category(String name, boolean isGlobal, User owner, Set<Inventory> inventories) {
         super(name, isGlobal, owner);
         this.inventories = inventories;
