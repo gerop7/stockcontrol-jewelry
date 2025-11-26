@@ -1,5 +1,9 @@
 package com.gerop.stockcontrol.jewelry.service.permissions;
 
+import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
+import com.gerop.stockcontrol.jewelry.model.entity.Category;
+import com.gerop.stockcontrol.jewelry.repository.CategoryRepository;
+import com.gerop.stockcontrol.jewelry.repository.SubcategoryRepository;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Subcategory;
@@ -9,13 +13,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SubcategoryPermissionsService implements ICategoryPermissionsService<Subcategory>{
-
-
+    private final IInventoryPermissionsService inventoryPermissions;
+    private final SubcategoryRepository repository;
 
     @Override
     public boolean isOwner(Long ownerId, Long catId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isOwner'");
+        return repository.existsByIdAndOwnerId(catId, ownerId);
     }
 
     @Override
@@ -25,25 +28,16 @@ public class SubcategoryPermissionsService implements ICategoryPermissionsServic
 
     @Override
     public boolean canCreate(Long userId, Long inventoryId) {
-        return false;
+        return inventoryPermissions.canWrite(inventoryId,userId);
     }
 
     @Override
     //No se puede eliminar si es global, y puede eliminar el dueño de la categoria o del inventario.
     public boolean canDeleteFromInventory(Long categoryId, Long inventoryId, Long userId) {
-        return false;
-    }
+        Subcategory subcategory = repository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId, "Categoria"));
 
-    @Override
-    public boolean canAddToInventory(Long categoryId, Long inventoryId, Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
-    }
+        if(subcategory.isGlobal()) return false;
 
-    @Override
-    public boolean canUseToCreateWithoutInventoryCheck(Long inventoryId, Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'canUseToCreateWithoutInventoryCheck'");
+        return isOwner(userId, subcategory) || inventoryPermissions.isOwner(inventoryId,userId);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.gerop.stockcontrol.jewelry.service.permissions;
 
+import com.gerop.stockcontrol.jewelry.exception.CategoryNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.gerop.stockcontrol.jewelry.model.entity.Category;
@@ -14,19 +15,8 @@ public class CategoryPermissionsService implements ICategoryPermissionsService<C
     private final CategoryRepository repository;
 
     @Override
-    public boolean canAddToInventory(Long categoryId, Long inventoryId, Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'canAddToInventory'");
-    }
-
-    @Override
-    public boolean canUseToCreateWithoutInventoryCheck(Long inventoryId, Long userId) {
-        return false;
-    }
-
-    @Override
-    public boolean isOwner(Long ownerId, Long jewelId) {
-        return false;
+    public boolean isOwner(Long ownerId, Long catId) {
+        return repository.existsByIdAndOwnerId(catId, ownerId);
     }
 
     @Override
@@ -36,13 +26,17 @@ public class CategoryPermissionsService implements ICategoryPermissionsService<C
 
     @Override
     public boolean canCreate(Long userId, Long inventoryId) {
-        return false;
+        return inventoryPermissions.canWrite(inventoryId,userId);
     }
 
     @Override
     //No se puede eliminar si es global, y puede eliminar el dueño de la categoria o del inventario.
     public boolean canDeleteFromInventory(Long categoryId, Long inventoryId, Long userId) {
-        return false;
+        Category category = repository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId, "Categoria"));
+
+        if(category.isGlobal()) return false;
+
+        return isOwner(userId, category) || inventoryPermissions.isOwner(inventoryId,userId);
     }
 
 }

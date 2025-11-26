@@ -20,4 +20,6 @@ public interface BaseCategoryRepository<C extends AbstractCategory> extends Crud
     List<C> findAllByPrincipalCategoryAndInventory(Long principalCategoryId, Long inventoryId);
 
     List<C> findAllByPrincipalCategory(Long principalCategoryId);
+
+    boolean existsByIdAndOwnerId(Long catId, Long ownerId);
 }

@@ -31,9 +31,8 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
     @Override
     @Transactional
     protected void createInternal(Subcategory sub, SubcategoryDto dto, Long userId) {
-        Category category = categoryService.findOneWithOwner(dto.principalCategoryId())
+            Category category = categoryService.findOneWithOwner(dto.principalCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Debes adjuntar una categoria padre existente para crear la subcategoría "+dto.name()+"."));
-        if(category.getOwner().getId().equals(userId)){
             sub.setPrincipalCategory(category);
             dto.inventoryIds().forEach(
                     inv -> {
@@ -46,8 +45,7 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
                         }
                     }
             );
-        }
-        categoryService.save(category);
+            categoryService.save(category);
     }
 
     @Override
@@ -76,10 +74,10 @@ public class SubcategoryService extends AbstractCategoryService<Subcategory, Sub
     @Transactional
     public void removeFromInventoryAllByPrincipalCategory(Category cat, Inventory inventory) {
         List<Subcategory> subcategories = findAllByPrincipalCategoryAndInventory(cat.getId(), inventory.getId());
-        subcategories.stream().map(
+        subcategories.forEach(
                 s -> {
                     s.getInventories().remove(inventory);
-                    return repository.save(s);
+                    repository.save(s);
                 });
     }
 
