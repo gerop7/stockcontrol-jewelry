@@ -10,8 +10,7 @@ public record InventoryStockDto(
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof InventoryStockDto other)) return false;
-        return Objects.equals(inventoryId, other.inventoryId)
-            && Objects.equals(stock, other.stock);
+        return Objects.equals(inventoryId, other.inventoryId);
     }
 
     @Override

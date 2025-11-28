@@ -8,6 +8,7 @@ import com.gerop.stockcontrol.jewelry.model.dto.materials.MaterialDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Material;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface IMaterialService<M extends Material, Q extends Number, MDto extends MaterialDto> {
     MDto create(MDto material);
@@ -32,6 +33,8 @@ public interface IMaterialService<M extends Material, Q extends Number, MDto ext
     void removePendingToRestock(M material, Q quantity, Inventory inventory);
 
     Optional<M> findOne(Long materialId);
+    Optional<M> findOneFullData(Long materialId);
+
     List<M> findAllByIds(Set<Long> materialIds);
     Page<M> findAllByInventory(Long inventoryId, int page, int size);
     Page<M> findAllByCurrentUser(int page, int size);

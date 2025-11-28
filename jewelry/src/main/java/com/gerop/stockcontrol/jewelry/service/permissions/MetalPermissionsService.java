@@ -54,8 +54,7 @@ public class MetalPermissionsService implements IMaterialPermissionsService<Meta
         Metal metal = metalRepository.findById(materialId)
                 .orElseThrow(() -> new MaterialNotFoundException("Metal no encontrado"));
 
-        return metal.isGlobal() || 
-            (isOwner(materialId, userId) || metalStockRepository.existsByInventoryIdAndMetalId(inventoryId, materialId));
+        return metal.isGlobal() || (isOwner(materialId, userId));
     }
     
     @Override

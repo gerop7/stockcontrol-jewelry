@@ -64,23 +64,8 @@ public class JewelPermissionsService implements IJewelPermissionsService {
     }
 
     @Override
-    public boolean canCreate(Long inventoryId, Long userId, Set<Long> metalIds, Set<Long> stoneIds) {
+    public void canCreate(Long inventoryId, Long userId, Set<Long> metalIds, Set<Long> stoneIds) {
         invPermissions.validatePermission(inventoryId, userId, InventoryUserPermissionType.WRITE, "Crear una joya");
-
-        metalIds.forEach(
-            mId -> {
-                if(!metalPermissions.canUseToCreateWithoutInvPermission(mId, userId, inventoryId))
-                    throw new MaterialPermissionDeniedException("No tienes permisos para usar el metal con ID: "+mId+", en el Inventario con ID: "+inventoryId+".");
-            }
-        );
-        stoneIds.forEach(
-            sId -> {
-                if(!stonePermissions.canUseToCreateWithoutInvPermission(sId, userId, inventoryId))
-                    throw new MaterialPermissionDeniedException("No tienes permisos para usar la piedra con ID: "+sId+", en el Inventario con ID: "+inventoryId+".");
-            }
-        );
-
-        return true;
     }
 
 }
