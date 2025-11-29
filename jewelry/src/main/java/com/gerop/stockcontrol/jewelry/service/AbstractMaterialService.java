@@ -1,9 +1,7 @@
 package com.gerop.stockcontrol.jewelry.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.StreamSupport;
+import java.text.Normalizer;
+import java.util.*;
 
 import com.gerop.stockcontrol.jewelry.exception.InvalidQuantityException;
 import com.gerop.stockcontrol.jewelry.exception.RequiredFieldException;
@@ -27,9 +25,6 @@ import com.gerop.stockcontrol.jewelry.service.pendingtorestock.IPendingRestockSe
 import com.gerop.stockcontrol.jewelry.service.permissions.IMaterialPermissionsService;
 import com.gerop.stockcontrol.jewelry.service.stockperinventory.IStockByInventoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -213,6 +208,17 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
         }
     }
 
+    @Transactional
+    @Override
+    public void addToInventory(M mat, Inventory inventory, N quantity) {
+        if(!stockService.existByIdAndInventoryId(mat.getId(),inventory.getId())){
+            if(!mat.isGlobal()){
+                addToInventoryInternal(mat, inventory, quantity);
+            }
+            save(mat);
+        }
+    }
+
     @Override
     @Transactional
     public void removeFromInventory(Long materialId, Inventory inventory) {
@@ -270,88 +276,129 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
     @Override
     @Transactional(readOnly = true)
     public Optional<M> findOne(Long materialId) {
+        return repository.findById(materialId);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<M> findOneFullData(Long materialId) {
         return repository.findByIdFullData(materialId);
     }
 
+    /*
+     *
+     * Muestra un unico material, con la informacion de los inventarios a los que tiene acceso el usuario.
+     * trae info basica, stock, usuario, y pendientes de reponer.
+     *
+     * */
     @Override
     @Transactional(readOnly = true)
-    public List<M> findAllByIds(Set<Long> materialIds) {
-        return StreamSupport.stream(repository.findAllById(materialIds).spliterator(), false).toList();
+    public MDto findOneDto(Long materialId, Set<Long> inventoriesIds){
+        return (MDto) mapper.toDto(repository.findByIdAndInventoriesIdsFullData(materialId,inventoriesIds).orElseThrow(()-> new MaterialNotFoundException(materialId,className())));
     }
 
-    protected abstract void filterRelationsByInventory(M material, Long inventoryId);
-
+    /*
+     *
+     * Muestra un unico material, con la informacion de ese inventario,
+     * info basica, stock, usuario, y pendientes de reponer.
+     *
+     * */
     @Override
     @Transactional(readOnly = true)
-    public Page<M> findAllByInventory(Long inventoryId, int page, int size) {
-        Page<Long> materialIds = repository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
+    public MDto findOneByIdAndInventoryDto(Long materialId, Long inventoryId){
+        return (MDto) mapper.toDto(repository.findByIdAndInventoriesIdsFullData(materialId, Collections.singleton(inventoryId)).orElseThrow(()-> new MaterialNotFoundException(materialId,className())));
+    }
 
-        if (materialIds.isEmpty())
-            return Page.empty();
+    /*
+    *
+    * Listado de materiales de un inventario con info minima
+    *
+    * */
+    @Override
+    @Transactional(readOnly = true)
+    public List<MDto> findAllByInventoryDto(Long inventoryId){
+        return (List<MDto>) repository.findAllByInventoryId(inventoryId).stream().map(mapper::toDto);
+    }
 
-        List<M> list = repository.findAllByIdsFullData(materialIds.getContent());
+    /*
+     *
+     * Listado de materiales de la seccion materiales del inventario
+     *
+     * */
+    @Transactional(readOnly = true)
+    @Override
+    public List<MDto> findAllByInventoryFullDataDto(Long inventoryId){
+        return (List<MDto>) repository.findAllByInventoryFullData(inventoryId).stream().map(mapper::toDto);
+    }
 
-        list.forEach(material -> filterRelationsByInventory(material, inventoryId));
+    /*
+     *
+     * Listado de materiales del usuario con informacion minima
+     *
+     * */
+    @Override
+    @Transactional(readOnly = true)
+    public List<MDto> findAllByCurrentUserDto(){
+        return (List<MDto>) repository.findAllByOwnerId(helperService.getCurrentUser().getId()).stream().map(mapper::toDto);
+    }
 
-        return new PageImpl<>(list, materialIds.getPageable(), materialIds.getTotalElements());
+    /*
+     *
+     * Listado de materiales de la seccion materiales del usuario
+     *
+     * */
+    @Transactional(readOnly = true)
+    @Override
+    public List<MDto> findAllByCurrentUserFullDataDto(Set<Long> inventoriesIds){
+        return (List<MDto>) repository.findAllByOwnerIdFullData(helperService.getCurrentUser().getId(), inventoriesIds).stream().map(mapper::toDto);
+    }
+
+
+    /*
+     *
+     * Listado de materiales que no existen en un inventario con informacion minima.
+     * Usado para agregar materiales a un inventario.
+     *
+     * */
+    @Override
+    @Transactional(readOnly = true)
+    public List<MDto> findAllByUserNotInInventory(Long inventoryId){
+        return (List<MDto>) repository.findAllByOwnerIdNotInInventory(helperService.getCurrentUser().getId(), inventoryId).stream().map(mapper::toDto);
+    }
+
+    /*
+     *
+     * Listado de materiales que pueden usarse para crear, modificar stock, etc...
+     * Muestra materiales del usuario y los del inventario.
+     *
+     * */
+    @Override
+    @Transactional(readOnly = true)
+    public List<MDto> findAllToUseInInventory(Long inventoryId){
+
+        List<MDto> allByUser = findAllByUserNotInInventory(inventoryId);
+        List<MDto> allByInventory = findAllByInventoryDto(inventoryId);
+
+        Set<MDto> materials = new HashSet<>();
+
+        materials.addAll(allByUser);
+        materials.addAll(allByInventory);
+
+        return materials.stream().toList();
+    }
+
+    private String normalize(String s) {
+        return Normalizer.normalize(s.toLowerCase(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<M> findAllByCurrentUser(int page, int size) {
-        Long userId = helperService.getCurrentUser().getId();
-
-        Page<Long> materialIds = repository.findAllIdsByUserId(userId, PageRequest.of(page, size));
-
-        if (materialIds.isEmpty())
-            return Page.empty();
-
-        List<M> list = repository.findAllByIdsAndUserFullData(materialIds.getContent(), userId);
-
-        return new PageImpl<>(list, materialIds.getPageable(), materialIds.getTotalElements());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<MDto> findOneDto(Long materialId) {
-        return findOne(materialId).map(m -> (MDto) mapper.toDto(m));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<MDto> findAllByInventoryDto(Long inventoryId, int page, int size) {
-        Page<Long> materialIds = repository.findAllIdsByInventoryId(inventoryId, PageRequest.of(page, size));
-
-        if (materialIds.isEmpty())
-            return Page.empty();
-
-        List<M> list = repository.findAllByIdsFullData(materialIds.getContent());
-
-        list.forEach(material -> filterRelationsByInventory(material, inventoryId));
-
-        List<MDto> dtoList = list.stream()
-                .map(m -> (MDto) mapper.toDto(m))
-                .toList();
-
-        return new PageImpl<>(dtoList, materialIds.getPageable(), materialIds.getTotalElements());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<MDto> findAllByCurrentUserDto(int page, int size) {
-        Long userId = helperService.getCurrentUser().getId();
-
-        Page<Long> materialIds = repository.findAllIdsByUserId(userId, PageRequest.of(page, size));
-
-        if (materialIds.isEmpty())
-            return Page.empty();
-
-        List<M> list = repository.findAllByIdsAndUserFullData(materialIds.getContent(), userId);
-
-        List<MDto> dtoList = list.stream()
-                .map(m -> (MDto) mapper.toDto(m))
-                .toList();
-
-        return new PageImpl<>(dtoList, materialIds.getPageable(), materialIds.getTotalElements());
+    public List<MDto> findAllContainsName(String name, List<MDto> materials){
+        if(name!=null && !name.isEmpty()){
+            String filter = normalize(name);
+            return materials.stream().filter(mDto -> normalize(mDto.name()).contains(filter)).toList();
+        }else
+            return materials;
     }
 }

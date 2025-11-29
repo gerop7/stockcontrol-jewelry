@@ -59,19 +59,4 @@ public class MetalService extends AbstractMaterialService<Metal, Float, MetalDto
         stockService.remove(stock);
         material.getStockByInventory().remove(stock);
     }
-
-    @Override
-    protected void filterRelationsByInventory(Metal metal, Long inventoryId) {
-        metal.setStockByInventory(
-                metal.getStockByInventory().stream()
-                        .filter(s -> s.getInventory().getId().equals(inventoryId))
-                        .toList()
-        );
-
-        metal.setPendingMetalRestock(
-                metal.getPendingMetalRestock().stream()
-                        .filter(p -> p.getInventory().getId().equals(inventoryId))
-                        .toList()
-        );
-    }
 }

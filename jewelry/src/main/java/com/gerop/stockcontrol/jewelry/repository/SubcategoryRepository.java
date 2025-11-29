@@ -24,7 +24,7 @@ public interface SubcategoryRepository extends BaseCategoryRepository<Subcategor
 
     @Query("""
         SELECT DISTINCT c FROM Subcategory c
-        LEFT JOIN FETCH c.owner o
+        JOIN c.owner o
         JOIN FETCH c.principalCategory
         WHERE o.id = :userId OR c.global = true
     """)
@@ -35,7 +35,6 @@ public interface SubcategoryRepository extends BaseCategoryRepository<Subcategor
     @Query("""
         SELECT DISTINCT c FROM Subcategory c
         JOIN c.inventories i
-        LEFT JOIN FETCH c.owner o
         JOIN FETCH c.principalCategory
         WHERE i.id = :inventoryId
     """)
@@ -43,7 +42,7 @@ public interface SubcategoryRepository extends BaseCategoryRepository<Subcategor
 
     @Query("""
         SELECT DISTINCT c FROM Subcategory c
-        LEFT JOIN FETCH c.owner o
+        JOIN c.owner o
         JOIN FETCH c.principalCategory
         WHERE o.id = :ownerId
             AND c.id NOT IN (

@@ -96,6 +96,7 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
     public void addToInventory(Long catId, Inventory inventory){
         C cat = repository.findByIdWithOwner(catId).orElseThrow(() -> new CategoryNotFoundException(catId, className()));
         addToInventories(cat, List.of(inventory));
+        save(cat);
     }
 
     @Override
@@ -134,6 +135,8 @@ public abstract class AbstractCategoryService<C extends AbstractCategory, CDto e
 
     @Override
     public List<CDto> findAllByUser(Long userId) {
+        if(userId==null)
+            userId=helper.getCurrentUser().getId();
         return (List<CDto>) repository.findAllByUser(userId).stream().map(mapper::toDto).toList();
     }
 

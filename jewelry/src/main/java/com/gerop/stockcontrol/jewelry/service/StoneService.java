@@ -59,19 +59,4 @@ public class StoneService extends AbstractMaterialService<Stone, Long, StoneDto,
         stockService.remove(stock);
         material.getStockByInventory().remove(stock);
     }
-
-    @Override
-    protected void filterRelationsByInventory(Stone stone, Long inventoryId) {
-        stone.setStockByInventory(
-                stone.getStockByInventory().stream()
-                        .filter(s -> s.getInventory().getId().equals(inventoryId))
-                        .toList()
-        );
-
-        stone.setPendingStoneRestock(
-                stone.getPendingStoneRestock().stream()
-                        .filter(p -> p.getInventory().getId().equals(inventoryId))
-                        .toList()
-        );
-    }
 }

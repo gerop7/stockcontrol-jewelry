@@ -22,7 +22,7 @@ public interface CategoryRepository extends BaseCategoryRepository<Category>{
 
     @Query("""
         SELECT DISTINCT c FROM Category c
-        LEFT JOIN FETCH c.owner o
+        JOIN c.owner o
         WHERE o.id = :userId OR c.global = true
     """)
     @Override
@@ -31,7 +31,6 @@ public interface CategoryRepository extends BaseCategoryRepository<Category>{
     @Query("""
         SELECT DISTINCT c FROM Category c
         JOIN c.inventories i
-        LEFT JOIN FETCH c.owner o
         WHERE i.id = :inventoryId
     """)
     @Override
@@ -39,7 +38,7 @@ public interface CategoryRepository extends BaseCategoryRepository<Category>{
 
     @Query("""
         SELECT DISTINCT c FROM Category c
-        LEFT JOIN FETCH c.owner o
+        JOIN c.owner o
         WHERE o.id = :ownerId
             AND c.id NOT IN (
                   SELECT c2.id FROM Category c2

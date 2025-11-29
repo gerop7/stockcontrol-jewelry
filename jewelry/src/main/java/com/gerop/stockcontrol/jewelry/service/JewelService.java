@@ -71,7 +71,7 @@ public class JewelService implements IJewelService{
         save(jewel);
         
         Long subId=jewelDto.subcategoryId();
-        Set<Inventory> inventories = new ArrayList<>();
+        Set<Inventory> inventories = new HashSet<>();
 
         Set<Long> metalIds = new HashSet<>();
         Set<Long> stoneIds = new HashSet<>();
@@ -129,14 +129,14 @@ public class JewelService implements IJewelService{
 
         if(subId!=null){
             Subcategory sub = subcategoryService.findOneWithOwner(subId).orElseThrow(()-> new CategoryNotFoundException(subId,"Subcategoría"));
-            subcategoryService.addToInventories(sub, inventories);
+            subcategoryService.addToInventories(sub, inventories.stream().toList());
             jewel.setSubcategory(sub);
             jewel.setCategory(sub.getPrincipalCategory());
         }else{
             Long catId=jewelDto.categoryId();
             if(catId!=null){
                 Category cat = categoryService.findOneWithOwner(catId).orElseThrow(()-> new CategoryNotFoundException(catId,"Categoría"));
-                categoryService.addToInventories(cat, inventories);
+                categoryService.addToInventories(cat, inventories.stream().toList());
                 jewel.setCategory(cat);
             }else{
                 throw new RequiredFieldException("Es necesaria una categoria o subcategoria para crear la joya "+jewelDto.sku()+".");

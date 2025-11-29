@@ -7,7 +7,6 @@ import java.util.Set;
 import com.gerop.stockcontrol.jewelry.model.dto.materials.MaterialDto;
 import com.gerop.stockcontrol.jewelry.model.entity.Inventory;
 import com.gerop.stockcontrol.jewelry.model.entity.Material;
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface IMaterialService<M extends Material, Q extends Number, MDto extends MaterialDto> {
@@ -25,6 +24,10 @@ public interface IMaterialService<M extends Material, Q extends Number, MDto ext
 
 
     void addToInventory(Long materialId, Inventory inventory, Q quantity);
+
+    @Transactional
+    void addToInventory(M mat, Inventory inventory, Q quantity);
+
     void removeFromInventory(Long materialId, Inventory inventory);
 
     void addPendingToRestock(Long materialId, Q quantity, Long inventoryId);
@@ -35,12 +38,16 @@ public interface IMaterialService<M extends Material, Q extends Number, MDto ext
     Optional<M> findOne(Long materialId);
     Optional<M> findOneFullData(Long materialId);
 
-    List<M> findAllByIds(Set<Long> materialIds);
-    Page<M> findAllByInventory(Long inventoryId, int page, int size);
-    Page<M> findAllByCurrentUser(int page, int size);
+    MDto findOneDto(Long materialId, Set<Long> inventoriesIds);
+    MDto findOneByIdAndInventoryDto(Long materialId, Long inventoryId);
 
-    Optional<MDto> findOneDto(Long materialId);
-    Page<MDto> findAllByInventoryDto(Long inventoryId, int page, int size);
-    Page<MDto> findAllByCurrentUserDto(int page, int size);
+    List<MDto> findAllByInventoryDto(Long inventoryId);
+    List<MDto> findAllByInventoryFullDataDto(Long inventoryId);
 
+    List<MDto> findAllByCurrentUserDto();
+    List<MDto> findAllByCurrentUserFullDataDto(Set<Long> inventoriesIds);
+
+    List<MDto> findAllByUserNotInInventory(Long inventoryId);
+    List<MDto> findAllToUseInInventory(Long inventoryId);
+    List<MDto> findAllContainsName(String name, List<MDto> materials);
 }
