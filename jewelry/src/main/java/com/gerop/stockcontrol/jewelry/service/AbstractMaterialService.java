@@ -317,7 +317,7 @@ public abstract class AbstractMaterialService<M extends Material, N extends Numb
     @Override
     @Transactional(readOnly = true)
     public List<MDto> findAllByInventoryDto(Long inventoryId){
-        return (List<MDto>) repository.findAllByInventoryId(inventoryId).stream().map(mapper::toDto);
+        return (List<MDto>) repository.findAllByInventoryId(inventoryId).stream().map(mapper::toDto).toList();
     }
 
     /*

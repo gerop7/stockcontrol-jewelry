@@ -23,8 +23,7 @@ public interface StoneRepository extends MaterialBaseRepository<Stone> {
     Optional<Stone> findByIdWithStockByInventory(@Param("id") Long id);
 
     @Query("""
-        SELECT DISTINCT s
-        FROM Stone s
+        SELECT DISTINCT s FROM Stone s
         LEFT JOIN FETCH s.user
         LEFT JOIN FETCH s.stockByInventory st
         LEFT JOIN FETCH st.inventory
@@ -100,12 +99,12 @@ public interface StoneRepository extends MaterialBaseRepository<Stone> {
 
     @Override
     @Query("""
-    SELECT s FROM Stone s
-    WHERE s.user.id = :ownerId AND s.isGlobal = false
-      AND s.id NOT IN (
-            SELECT st.stone.id FROM StoneStockByInventory st
-            WHERE st.inventory.id = :inventoryId
-      )
+        SELECT s FROM Stone s
+        WHERE s.user.id = :ownerId AND s.isGlobal = false
+          AND s.id NOT IN (
+                SELECT st.stone.id FROM StoneStockByInventory st
+                WHERE st.inventory.id = :inventoryId
+          )
     """)
     List<Stone> findAllByOwnerIdNotInInventory(Long ownerId, Long inventoryId);
 }
